@@ -1,4 +1,4 @@
-backports.zoneinfo;python_version<"3.9"
+protobuf ==  3.19
 streamlit
 pandas
 plotly
