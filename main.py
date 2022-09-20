@@ -1,5 +1,7 @@
-""""""
-
 import streamlit as st
-heating_system = st.selectbox('Heating System', options=['Gas Boiler', 'Direct Electric', 'Heat Pump'])
-st.write(f'Your heating system is a {heating_system}')
+
+import usage
+import solar
+
+has_gas, heating_system = usage.render()
+solar_orientation, roof_area_m2 = solar.render()
