@@ -43,7 +43,7 @@ def render() -> Tuple[float, str]:
 
 @dataclass
 class Demand:
-    time_series: pd.Series  # TODO: figure out how to specify index should be datetime?
+    profile: pd.Series  # TODO: figure out how to specify index should be datetime?
     units: str
 
     def __post_init__(self):
@@ -52,12 +52,12 @@ class Demand:
 
     @property
     def annual_sum(self) -> float:
-        annual_consumption = self.time_series.sum()
+        annual_consumption = self.profile.sum()
         return annual_consumption
 
     def add(self, other: 'Demand') -> 'Demand':
         if self.units == other.units:
-            combined_time_series = self.time_series + other.time_series
+            combined_time_series = self.profile + other.profile
             combined = Demand(time_series=combined_time_series, units=self.units)
         #     TODO: should this change the base class
         else:
@@ -76,8 +76,8 @@ class Consumption(Demand):
 
     def add(self, other: 'Consumption') -> 'Consumption':
         if self.fuel == other.fuel and self.units == other.units:
-            combined_time_series = self.time_series + other.time_series
-            combined = Consumption(time_series=combined_time_series, units=self.units, fuel=self.fuel)
+            combined_time_series = self.profile + other.profile
+            combined = Consumption(profile=combined_time_series, units=self.units, fuel=self.fuel)
         else:
             raise ValueError("The fuel and units of the two consumptions must match")
             # idea: maybe this should work and just return a list?
@@ -101,8 +101,8 @@ class HeatingSystem:
         return self.calculate_consumption(demand=water_heat_demand, efficiency=self.water_heating_efficiency)
 
     def calculate_consumption(self, demand: Demand, efficiency: float) -> Consumption:
-        time_series = demand.time_series / efficiency
-        return Consumption(time_series=time_series, fuel=self.fuel, units=demand.units)
+        profile = demand.profile / efficiency
+        return Consumption(profile=profile, fuel=self.fuel, units=demand.units)
 
 
 class House:
@@ -114,14 +114,14 @@ class House:
         units = 'kWh'
         idx = constants.BASE_YEAR_HALF_HOUR_INDEX
         # Dummy data for now TODO get profiles from elsewhere
-        self.base_demand = Demand(time_series=pd.Series(index=idx, data=0.001 * floor_area_m2), units=units)
-        self.water_heating_demand = Demand(time_series=pd.Series(index=idx, data=0.004 * floor_area_m2), units=units)
-        self.space_heat_demand = Demand(time_series=pd.Series(index=idx, data=0.005 * floor_area_m2), units=units)
+        self.base_demand = Demand(profile=pd.Series(index=idx, data=0.001 * floor_area_m2), units=units)
+        self.water_heating_demand = Demand(profile=pd.Series(index=idx, data=0.004 * floor_area_m2), units=units)
+        self.space_heat_demand = Demand(profile=pd.Series(index=idx, data=0.005 * floor_area_m2), units=units)
 
     def calculate_consumption(self, heating_system: HeatingSystem) -> Dict[str, Consumption]:
 
         # Base demand is always electricity (lighting/plug loads etc.)
-        base_consumption = Consumption(time_series=self.base_demand.time_series,
+        base_consumption = Consumption(profile=self.base_demand.profile,
                                        units=self.base_demand.units,
                                        fuel='electricity')
         space_heat_consumption = heating_system.calculate_space_heating_consumption(self.space_heat_demand)

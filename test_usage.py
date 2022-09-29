@@ -11,7 +11,7 @@ def test_calculate_consumption():
     assert list(consumption_dict.keys()) == ['electricity']
     assert consumption_dict['electricity'].fuel == 'electricity'
     assert consumption_dict['electricity'].units == 'kWh'
-    assert (consumption_dict['electricity'].time_series > 0).all()
+    assert (consumption_dict['electricity'].profile > 0).all()
     assert consumption_dict['electricity'].annual_sum > 0
     return consumption_dict
 
