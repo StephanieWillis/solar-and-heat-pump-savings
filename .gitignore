@@ -1,0 +1,16 @@
+*.pyc
+*.pdf
+*.png
+*.csv
+*.json
+*.zip
+*.xlsx
+*.xlsm
+*.txt
+*.csv_*
+.DS_Store
+*.html
+*.idea
+* config.py
+env/
+venv/
