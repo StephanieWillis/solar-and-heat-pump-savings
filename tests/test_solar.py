@@ -1,3 +1,5 @@
+import pandas as pd
+
 import solar
 
 import plotly.express as px
@@ -5,15 +7,20 @@ import plotly.express as px
 
 def test_solar():
     orientation = 'South'
-    roof_area_m2 = 30
+    roof_height = 2
+    roof_width = 7
     postcode = 'DN20 0RG'
-    solar_install = solar.Solar(orientation=orientation, roof_area_m2=roof_area_m2, postcode=postcode)
+    solar_install = solar.Solar(orientation=orientation, roof_width_m=roof_width, roof_height_m=roof_height,
+                                postcode=postcode)
     profile = solar_install.generation.profile
 
     assert solar_install.orientation == orientation
-    assert solar_install.area_m2 == roof_area_m2 * 0.7  # TODO store this somewhere
     assert solar_install.generation.units == "kWh"
     assert solar_install.generation.fuel == 'electricity'
+    assert isinstance(solar_install.number_of_panels, int)
+    assert isinstance(solar_install.peak_capacity_kW_out_per_kW_in_per_m2, float)
+    assert isinstance(solar_install.generation.profile, pd.Series)
+    solar_install.generation.annual_sum
 
     fig = px.line(profile.loc["2020-01-01": "2020-01-03"])
     fig.show()

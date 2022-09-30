@@ -7,40 +7,6 @@ import streamlit as st
 import constants
 
 
-def render() -> Tuple[float, str]:
-    st.subheader("Your current energy usage")
-
-    house_floor_area_m2 = st.number_input(label='floor_area', min_value=0, max_value=500, value=80)
-    house_type = st.selectbox('House Type', options=constants.HOUSE_TYPES)
-    house = House(house_type=house_type, floor_area_m2=house_floor_area_m2)
-
-    heating_systems = {'Heat Pump': HeatingSystem(3.5, 3, 'electricity'),
-                       'Gas Boiler': HeatingSystem(0.85, 0.8, 'gas'),
-                       'Oil Boiler': HeatingSystem(0.85, 0.8, 'oil'),
-                       'Direct Electric': HeatingSystem(1, 1, 'electricity')
-                       }
-    heating_system_name = st.selectbox('Heating System', options=heating_systems.keys())
-    heating_system = heating_systems[heating_system_name]
-
-    consumption_dict = house.calculate_consumption(heating_system=heating_system)
-
-    st.write(f'Your house is an {house.floor_area_m2} m\u00b2 {house.type}')
-
-    st.write(f'Your heating system is a {heating_system_name}. '
-             f'It has an efficiency of {heating_system.space_heating_efficiency:.0%} in space heating and '
-             f'{heating_system.water_heating_efficiency:.0%} when heating water')
-
-    # TODO: figure out how to render these with a comma
-    if heating_system.fuel == 'electricity':
-        st.write(f"We think your home needs {int(consumption_dict['electricity'].annual_sum)} kWh of electricity a year"
-                 )
-    else:
-        st.write(f"We think your home needs {int(consumption_dict['electricity'].annual_sum)} kWh of electricity a year"
-                 f" and {int(consumption_dict[heating_system.fuel].annual_sum)} kWh of {heating_system.fuel}")
-
-    return house_floor_area_m2, heating_system
-
-
 @dataclass
 class Demand:
     profile: pd.Series  # TODO: figure out how to specify index should be datetime?
@@ -90,6 +56,12 @@ class HeatingSystem:
     water_heating_efficiency: float
     fuel: str
 
+    @classmethod
+    def from_constants(cls, parameters: constants.HeatingConstants):
+        return cls(space_heating_efficiency=parameters.space_heating_efficiency,
+                   water_heating_efficiency=parameters.water_heating_efficiency,
+                   fuel=parameters.fuel)
+
     def __post_init__(self):
         if self.fuel not in constants.FUELS:
             raise ValueError(f"fuel must be one of {constants.FUELS}")
@@ -138,5 +110,31 @@ class House:
         return consumption_all_fuels
 
 
+def render() -> Tuple[House, Dict[str, Consumption]]:
+    st.subheader("Your current energy usage")
 
+    st.write("To estimate your current energy use we need a few bits of information about your house:")
 
+    house_floor_area_m2 = st.number_input(label='House floor area (m2)', min_value=0, max_value=500, value=80)
+    house_type = st.selectbox('House Type', options=constants.HOUSE_TYPES)
+    house = House(house_type=house_type, floor_area_m2=house_floor_area_m2)
+
+    heating_system_name = st.selectbox('Heating System', options=constants.DEFAULT_HEATING_CONSTANTS.keys())
+    heating_system = HeatingSystem.from_constants(constants.DEFAULT_HEATING_CONSTANTS[heating_system_name])
+    consumption_dict = house.calculate_consumption(heating_system=heating_system)
+
+    st.write(f'Your house is an {house.floor_area_m2} m\u00b2 {house.type}')
+
+    st.write(f'Your heating system is a {heating_system_name}. '
+             f'It has an efficiency of {heating_system.space_heating_efficiency:.0%} in space heating and '
+             f'{heating_system.water_heating_efficiency:.0%} when heating water')
+
+    # TODO: figure out how to render these with a comma
+    if heating_system.fuel == 'electricity':
+        st.write(f"We think your home needs {int(consumption_dict['electricity'].annual_sum):,} kWh of electricity a year"
+                 )
+    else:
+        st.write(f"We think your home needs {int(consumption_dict['electricity'].annual_sum):,} kWh of electricity a year"
+                 f" and {int(consumption_dict[heating_system.fuel].annual_sum)} kWh of {heating_system.fuel}")
+
+    return house, consumption_dict
