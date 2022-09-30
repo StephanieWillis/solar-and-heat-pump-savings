@@ -1,4 +1,8 @@
 protobuf ==  3.19
-streamlit
+streamlit==1.11.1
 pandas
 plotly
+streamlit-wizard>=0.0.3
+streamlit-drawable-canvas
+leafmap
+streamlit-folium
