@@ -46,7 +46,12 @@
 
         var input = document.getElementById(id);
 
-        var autocomplete = new google.maps.places.Autocomplete(input);
+        //TODO make these bounds work
+        const options = {
+    strictBounds: false,
+    locationBias: "ipbias"
+  };
+        var autocomplete = new google.maps.places.Autocomplete(input, options);
 
         // Set the data fields to return when the user selects a place.
         autocomplete.setFields(
