@@ -7,6 +7,45 @@ import streamlit as st
 import constants
 
 
+def render():
+    house, heating_system = render_questions()
+    calculate_and_render_outputs(house=house, heating_system=heating_system)
+
+
+def render_questions() -> Tuple['House', 'HeatingSystem']:
+    st.subheader("Your current energy usage")
+
+    st.write("To estimate your current energy use we need a few bits of information about your house:")
+
+    house_floor_area_m2 = st.number_input(label='House floor area (m2)', min_value=0, max_value=500, value=80)
+    house_type = st.selectbox('House Type', options=constants.HOUSE_TYPES)
+    house = House(house_type=house_type, floor_area_m2=house_floor_area_m2)
+
+    heating_system_name = st.selectbox('Heating System', options=constants.DEFAULT_HEATING_CONSTANTS.keys())
+    heating_system = HeatingSystem.from_constants(name=heating_system_name,
+                                                  parameters=constants.DEFAULT_HEATING_CONSTANTS[heating_system_name])
+
+    return house, heating_system
+
+
+def calculate_and_render_outputs(house: 'House', heating_system: 'HeatingSystem'):
+
+    consumption_dict = house.calculate_consumption(heating_system=heating_system)
+
+    st.write(f'Your house is an {house.floor_area_m2} m\u00b2 {house.type}')
+
+    st.write(f'Your heating system is a {heating_system.name}. '
+             f'It has an efficiency of {heating_system.space_heating_efficiency:.0%} in space heating and '
+             f'{heating_system.water_heating_efficiency:.0%} when heating water')
+
+    if heating_system.fuel == 'electricity':
+        st.write(f"We think your home needs {int(consumption_dict['electricity'].annual_sum):,} kWh of electricity a year"
+                 )
+    else:
+        st.write(f"We think your home needs {int(consumption_dict['electricity'].annual_sum):,} kWh of electricity per year"
+                 f" and {int(consumption_dict[heating_system.fuel].annual_sum)} kWh of {heating_system.fuel}")
+
+
 @dataclass
 class Demand:
     profile: pd.Series  # TODO: figure out how to specify index should be datetime?
@@ -23,8 +62,7 @@ class Demand:
     def add(self, other: 'Demand') -> 'Demand':
         if self.units == other.units:
             combined_time_series = self.profile + other.profile
-            combined = Demand(time_series=combined_time_series, units=self.units)
-        #     TODO: should this change the base class
+            combined = Demand(profile=combined_time_series, units=self.units)
         else:
             raise ValueError("The units of the two energy time series must match")
         return combined
@@ -52,15 +90,13 @@ class Consumption(Demand):
 @dataclass
 class Tariff:
     price_per_unit: float
-    unit: float
+    unit: str
     price_per_day: float
     fuel: str
 
     def __post_init__(self):
         check_valid_fuel(fuel=self.fuel)
-
-
-
+        check_valid_units(unit=self.unit)
 
 
 @dataclass
@@ -123,45 +159,6 @@ class House:
                                          heating_consumption.fuel: heating_consumption}
 
         return consumption_all_fuels
-
-
-def render():
-    house, heating_system = render_questions()
-    calculate_and_render_outputs(house=house, heating_system=heating_system)
-
-
-def render_questions() -> Tuple[House, Dict[str, Consumption]]:
-    st.subheader("Your current energy usage")
-
-    st.write("To estimate your current energy use we need a few bits of information about your house:")
-
-    house_floor_area_m2 = st.number_input(label='House floor area (m2)', min_value=0, max_value=500, value=80)
-    house_type = st.selectbox('House Type', options=constants.HOUSE_TYPES)
-    house = House(house_type=house_type, floor_area_m2=house_floor_area_m2)
-
-    heating_system_name = st.selectbox('Heating System', options=constants.DEFAULT_HEATING_CONSTANTS.keys())
-    heating_system = HeatingSystem.from_constants(name=heating_system_name,
-                                                  parameters=constants.DEFAULT_HEATING_CONSTANTS[heating_system_name])
-
-    return house, heating_system
-
-
-def calculate_and_render_outputs(house: House, heating_system: HeatingSystem):
-
-    consumption_dict = house.calculate_consumption(heating_system=heating_system)
-
-    st.write(f'Your house is an {house.floor_area_m2} m\u00b2 {house.type}')
-
-    st.write(f'Your heating system is a {heating_system.name}. '
-             f'It has an efficiency of {heating_system.space_heating_efficiency:.0%} in space heating and '
-             f'{heating_system.water_heating_efficiency:.0%} when heating water')
-
-    if heating_system.fuel == 'electricity':
-        st.write(f"We think your home needs {int(consumption_dict['electricity'].annual_sum):,} kWh of electricity a year"
-                 )
-    else:
-        st.write(f"We think your home needs {int(consumption_dict['electricity'].annual_sum):,} kWh of electricity per year"
-                 f" and {int(consumption_dict[heating_system.fuel].annual_sum)} kWh of {heating_system.fuel}")
 
 
 def check_valid_item(item: str, valid_items: List[str]):
