@@ -52,13 +52,15 @@ class Consumption(Demand):
 
 @dataclass
 class HeatingSystem:
+    name: str
     space_heating_efficiency: float
     water_heating_efficiency: float
     fuel: str
 
     @classmethod
-    def from_constants(cls, parameters: constants.HeatingConstants):
-        return cls(space_heating_efficiency=parameters.space_heating_efficiency,
+    def from_constants(cls, name, parameters: constants.HeatingConstants):
+        return cls(name=name,
+                   space_heating_efficiency=parameters.space_heating_efficiency,
                    water_heating_efficiency=parameters.water_heating_efficiency,
                    fuel=parameters.fuel)
 
@@ -110,7 +112,12 @@ class House:
         return consumption_all_fuels
 
 
-def render() -> Tuple[House, Dict[str, Consumption]]:
+def render():
+    house, heating_system = render_questions()
+    calculate_and_render_outputs(house=house, heating_system=heating_system)
+
+
+def render_questions() -> Tuple[House, Dict[str, Consumption]]:
     st.subheader("Your current energy usage")
 
     st.write("To estimate your current energy use we need a few bits of information about your house:")
@@ -120,21 +127,25 @@ def render() -> Tuple[House, Dict[str, Consumption]]:
     house = House(house_type=house_type, floor_area_m2=house_floor_area_m2)
 
     heating_system_name = st.selectbox('Heating System', options=constants.DEFAULT_HEATING_CONSTANTS.keys())
-    heating_system = HeatingSystem.from_constants(constants.DEFAULT_HEATING_CONSTANTS[heating_system_name])
+    heating_system = HeatingSystem.from_constants(name=heating_system_name,
+                                                  parameters=constants.DEFAULT_HEATING_CONSTANTS[heating_system_name])
+
+    return house, heating_system
+
+
+def calculate_and_render_outputs(house: House, heating_system: HeatingSystem):
+
     consumption_dict = house.calculate_consumption(heating_system=heating_system)
 
     st.write(f'Your house is an {house.floor_area_m2} m\u00b2 {house.type}')
 
-    st.write(f'Your heating system is a {heating_system_name}. '
+    st.write(f'Your heating system is a {heating_system.name}. '
              f'It has an efficiency of {heating_system.space_heating_efficiency:.0%} in space heating and '
              f'{heating_system.water_heating_efficiency:.0%} when heating water')
 
-    # TODO: figure out how to render these with a comma
     if heating_system.fuel == 'electricity':
         st.write(f"We think your home needs {int(consumption_dict['electricity'].annual_sum):,} kWh of electricity a year"
                  )
     else:
-        st.write(f"We think your home needs {int(consumption_dict['electricity'].annual_sum):,} kWh of electricity a year"
+        st.write(f"We think your home needs {int(consumption_dict['electricity'].annual_sum):,} kWh of electricity per year"
                  f" and {int(consumption_dict[heating_system.fuel].annual_sum)} kWh of {heating_system.fuel}")
-
-    return house, consumption_dict
