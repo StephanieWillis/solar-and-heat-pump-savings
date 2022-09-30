@@ -32,7 +32,9 @@ class Solar:
         self.area_m2 = roof_area_m2 * 0.7  # hack until archy has the boxes working
         self.capacity = self.area_m2
         profile_kWh_per_m2 = self.get_generation_profile(postcode)
-        self.generation = usage.Demand(profile=profile_kWh_per_m2 * self.area_m2, units='kWh')
+        self.generation = usage.Consumption(profile=profile_kWh_per_m2 * self.area_m2,
+                                            fuel='electricity',
+                                            units='kWh')
 
     def get_capacity(self):
         NotImplemented
