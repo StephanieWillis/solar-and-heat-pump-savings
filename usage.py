@@ -13,8 +13,7 @@ class Demand:
     units: str
 
     def __post_init__(self):
-        if self.units not in constants.ENERGY_UNITS:
-            raise ValueError(f"fuel must be one of {constants.ENERGY_UNITS}")
+        check_valid_units(self.units)
 
     @property
     def annual_sum(self) -> float:
@@ -37,8 +36,8 @@ class Consumption(Demand):
     fuel: str = 'electricity'
 
     def __post_init__(self):
-        if self.fuel not in constants.FUELS:
-            raise ValueError(f"fuel must be one of {constants.FUELS}")
+        check_valid_fuel(fuel=self.fuel)
+        check_valid_units(self.units)
 
     def add(self, other: 'Consumption') -> 'Consumption':
         if self.fuel == other.fuel and self.units == other.units:
@@ -48,6 +47,20 @@ class Consumption(Demand):
             raise ValueError("The fuel and units of the two consumptions must match")
             # idea: maybe this should work and just return a list?
         return combined
+
+
+@dataclass
+class Tariff:
+    price_per_unit: float
+    unit: float
+    price_per_day: float
+    fuel: str
+
+    def __post_init__(self):
+        check_valid_fuel(fuel=self.fuel)
+
+
+
 
 
 @dataclass
@@ -149,3 +162,16 @@ def calculate_and_render_outputs(house: House, heating_system: HeatingSystem):
     else:
         st.write(f"We think your home needs {int(consumption_dict['electricity'].annual_sum):,} kWh of electricity per year"
                  f" and {int(consumption_dict[heating_system.fuel].annual_sum)} kWh of {heating_system.fuel}")
+
+
+def check_valid_item(item: str, valid_items: List[str]):
+    if item not in valid_items:
+        raise ValueError(f"fuel must be one of {valid_items}")
+
+
+def check_valid_fuel(fuel: str, valid_fuels: List[str] = constants.FUELS):
+    check_valid_item(fuel, valid_fuels)
+
+
+def check_valid_units(unit: str, valid_units: List[str] = constants.ENERGY_UNITS):
+    check_valid_item(unit, valid_units)
