@@ -19,10 +19,10 @@ class HeatingConstants:
     fuel: str
 
 
-DEFAULT_HEATING_CONSTANTS = {'Heat pump': HeatingConstants(3.5, 3, 'electricity'),
+DEFAULT_HEATING_CONSTANTS = {'Heat pump': HeatingConstants(3.5, 3.0, 'electricity'),
                              'Gas boiler': HeatingConstants(0.85, 0.8, 'gas'),
                              'Oil boiler': HeatingConstants(0.8, 0.75, 'oil'),
-                             'Direct electric': HeatingConstants(1, 1, 'electricity')}
+                             'Direct electric': HeatingConstants(1.0, 1.0, 'electricity')}
 
 
 @dataclass

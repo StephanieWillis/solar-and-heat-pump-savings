@@ -29,21 +29,30 @@ def render_questions() -> Tuple['House', 'HeatingSystem']:
 
 
 def calculate_and_render_outputs(house: 'House', heating_system: 'HeatingSystem'):
+    st.write(f'Your house is an {house.floor_area_m2} m\u00b2 {house.type}')
+
+    st.write(f'Your heating system is a {heating_system.name}. ')
+    heating_system.space_heating_efficiency = st.number_input(label='Its efficiency for space heating is: ',
+                                                              min_value=0.0,
+                                                              max_value=10.0,
+                                                              value=heating_system.space_heating_efficiency)
+    heating_system.water_heating_efficiency = st.number_input(label='Its efficiency for water heating is: ',
+                                                              min_value=0.0,
+                                                              max_value=10.0,
+                                                              value=heating_system.water_heating_efficiency)
 
     consumption_dict = house.calculate_consumption(heating_system=heating_system)
 
-    st.write(f'Your house is an {house.floor_area_m2} m\u00b2 {house.type}')
-
-    st.write(f'Your heating system is a {heating_system.name}. '
-             f'It has an efficiency of {heating_system.space_heating_efficiency:.0%} in space heating and '
-             f'{heating_system.water_heating_efficiency:.0%} when heating water')
-
     if heating_system.fuel == 'electricity':
-        st.write(f"We think your home needs {int(consumption_dict['electricity'].annual_sum):,} kWh of electricity a year"
-                 )
+        st.write(
+            f"We think your home needs {int(consumption_dict['electricity'].annual_sum):,} kWh of electricity a year"
+        )
     else:
-        st.write(f"We think your home needs {int(consumption_dict['electricity'].annual_sum):,} kWh of electricity per year"
-                 f" and {int(consumption_dict[heating_system.fuel].annual_sum)} kWh of {heating_system.fuel}")
+        st.write(
+            f"We think your home needs {int(consumption_dict['electricity'].annual_sum):,} kWh of electricity per year"
+            f" and {int(consumption_dict[heating_system.fuel].annual_sum)} kWh of {heating_system.fuel}")
+
+    # bills =
 
 
 @dataclass
