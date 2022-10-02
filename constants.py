@@ -3,26 +3,37 @@ from typing import Dict
 
 import pandas as pd
 
+HOUSE_TYPES = ['Terrace', 'Semi-detached', 'Detached', 'Flat']
+
 BASE_YEAR_HALF_HOUR_INDEX = pd.date_range(start="2020-01-01", end="2021-01-01", freq="30T")
 EMPTY_TIMESERIES = pd.Series(index=BASE_YEAR_HALF_HOUR_INDEX, data=0)
 
-ENERGY_UNITS = ['kWh', 'GJ']
-FUELS = ['electricity', 'gas', 'oil']
 
-HOUSE_TYPES = ['Terrace', 'Semi-detached', 'Detached', 'Flat']
+@dataclass
+class Fuel:
+    name: str
+    units: str = 'kWh'
+    converter_consumption_units_to_kWh: float = 1
+
+KWH_PER_LITRE_OF_OIL = 10.35
+# https: // www.thegreenage.co.uk / is -heating - oil - a - cheap - way - to - heat - my - home /
+ELECTRICITY = Fuel('electricity')
+GAS = Fuel(name='gas')
+OIL = Fuel(name='oil', units='litres', converter_consumption_units_to_kWh=KWH_PER_LITRE_OF_OIL)
+FUELS = [ELECTRICITY, GAS, OIL]
 
 
 @dataclass
 class HeatingConstants:
     space_heating_efficiency: float
     water_heating_efficiency: float
-    fuel: str
+    fuel: Fuel
 
 
-DEFAULT_HEATING_CONSTANTS = {'Heat pump': HeatingConstants(3.5, 3.0, 'electricity'),
-                             'Gas boiler': HeatingConstants(0.85, 0.8, 'gas'),
-                             'Oil boiler': HeatingConstants(0.8, 0.75, 'oil'),
-                             'Direct electric': HeatingConstants(1.0, 1.0, 'electricity')}
+DEFAULT_HEATING_CONSTANTS = {'Gas boiler': HeatingConstants(0.85, 0.8, GAS),
+                             'Oil boiler': HeatingConstants(0.8, 0.75, OIL),
+                             'Direct electric': HeatingConstants(1.0, 1.0, ELECTRICITY),
+                             'Heat pump': HeatingConstants(3.5, 3.0, ELECTRICITY)}
 
 
 @dataclass
@@ -37,15 +48,17 @@ class SolarConstants:
     KW_PEAK_PER_PANEL = 0.36  # output with incident radiation of 1kW/m2
 # https://www.theecoexperts.co.uk/solar-panels/how-many-do-i-need
 
+
 @dataclass
 class TariffConstants:
     p_per_kWh_gas: float
     p_per_kWh_elec: float
     p_per_day_gas: float
     p_per_day_elec: float
+    p_per_L_oil: float
 
-
-DEFAULT_TARIFF_CONSTANTS = {'Standard Variable (the price cap)': TariffConstants(10.3, 34.0, 28.0, 46.0),
-                            "Fixed (we'll ask you to enter the details below)": 'User entry',
-                            "Octopus Agile (we can't deal with this yet)": NotImplemented,
-                            "Octopus Go (we can't deal with this yet)": NotImplemented}
+STANDARD_TARIFF = TariffConstants(p_per_kWh_gas=10.3,
+                                  p_per_kWh_elec=34.0,
+                                  p_per_day_gas=28.0,
+                                  p_per_day_elec=46.0,
+                                  p_per_L_oil=95.0)
