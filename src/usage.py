@@ -45,7 +45,6 @@ def render_heating_system_questions() -> 'HeatingSystem':
 
 
 def render_house_outputs(house: 'House') -> 'House':
-
     st.write(f"We assume that an {house.floor_area_m2}m\u00b2 {house.type.lower()} needs about: ")
     house.space_heating_demand = render_annual_demand_input_overwrite_if_needed(label='Heating (kWh): ',
                                                                                 demand=house.space_heat_demand)
@@ -64,7 +63,6 @@ def render_annual_demand_input_overwrite_if_needed(label: str, demand: 'Demand')
 
 
 def render_heating_system_outputs(heating_system: 'HeatingSystem') -> 'HeatingSystem':
-    st.subheader("Your heating system")
     heating_system.space_heating_efficiency = st.number_input(label='Efficiency for space heating: ',
                                                               min_value=0.0,
                                                               max_value=10.0,
@@ -93,8 +91,6 @@ def render_consumption_outputs(house: 'House', heating_system: 'HeatingSystem') 
 
 
 def render_tariff_outputs(consumption_dict: Dict[str, 'Consumption']) -> Dict[str, 'Tariff']:
-    st.subheader("Your energy tariff")
-
     st.write(f"We have assumed that you are on a default energy tariff, but if you have fixed at a different rate"
              " then you can edit the numbers. Unfortunately we can't deal with variable rates like Octopus Agile/Go "
              "or Economy 7 right now, but we are working on it!")
