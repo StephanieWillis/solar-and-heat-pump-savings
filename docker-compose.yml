@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      dockerfile:  ./Dockerfile
+      context: .
+    container_name: solar-heat-pump-calculator
+    ports:
+        - 8083:8082
+    volumes:
+      - ./src:/src
