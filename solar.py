@@ -4,12 +4,13 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 
+import constants
 from constants import SolarConstants, BASE_YEAR_HALF_HOUR_INDEX
 import usage
 
 
 def render() -> 'Solar':
-    st.subheader("Your solar potential")
+    st.header("Your solar potential")
 
     postcode: str = st.text_input("Postcode:")
     orientation: str = st.selectbox('Solar Orientation', SolarConstants.SOLAR_ORIENTATIONS)
@@ -34,8 +35,7 @@ class Solar:
         self.peak_capacity_kW_out_per_kW_in_per_m2 = self.get_peak_capacity(kWp_per_panel=SolarConstants.KW_PEAK_PER_PANEL)   # defined as output when incident irradiance = 1kW/m2
         profile_kWh_per_m2 = self.get_generation_profile(postcode)
         self.generation = usage.Consumption(profile=profile_kWh_per_m2 * self.peak_capacity_kW_out_per_kW_in_per_m2,
-                                            fuel='electricity',
-                                            units='kWh')
+                                            fuel=constants.ELECTRICITY)
 
     @staticmethod
     def get_number_of_panels(roof_width_m: float, roof_height_m: float) -> float:
