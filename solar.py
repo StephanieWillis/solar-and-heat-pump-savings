@@ -13,14 +13,14 @@ def render() -> 'Solar':
 
     postcode: str = st.text_input("Postcode:")
     orientation: str = st.selectbox('Solar Orientation', SolarConstants.SOLAR_ORIENTATIONS)
-    roof_height = st.number_input(label='Roof height (m)', min_value=0, max_value=10, value=2)
-    roof_width = st.number_input(label='Roof width (m)', min_value=0, max_value=20, value = 8)
+    roof_height = st.number_input(label='Roof height (m)', min_value=0.0, max_value=10.0, value=2.0)
+    roof_width = st.number_input(label='Roof width (m)', min_value=0.0, max_value=20.0, value = 8.0)
 
     solar_install = Solar(orientation=orientation, roof_width_m=roof_width, roof_height_m=roof_height,
                           postcode=postcode)
 
-    st.write(f'Your roof faces {solar_install.orientation} and could fit  {solar_install.number_of_panels}')
-    st.write(f'That amounts to {solar_install.peak_capacity_kW_out_per_kW_in_per_m2} kW of peak capacity.')
+    st.write(f'Your roof faces {solar_install.orientation} and could fit  {solar_install.number_of_panels} panels')
+    st.write(f'That amounts to {round(solar_install.peak_capacity_kW_out_per_kW_in_per_m2, 1)} kW of peak capacity.')
     st.write(f'We estimate that would generate {int(solar_install.generation.annual_sum):,}  kWh of electricity per year')
     return solar_install
 
@@ -54,10 +54,11 @@ class Solar:
     def get_generation_profile(self, postcode: str):
         # TODO properly using orientation and postcode
         print(self.orientation)  # will use this later
+
+        # Stand in for now in absense of proper data
         idx = BASE_YEAR_HALF_HOUR_INDEX
         minute_of_the_day = idx.hour * 60 + idx.minute
-
-        kW_per_m2_peak = 0.1
+        kW_per_m2_peak = 0.3
         generation = - np.cos(minute_of_the_day * np.pi * 2/(24 * 60)) * kW_per_m2_peak
         profile_kW_per_m2 = pd.Series(index=BASE_YEAR_HALF_HOUR_INDEX, data=generation)
         profile_kW_per_m2.loc[profile_kW_per_m2 < 0] = 0
