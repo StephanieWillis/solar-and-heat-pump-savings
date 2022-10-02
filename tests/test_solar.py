@@ -1,6 +1,7 @@
 import pandas as pd
 
 import solar
+import roof
 
 import plotly.express as px
 
@@ -24,8 +25,10 @@ def test_solar():
     assert isinstance(solar_install.generation.profile, pd.Series)
     assert isinstance(solar_install.generation.annual_sum, float)
 
-    fig = px.line(profile.loc["2020-01-01": "2020-01-03"])
-    fig.show()
+    polygons = roof.roof_mapper(800, 400)
+
+    # fig = px.line(profile.loc["2020-01-01": "2020-01-03"])
+    # fig.show()
     return solar_install
 
 
