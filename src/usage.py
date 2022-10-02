@@ -8,13 +8,15 @@ import constants
 
 
 def render():
-    consumption_dict = render_consumption()
-    calculate_and_render_bills(consumption_dict)
-
-
-def render_consumption():
     st.header("Your current energy usage")
+    house = render_house()
+    heating_system = render_heating_system()
+    consumption_dict = render_consumption(house=house, heating_system=heating_system)
+    tariffs = render_tariffs(consumption_dict=consumption_dict)
+    annual_bills = render_bills(consumption_dict=consumption_dict, tariffs=tariffs)
 
+
+def render_house() -> 'House':
     st.subheader("Your house")
     house_type = st.selectbox('House Type', options=constants.HOUSE_TYPES)
     house_floor_area_m2 = st.number_input(label='House floor area (m2)', min_value=0, max_value=500, value=80)
@@ -27,7 +29,15 @@ def render_consumption():
                                                                                 demand=house.water_heating_demand)
     house.base_demand = render_annual_demand_input_overwrite_if_needed(label='Other (lighting/appliances etc.) (kWh): ',
                                                                        demand=house.base_demand)
+    return house
 
+def render_annual_demand_input_overwrite_if_needed(label: str, demand: 'Demand') -> 'Demand':
+    demand_overwrite = st.number_input(label=label, min_value=0, max_value=100000, value=int(demand.annual_sum))
+    if demand_overwrite != int(demand.annual_sum): # scale profile  by corerction factor
+        demand.profile_kWh = demand_overwrite / int(demand.annual_sum) * demand.profile_kWh
+    return demand
+
+def render_heating_system() -> 'HeatingSystem':
     st.subheader("Your heating system")
     heating_system_name = st.selectbox('Heating System',
                                        options=constants.DEFAULT_HEATING_CONSTANTS.keys())
@@ -41,7 +51,9 @@ def render_consumption():
                                                               min_value=0.0,
                                                               max_value=10.0,
                                                               value=heating_system.water_heating_efficiency)
+    return heating_system
 
+def render_consumption(house: 'House', heating_system: 'HeatingSystem') -> Dict[str, 'Consumption']:
     consumption_dict = house.calculate_consumption(heating_system=heating_system)
 
     if heating_system.fuel.name == 'electricity':
@@ -53,31 +65,22 @@ def render_consumption():
             f"We think your home needs {int(consumption_dict['electricity'].annual_sum):,} kWh of electricity per year"
             f" and {int(consumption_dict[heating_system.fuel.name].annual_sum):,} {heating_system.fuel.units} of"
             f" {heating_system.fuel.name}")
-
     return consumption_dict
 
-
-def render_annual_demand_input_overwrite_if_needed(label: str, demand: 'Demand'):
-    demand_overwrite = st.number_input(label=label, min_value=0, max_value=100000, value=int(demand.annual_sum))
-    if demand_overwrite != int(demand.annual_sum):
-        demand.profile_kWh = demand_overwrite / int(demand.annual_sum) * demand.profile_kWh
-    return demand
-
-
-def calculate_and_render_bills(consumption_dict: [str, 'Consumption']):
+def render_tariffs(consumption_dict: Dict[str, 'Consumption']) -> Dict[str, 'Tariff']:
     st.header("Your energy tariff")
 
     st.write(f"We have assumed that you are on a default energy tariff, but if you have fixed at a different rate"
              " then you can edit the numbers. Unfortunately we can't deal with variable rates like Octopus Agile/Go "
              "or Economy 7 right now, but we are working on it!")
-    tarrifs = {}
+    tariffs = {}
 
     st.subheader('Electricity')
     p_per_kWh_elec = st.number_input(label='Unit rate (p/kWh), electricity', min_value=0.0, max_value=100.0,
                                      value=constants.STANDARD_TARIFF.p_per_kWh_elec)
     p_per_day_elec = st.number_input(label='Standing charge (p/day), electricity', min_value=0.0, max_value=100.0,
                                      value=constants.STANDARD_TARIFF.p_per_day_elec)
-    tarrifs['electricity'] = Tariff(p_per_unit=p_per_kWh_elec,
+    tariffs['electricity'] = Tariff(p_per_unit=p_per_kWh_elec,
                                     units='kWh',
                                     p_per_day=p_per_day_elec,
                                     fuel=constants.ELECTRICITY)
@@ -91,7 +94,7 @@ def calculate_and_render_bills(consumption_dict: [str, 'Consumption']):
                                         min_value=0.0,
                                         max_value=100.0,
                                         value=constants.STANDARD_TARIFF.p_per_day_gas)
-        tarrifs['gas'] = Tariff(p_per_unit=p_per_kWh_gas,
+        tariffs['gas'] = Tariff(p_per_unit=p_per_kWh_gas,
                                 units='kWh',
                                 p_per_day=p_per_day_gas,
                                 fuel=constants.GAS)
@@ -99,14 +102,17 @@ def calculate_and_render_bills(consumption_dict: [str, 'Consumption']):
         st.subheader('Oil')
         p_per_L_oil = st.number_input(label='Oil price, (p/litre)', min_value=0.0, max_value=200.0,
                                       value=constants.STANDARD_TARIFF.p_per_L_oil)
-        tarrifs['oil'] = Tariff(p_per_unit=p_per_L_oil,
+        tariffs['oil'] = Tariff(p_per_unit=p_per_L_oil,
                                 units='litres',
                                 p_per_day=0.0,
                                 fuel=constants.OIL)
+    return tariffs
+
+def render_bills(consumption_dict: [str, 'Consumption'], tariffs: Dict[str, 'Tariff']) -> Dict[str, float]:
 
     annual_bills = {}
     for fuel_name, consumption in consumption_dict.items():
-        annual_bills[fuel_name] = consumption.calculate_annual_cost(tarrifs[fuel_name])
+        annual_bills[fuel_name] = consumption.calculate_annual_cost(tariffs[fuel_name])
 
     annual_bill_total = sum(annual_bills.values())
     has_multiple_fuels = len(consumption_dict) > 1
@@ -114,6 +120,7 @@ def calculate_and_render_bills(consumption_dict: [str, 'Consumption']):
 
     st.write(f'We calculate that your annual energy bill on this tariff will be £{int(annual_bill_total):,}'
              f' {breakdown if has_multiple_fuels else ""}')
+    return annual_bills
 
 
 class House:
