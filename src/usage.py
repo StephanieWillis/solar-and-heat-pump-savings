@@ -7,22 +7,46 @@ import streamlit as st
 import constants
 
 
-def render():
-    st.header("Your current energy usage")
-    house = render_house()
-    heating_system = render_heating_system()
-    consumption_dict = render_consumption(house=house, heating_system=heating_system)
-    tariffs = render_tariffs(consumption_dict=consumption_dict)
-    annual_bills = render_bills(consumption_dict=consumption_dict, tariffs=tariffs)
+def render_questions() -> Tuple['House', 'HeatingSystem']:
+    st.header("Your house")
+    house = render_house_questions()
+    heating_system = render_heating_system_questions()
+    return house, heating_system
 
 
-def render_house() -> 'House':
-    st.subheader("Your house")
+def render_outputs(house: 'House', heating_system: 'HeatingSystem'):
+    st.header("Your current energy use ")
+    st.write("Based on your answers in the last tab, we calculate that your home needs")
+    with st.expander("Expand demand assumptions"):
+        house = render_house_outputs(house=house)
+    with st.expander("Expand heating system assumptions"):
+        heating_system = render_heating_system_outputs(heating_system)
+    consumption_dict = render_consumption_outputs(house=house, heating_system=heating_system)
+    with st.expander("Expand tariff assumptions"):
+        tariffs = render_tariff_outputs(consumption_dict=consumption_dict)
+    annual_bills = render_bill_outputs(consumption_dict=consumption_dict, tariffs=tariffs)
+
+
+def render_house_questions() -> 'House':
     house_type = st.selectbox('House Type', options=constants.HOUSE_TYPES)
     house_floor_area_m2 = st.number_input(label='House floor area (m2)', min_value=0, max_value=500, value=80)
 
     house = House(house_type=house_type, floor_area_m2=house_floor_area_m2)
-    st.write(f"We assume that an {house_floor_area_m2}m\u00b2 {house_type.lower()} needs about: ")
+
+    return house
+
+
+def render_heating_system_questions() -> 'HeatingSystem':
+    heating_system_name = st.selectbox('Heating System',
+                                       options=constants.DEFAULT_HEATING_CONSTANTS.keys())
+    heating_system = HeatingSystem.from_constants(name=heating_system_name,
+                                                  parameters=constants.DEFAULT_HEATING_CONSTANTS[heating_system_name])
+    return heating_system
+
+
+def render_house_outputs(house: 'House') -> 'House':
+
+    st.write(f"We assume that an {house.floor_area_m2}m\u00b2 {house.type.lower()} needs about: ")
     house.space_heating_demand = render_annual_demand_input_overwrite_if_needed(label='Heating (kWh): ',
                                                                                 demand=house.space_heat_demand)
     house.water_heating_demand = render_annual_demand_input_overwrite_if_needed(label='Hot water (kWh): ',
@@ -31,18 +55,16 @@ def render_house() -> 'House':
                                                                        demand=house.base_demand)
     return house
 
+
 def render_annual_demand_input_overwrite_if_needed(label: str, demand: 'Demand') -> 'Demand':
     demand_overwrite = st.number_input(label=label, min_value=0, max_value=100000, value=int(demand.annual_sum))
     if demand_overwrite != int(demand.annual_sum): # scale profile  by corerction factor
         demand.profile_kWh = demand_overwrite / int(demand.annual_sum) * demand.profile_kWh
     return demand
 
-def render_heating_system() -> 'HeatingSystem':
+
+def render_heating_system_outputs(heating_system: 'HeatingSystem') -> 'HeatingSystem':
     st.subheader("Your heating system")
-    heating_system_name = st.selectbox('Heating System',
-                                       options=constants.DEFAULT_HEATING_CONSTANTS.keys())
-    heating_system = HeatingSystem.from_constants(name=heating_system_name,
-                                                  parameters=constants.DEFAULT_HEATING_CONSTANTS[heating_system_name])
     heating_system.space_heating_efficiency = st.number_input(label='Efficiency for space heating: ',
                                                               min_value=0.0,
                                                               max_value=10.0,
@@ -53,22 +75,25 @@ def render_heating_system() -> 'HeatingSystem':
                                                               value=heating_system.water_heating_efficiency)
     return heating_system
 
-def render_consumption(house: 'House', heating_system: 'HeatingSystem') -> Dict[str, 'Consumption']:
+
+def render_consumption_outputs(house: 'House', heating_system: 'HeatingSystem') -> Dict[str, 'Consumption']:
     consumption_dict = house.calculate_consumption(heating_system=heating_system)
 
     if heating_system.fuel.name == 'electricity':
         st.write(
-            f"We think your home needs {int(consumption_dict['electricity'].annual_sum):,} kWh of electricity a year"
-        )
+            f"We calculate that your house needs about "
+            f"{int(consumption_dict['electricity'].annual_sum):,} kWh of electricity a year")
     else:
         st.write(
-            f"We think your home needs {int(consumption_dict['electricity'].annual_sum):,} kWh of electricity per year"
+            f"We calculate that your house needs about "
+            f"{int(consumption_dict['electricity'].annual_sum):,} kWh of electricity per year"
             f" and {int(consumption_dict[heating_system.fuel.name].annual_sum):,} {heating_system.fuel.units} of"
             f" {heating_system.fuel.name}")
     return consumption_dict
 
-def render_tariffs(consumption_dict: Dict[str, 'Consumption']) -> Dict[str, 'Tariff']:
-    st.header("Your energy tariff")
+
+def render_tariff_outputs(consumption_dict: Dict[str, 'Consumption']) -> Dict[str, 'Tariff']:
+    st.subheader("Your energy tariff")
 
     st.write(f"We have assumed that you are on a default energy tariff, but if you have fixed at a different rate"
              " then you can edit the numbers. Unfortunately we can't deal with variable rates like Octopus Agile/Go "
@@ -108,7 +133,8 @@ def render_tariffs(consumption_dict: Dict[str, 'Consumption']) -> Dict[str, 'Tar
                                 fuel=constants.OIL)
     return tariffs
 
-def render_bills(consumption_dict: [str, 'Consumption'], tariffs: Dict[str, 'Tariff']) -> Dict[str, float]:
+
+def render_bill_outputs(consumption_dict: [str, 'Consumption'], tariffs: Dict[str, 'Tariff']) -> Dict[str, float]:
 
     annual_bills = {}
     for fuel_name, consumption in consumption_dict.items():
