@@ -1,7 +1,7 @@
 import pandas as pd
 
-import solar
-import roof
+from src import solar
+from src import roof
 
 import plotly.express as px
 
