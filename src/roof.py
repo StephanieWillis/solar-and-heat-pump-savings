@@ -78,7 +78,7 @@ def roof_mapper(width: int, height: int) -> Optional[List[Polygon]]:
     selected_location = place_search()
 
     centre = [selected_location["lat"], selected_location["lng"]] if selected_location else [55, 0]
-    m = leafmap.Map(google_map="SATELLITE", location=centre, zoom_start=22 if selected_location else 4)
+    m = leafmap.Map(google_map="SATELLITE", location=centre, zoom_start=21 if selected_location else 4)
     if selected_location:
         _ = folium.Marker(
             [selected_location["lat"], selected_location["lng"]], popup=selected_location["address"]
