@@ -15,6 +15,7 @@ def render_questions() -> 'Solar':
     st.write("Search for your home below and draw a square where you think solar panels might go on your most South"
              "facing roof. Use the hexagonal tool to draw the square.  ")
     polygons = roof.roof_mapper(800, 400)
+    # returns list of list of polygons
     if polygons:
         st.write([p.dimensions for p in polygons])
 

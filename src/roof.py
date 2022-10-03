@@ -30,16 +30,17 @@ def shoelace(x_y):
 
 @dataclass
 class Polygon:
-    _points: List[Tuple]
+    _points: List[Tuple[float]]
 
 
     @property
-    def points(self):
+    def points(self) -> List[Tuple[float]]:
+        """map returns lng lat for some reason, rather than lat long - so switch around here"""
         return [(lat, lng) for (lng, lat) in self._points]
 
 
     @property
-    def dimensions(self):
+    def dimensions(self) -> List[Tuple[float]]:
         """Formats points as metres"""
         points_in_relative_lat_lng = self.convert_points_to_be_relative_to_first(self.points)
         points_in_relative_metres = [
@@ -49,8 +50,14 @@ class Polygon:
         return points_in_relative_metres
 
     @property
-    def area(self):
+    def area(self) -> float:
         return shoelace(self.points)
+
+    @property
+    def largest_rectangle(self):
+        if len(self.dimensions) !=5:
+            raise ValueError("Only able to deal with 4 sided shapes for now - please redraw")
+
 
     @staticmethod
     def convert_points_to_be_relative_to_first(points: List[Tuple]):
@@ -83,9 +90,17 @@ def roof_mapper(width: int, height: int) -> Optional[List[Polygon]]:
         _ = folium.Marker(
             [selected_location["lat"], selected_location["lng"]], popup=selected_location["address"]
         ).add_to(m)
-
+    # also return selected_location['lat'] and selected_location['lng']
     map = st_folium(m, width=width, height=height)
     # st.write(map)
-
-    if map["all_drawings"]:
-        return [Polygon(_points=drawing["geometry"]["coordinates"][0]) for drawing in map["all_drawings"]]
+    if map["all_drawings"]:  # map["all_drawings"] is none until somebody clicks
+        # Figure out if actually possible to produce more than one drawing
+        polygons = []
+        for drawing in map['all_drawings']:
+            drawing_type = drawing['geometry']['type']
+            if not(drawing_type == 'Polygon'):
+                raise KeyError(f"User selected the {drawing_type} tool")
+            # coordinates is list of list of lists: e.g. [[[lng, lat], [lng, lat], [lng, lat], [lng, lat]]]
+            polygon = Polygon(_points=drawing["geometry"]["coordinates"][0])
+            polygons.append(polygon)
+        return polygons
