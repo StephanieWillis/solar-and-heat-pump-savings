@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from math import pi
+import math
 from typing import List, Tuple, Optional
 
 import folium
@@ -32,12 +32,10 @@ def shoelace(x_y):
 class Polygon:
     _points: List[Tuple[float]]
 
-
     @property
     def points(self) -> List[Tuple[float]]:
         """map returns lng lat for some reason, rather than lat long - so switch around here"""
         return [(lat, lng) for (lng, lat) in self._points]
-
 
     @property
     def dimensions(self) -> List[Tuple[float]]:
@@ -46,22 +44,51 @@ class Polygon:
         points_in_relative_metres = [
             self.lat_lng_to_metres(start_lat_lng=self.points[0], lat_lng=p) for p in points_in_relative_lat_lng
         ]
-
+        points_in_relative_metres = points_in_relative_metres[:-1]  # drop the 5th point which closes the shape
         return points_in_relative_metres
+
+    @property
+    def side_lengths(self):
+        side_lengths = self.calculate_side_lengths(self.dimensions)
+        return side_lengths
+
+    @property
+    def x_aligned_dimensions(self) -> List[Tuple[float]]:
+        """ Rotate dimensions so the longest side is along the horizontal (x--x)"""
+        # Identify longest side and put first
+        # TODO: something isn't working here - not ordering as I'd expect
+        longest_side_idx = self.side_lengths.index(max(self.side_lengths))
+        points_longest_first = list(np.roll(self.dimensions, 1-longest_side_idx, axis=0))
+        points_longest_first = [array.tolist() for array in points_longest_first]
+        # recalculate lengths to check
+        side_lengths = self.calculate_side_lengths(points_longest_first)
+        assert set(side_lengths) == set(self.side_lengths)
+        assert side_lengths.index(max(side_lengths)) == 0
+
+        # shift so stars at origin with new order
+        points_longest_starting_at_origin = self.convert_points_to_be_relative_to_first(points_longest_first)
+        side_lengths = self.calculate_side_lengths(points_longest_starting_at_origin)
+        assert set(side_lengths) == set(self.side_lengths)
+        assert side_lengths.index(max(side_lengths)) == 0
+        assert points_longest_starting_at_origin[0] == (0, 0)
+
+        # rotate so first side is along x axis
+        angle = self.calculate_angle_to_rotate_point_to_horizontal(points_longest_starting_at_origin[1])
+        x_aligned_dimensions = [self.rotate_point_by_angle(point, angle) for point in points_longest_starting_at_origin]
+        side_lengths = self.calculate_side_lengths(x_aligned_dimensions)
+        assert set(side_lengths) == set(self.side_lengths)
+        assert side_lengths.index(max(side_lengths)) == 0
+        assert x_aligned_dimensions[0] == (0, 0)
+        assert x_aligned_dimensions[1] == (max(self.side_lengths),0)
+        return x_aligned_dimensions
 
     @property
     def area(self) -> float:
         return shoelace(self.points)
 
-    @property
-    def largest_rectangle(self):
-        if len(self.dimensions) !=5:
-            raise ValueError("Only able to deal with 4 sided shapes for now - please redraw")
-
-
     @staticmethod
     def convert_points_to_be_relative_to_first(points: List[Tuple]):
-        first = points.copy().pop()
+        first = points.copy()[0]
         return [(p[0] - first[0], p[1] - first[1]) for p in points]
 
     @staticmethod
@@ -71,10 +98,46 @@ class Polygon:
         st.write(start_lat_lng)
         lat, lng = lat_lng
         r_earth_in_km = 6378
-        km_per_degree_lng = (pi / 180) * r_earth_in_km * np.cos(start_lat * pi / 180)  # Depend upon latitude
+        km_per_degree_lng = (math.pi / 180) * r_earth_in_km * np.cos(start_lat * math.pi / 180)  # Depend upon latitude
         km_per_degree_lat = 111  # constant
 
         return lat * km_per_degree_lat * KM_TO_M, lng * km_per_degree_lng * KM_TO_M
+
+    def calculate_side_lengths(self, dimensions: List[Tuple[float]]) -> List[float]:
+        side_lengths = []
+        for i in range(len(dimensions)):
+            next_dimension = dimensions[i+1] if i+1 < len(dimensions) else dimensions[0]
+            side_length = self.calculate_side_length(dimensions[i], next_dimension)
+            side_lengths.append(side_length)
+        side_lengths = [self.calculate_side_length(dimensions[i], dimensions[i+1]) for i in range(-1, (len(dimensions) - 1))]
+        return side_lengths
+
+    @staticmethod
+    def calculate_side_length(point_1: Tuple[float], point_2) -> float:
+        (x1, y1) = point_1
+        (x2, y2) = point_2
+        length = math.sqrt((x2-x1) ** 2 + (y2-y1) ** 2)
+        return length
+
+    @staticmethod
+    def calculate_angle_to_rotate_point_to_horizontal(point: Tuple[float]) -> float:
+        """ Calculate angle of rotation (anticlockwise in radians) needed to get a point onto the x axis """
+        (x, y) = point
+        return - math.atan(y / x)
+
+    @staticmethod
+    def rotate_point_by_angle(point: Tuple[float], angle: float) -> Tuple[float]:
+        """ Rotates a point by angle in radians around the origin in an anticlockwise direction """
+        # https://stackoverflow.com/questions/14842090/rotate-line-around-center-point-given-two-vertices/14842362#14842362
+        (x1, y1) = point
+        x2 = x1 * math.cos(angle) - y1 * math.sin(angle)
+        y2 = x1 * math.sin(angle) + y1 * math.cos(angle)
+        print(x1,y1)
+        print(x2, y2)
+        return x2, y2
+
+
+
 
 
 def roof_mapper(width: int, height: int) -> Optional[List[Polygon]]:
