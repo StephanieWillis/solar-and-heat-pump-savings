@@ -31,6 +31,7 @@ def render_questions() -> 'Solar':
 
 
 def render_outputs(solar_install: 'Solar'):
+    st.header("Solar potential")
     st.write(f'Your roof faces {solar_install.orientation} and could fit  {solar_install.number_of_panels} panels')
     st.write(f'That amounts to {round(solar_install.peak_capacity_kW_out_per_kW_in_per_m2, 1)} kW of peak capacity.')
     st.write(f'We estimate that would generate {int(solar_install.generation.annual_sum):,}  kWh of electricity per year')
