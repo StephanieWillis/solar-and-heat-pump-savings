@@ -5,7 +5,7 @@ import usage
 def test_calculate_consumption():
     house_floor_area_m2 = 100
     house_type = "terrace"
-    house = usage.House(house_type=house_type, floor_area_m2=house_floor_area_m2)
+    house = usage.BuildingEnvelope(house_type=house_type, floor_area_m2=house_floor_area_m2)
     heating_system = usage.HeatingSystem(name='Heat pump',
                                          space_heating_efficiency=3.5,
                                          water_heating_efficiency=3.0,
