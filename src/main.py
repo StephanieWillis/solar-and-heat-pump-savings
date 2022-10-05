@@ -13,11 +13,11 @@ use_qs_tab, solar_qs_tab, use_outputs_tab, potential_tab = st.tabs(["Usage Quest
                                                                     "Your Current Energy Use",
                                                                     "Your Electrified Home"])
 with use_qs_tab:
-    house, heating_system = usage.render_questions()
-    with solar_qs_tab:
-        solar_install = solar.render_questions()
+    house = usage.render_questions()
+with solar_qs_tab:
+    solar_install = solar.render_questions()
 with use_outputs_tab:
-    usage.render_outputs(house=house, heating_system=heating_system)
+    house = usage.render_outputs(house=house)
 with potential_tab:
     solar.render_outputs(solar_install=solar_install)
 #     TODO: change this to be Electrified home
