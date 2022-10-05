@@ -1,33 +1,81 @@
+import copy
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, List
 
 import pandas as pd
 import streamlit as st
+import plotly.express as px
 
 import constants
 
 
 def render_questions() -> 'House':
-    st.header("Your house")
+    st.header("Your House")
     envelope = render_house_questions()
     heating_system_name = render_heating_system_questions()
-    house = House(envelope=envelope, heating_name=heating_system_name)
+    house = House.set_up_from_heating_name(envelope=envelope, heating_name=heating_system_name)
     return house
 
 
 def render_outputs(house: 'House') -> 'House':
-    st.header("Your current energy use ")
-    st.write("Based on your answers in the last tab, we calculate that your home needs")
-    with st.expander("Expand demand assumptions"):
-        house.envelope = render_and_allow_overwrite_of_envelope_outputs(envelope=house.envelope)
-    with st.expander("Expand heating system assumptions"):
-        house.heating_system = render_and_allow_overwrite_of_heating_system(heating_system=house.heating_system)
+    st.header("Your Heat Pump and Solar Savings")
+    st.subheader("Energy Bills")
+    bills_chart = st.empty()
+    bills_text = st.empty()
+    st.subheader("Energy Consumption")
+    energy_chart = st.empty()
+    energy_text = st.empty()
+    st.subheader("Carbon Emissions")
+    carbon_chart = st.empty()
+    carbon_text = st.empty()
 
-    render_consumption_outputs(house=house)
-    with st.expander("Expand tariff assumptions"):
+    st.header("Detailed Inputs")
+    st.write("We have estimated your homes current energy use and bills using assumptions based on your answers."
+             " You can edit those assumptions below ")
+    with st.expander("Demand assumptions"):
+        house.envelope = render_and_allow_overwrite_of_envelope_outputs(envelope=house.envelope)
+    with st.expander("Baseline heating system assumptions"):
+        house.heating_system = render_and_allow_overwrite_of_heating_system(heating_system=house.heating_system)
+    with st.expander("Upgrade heating system assumptions"):
+        upgrade_heating = HeatingSystem.from_constants(name='Heat pump',
+                                                       parameters=constants.DEFAULT_HEATING_CONSTANTS['Heat pump'])
+        upgrade_heating = render_and_allow_overwrite_of_heating_system(heating_system=upgrade_heating)
+    with st.expander("Tariff assumptions"):
         house = render_and_allow_overwrite_of_tariffs(house=house)
-    render_bill_outputs(house=house)
+
+    # Upgraded buildings
+    hp_house = copy.deepcopy(house)  # do after modifications so modifications flow through
+    hp_house.heating_system = upgrade_heating
+
+    # Combine results
+    results_df = combined_results_dfs_multiple_houses([house, hp_house], ['Current', 'With a heat pump'])
+
+    with bills_chart:
+        bills_fig = px.bar(results_df, x='Upgrade option', y='Your annual energy bill £', color='fuel')
+        st.plotly_chart(bills_fig, use_container_width=False, sharing="streamlit")
+    with bills_text:
+        render_bill_outputs(house=house, hp_house=hp_house)
+
+    with energy_chart:
+        energy_fig = px.bar(results_df, x='Upgrade option', y='Your annual energy use kWh', color='fuel')
+        st.plotly_chart(energy_fig, use_container_width=False, sharing="streamlit")
+    with energy_text:
+        render_consumption_outputs(house=house, hp_house=hp_house)
+
+    # with carbon_chart:
+    #     NotImplemented
+    with carbon_text:
+        st.write("Coming soon :)")
+
     return house
+
+
+def combined_results_dfs_multiple_houses(houses: List['House'], keys: List['str']):
+    results_df = pd.concat([house.energy_and_bills_df for house in houses], keys=keys)
+    results_df.index.names = ['Upgrade option', 'old_index']
+    results_df = results_df.reset_index()
+    results_df = results_df.drop(columns='old_index')
+    return results_df
 
 
 def render_house_questions() -> 'BuildingEnvelope':
@@ -63,27 +111,32 @@ def render_and_allow_overwrite_of_annual_demand(label: str, demand: 'Demand') ->
 
 def render_and_allow_overwrite_of_heating_system(heating_system: 'HeatingSystem') -> 'HeatingSystem':
     heating_system.space_heating_efficiency = st.number_input(label='Efficiency for space heating: ',
-                                                                    min_value=0.0,
-                                                                    max_value=8.0,
-                                                                    value=heating_system.space_heating_efficiency)
+                                                              min_value=0.0,
+                                                              max_value=8.0,
+                                                              value=heating_system.space_heating_efficiency)
     heating_system.water_heating_efficiency = st.number_input(label='Efficiency for water heating: ',
-                                                                    min_value=0.0,
-                                                                    max_value=8.0,
-                                                                    value=heating_system.water_heating_efficiency)
+                                                              min_value=0.0,
+                                                              max_value=8.0,
+                                                              value=heating_system.water_heating_efficiency)
     return heating_system
 
 
-def render_consumption_outputs(house: 'House'):
+def render_consumption_outputs(house: 'House', hp_house: 'House'):
     if house.heating_system.fuel.name == 'electricity':
+        # TODO: catch case where there is already a heat pump?
         st.write(
-            f"We calculate that your house needs about "
-            f"{int(house.consumption_dict['electricity'].annual_sum):,} kWh of electricity a year")
+            f"We calculate that your house currently needs about "
+            f"{int(house.consumption_profile_per_fuel['electricity'].annual_sum):,} kWh of electricity a year"
+            f" \nWith a heat pump that value would fall to "
+            f"{int(hp_house.consumption_profile_per_fuel['electricity'].annual_sum):,} kWh of electricity a year")
     else:
         st.write(
             f"We calculate that your house needs about "
-            f"{int(house.consumption_dict['electricity'].annual_sum):,} kWh of electricity per year"
-            f" and {int(house.consumption_dict[house.heating_system.fuel.name].annual_sum):,}"
-            f" {house.heating_system.fuel.units} of {house.heating_system.fuel.name}")
+            f"{int(house.consumption_profile_per_fuel['electricity'].annual_sum):,} kWh of electricity per year"
+            f" and {int(house.consumption_profile_per_fuel[house.heating_system.fuel.name].annual_sum):,}"
+            f" {house.heating_system.fuel.units} of {house.heating_system.fuel.name}. "
+            f"  \nWith a heat pump that value would fall to "
+            f"{int(hp_house.consumption_profile_per_fuel['electricity'].annual_sum):,} kWh of electricity a year")
 
 
 def render_and_allow_overwrite_of_tariffs(house: 'House') -> 'House':
@@ -120,23 +173,37 @@ def render_and_allow_overwrite_of_tariffs(house: 'House') -> 'House':
     return house
 
 
-def render_bill_outputs(house: 'House'):
-    breakdown = f'({", ".join(f"£{int(amount):,} for {fuel_name}" for fuel_name, amount in house.bills_dict.items())})'
-    st.write(f'We calculate that your annual energy bill on this tariff will be £{int(house.bill_annual_sum):,}'
-             f' {breakdown if house.has_multiple_fuels else ""}')
+def render_bill_outputs(house: 'House', hp_house: 'House'):
+    breakdown = (
+        f'({", ".join(f"£{int(amount):,} for {fuel_name}" for fuel_name, amount in house.annual_bill_per_fuel.items())})')
+    if house.total_annual_bill > hp_house.total_annual_bill:
+        verb = 'drop'
+    else:
+        verb = 'increase'
+
+    st.write(f'We calculate that your energy bills for the next year will be'
+             f' £{int(house.total_annual_bill):,} {breakdown if house.has_multiple_fuels else ""}. '
+             f' \nWith a heat pump we calculate that your energy bills will {verb} '
+             f'to £{int(hp_house.total_annual_bill):,}.'
+             f'  \nThat is a saving of £{int(house.total_annual_bill - hp_house.total_annual_bill):,}.')
 
 
 class House:
     """ Stores info on consumption and bills """
 
-    def __init__(self, envelope: 'BuildingEnvelope', heating_name: str):
+    def __init__(self, envelope: 'BuildingEnvelope', heating_system: 'HeatingSystem'):
 
         self.envelope = envelope
         # Set up initial values for heating system and tariffs but allow to be modified by the user later
         # Maybe I should be using getters and setters here?
-        self.heating_system = HeatingSystem.from_constants(name=heating_name,
-                                                           parameters=constants.DEFAULT_HEATING_CONSTANTS[heating_name])
+        self.heating_system = heating_system
         self.tariffs = self.set_up_standard_tariffs()
+
+    @classmethod
+    def set_up_from_heating_name(cls, envelope: 'BuildingEnvelope', heating_name: str) -> 'House':
+        heating_system = HeatingSystem.from_constants(name=heating_name,
+                                                      parameters=constants.DEFAULT_HEATING_CONSTANTS[heating_name])
+        return cls(envelope=envelope, heating_system=heating_system)
 
     def set_up_standard_tariffs(self) -> Dict[str, 'Tariff']:
 
@@ -159,7 +226,7 @@ class House:
         return len(self.tariffs) > 1
 
     @property
-    def consumption_dict(self) -> Dict[str, 'Consumption']:
+    def consumption_profile_per_fuel(self) -> Dict[str, 'Consumption']:
 
         # Base demand is always electricity (lighting/plug loads etc.)
         base_consumption = Consumption(profile=self.envelope.base_demand.profile_kWh,
@@ -180,15 +247,31 @@ class House:
         return consumption_dict
 
     @property
-    def bills_dict(self) -> Dict[str, float]:
+    def annual_consumption_per_fuel(self) -> Dict[str, float]:
+        return {fuel: consumption.annual_sum for fuel, consumption in self.consumption_profile_per_fuel.items()}
+
+    @property
+    def total_annual_consumption(self) -> float:
+        return sum(self.annual_consumption_per_fuel.values())
+
+    @property
+    def annual_bill_per_fuel(self) -> Dict[str, float]:
         bills_dict = {}
-        for fuel_name, consumption in self.consumption_dict.items():
+        for fuel_name, consumption in self.consumption_profile_per_fuel.items():
             bills_dict[fuel_name] = self.tariffs[fuel_name].calculate_annual_cost(consumption)
         return bills_dict
 
     @property
-    def bill_annual_sum(self) -> float:
-        return sum(self.bills_dict.values())
+    def total_annual_bill(self) -> float:
+        return sum(self.annual_bill_per_fuel.values())
+
+    @property
+    def energy_and_bills_df(self) -> pd.DataFrame:
+        df = pd.DataFrame(data={'Your annual energy use kWh': self.annual_consumption_per_fuel,
+                                'Your annual energy bill £': self.annual_bill_per_fuel})
+        df.index.name = 'fuel'
+        df = df.reset_index()
+        return df
 
 
 @dataclass()
