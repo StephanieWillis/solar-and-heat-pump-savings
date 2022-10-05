@@ -7,14 +7,14 @@ import streamlit as st
 import constants
 
 
-def render_questions() -> Tuple['House', 'HeatingSystem']:
+def render_questions() -> Tuple['BuildingEnvelope', 'HeatingSystem']:
     st.header("Your house")
     house = render_house_questions()
     heating_system = render_heating_system_questions()
     return house, heating_system
 
 
-def render_outputs(house: 'House', heating_system: 'HeatingSystem'):
+def render_outputs(house: 'BuildingEnvelope', heating_system: 'HeatingSystem'):
     st.header("Your current energy use ")
     st.write("Based on your answers in the last tab, we calculate that your home needs")
     with st.expander("Expand demand assumptions"):
@@ -27,11 +27,11 @@ def render_outputs(house: 'House', heating_system: 'HeatingSystem'):
     annual_bills = render_bill_outputs(consumption_dict=consumption_dict, tariffs=tariffs)
 
 
-def render_house_questions() -> 'House':
+def render_house_questions() -> 'BuildingEnvelope':
     house_type = st.selectbox('House Type', options=constants.HOUSE_TYPES)
     house_floor_area_m2 = st.number_input(label='House floor area (m2)', min_value=0, max_value=500, value=80)
 
-    house = House(house_type=house_type, floor_area_m2=house_floor_area_m2)
+    house = BuildingEnvelope(house_type=house_type, floor_area_m2=house_floor_area_m2)
 
     return house
 
@@ -44,7 +44,7 @@ def render_heating_system_questions() -> 'HeatingSystem':
     return heating_system
 
 
-def render_house_outputs(house: 'House') -> 'House':
+def render_house_outputs(house: 'BuildingEnvelope') -> 'BuildingEnvelope':
     st.write(f"We assume that an {house.floor_area_m2}m\u00b2 {house.type.lower()} needs about: ")
     house.space_heating_demand = render_annual_demand_input_overwrite_if_needed(label='Heating (kWh): ',
                                                                                 demand=house.space_heat_demand)
@@ -74,7 +74,7 @@ def render_heating_system_outputs(heating_system: 'HeatingSystem') -> 'HeatingSy
     return heating_system
 
 
-def render_consumption_outputs(house: 'House', heating_system: 'HeatingSystem') -> Dict[str, 'Consumption']:
+def render_consumption_outputs(house: 'BuildingEnvelope', heating_system: 'HeatingSystem') -> Dict[str, 'Consumption']:
     consumption_dict = house.calculate_consumption(heating_system=heating_system)
 
     if heating_system.fuel.name == 'electricity':
@@ -134,7 +134,7 @@ def render_bill_outputs(consumption_dict: [str, 'Consumption'], tariffs: Dict[st
 
     annual_bills = {}
     for fuel_name, consumption in consumption_dict.items():
-        annual_bills[fuel_name] = consumption.calculate_annual_cost(tariffs[fuel_name])
+        annual_bills[fuel_name] = tariffs[fuel_name].calculate_annual_cost(consumption)
 
     annual_bill_total = sum(annual_bills.values())
     has_multiple_fuels = len(consumption_dict) > 1
@@ -212,14 +212,6 @@ class Consumption:
             # idea: maybe this should work and just return a list?
         return combined
 
-    def calculate_annual_cost(self, tariff: 'Tariff') -> float:
-
-        if self.fuel != tariff.fuel:
-            raise ValueError("To calculate annual costs the tariff fuel must match the consumption fuel, they are"
-                             f"{tariff.fuel} and {self.fuel}")
-        annual_cost = (365 * tariff.p_per_day + self.annual_sum * tariff.p_per_unit)/100
-        return annual_cost
-
 
 @dataclass
 class HeatingSystem:
@@ -257,3 +249,11 @@ class Tariff:
     units: str
     p_per_day: float
     fuel: constants.Fuel
+
+    def calculate_annual_cost(self, consumption: 'Consumption') -> float:
+
+        if self.fuel != consumption.fuel:
+            raise ValueError("To calculate annual costs the tariff fuel must match the consumption fuel, they are"
+                             f"{self.fuel} and {consumption.fuel}")
+        annual_cost = (365 * self.p_per_day + consumption.annual_sum * self.p_per_unit)/100
+        return annual_cost
