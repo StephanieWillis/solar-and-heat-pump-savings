@@ -42,12 +42,11 @@ class SolarConstants:
     MIN_ROOF_AREA = 0
     MAX_ROOF_AREA = 20
     DEFAULT_ROOF_AREA = 20
-    PANEL_HEIGHT_M = 1.65
-    PANEL_WIDTH_M = 0.99
-    PCT_OF_DIMENSION_USABLE = 0.9
-    KW_PEAK_PER_PANEL = 0.36  # output with incident radiation of 1kW/m2
-# https://www.theecoexperts.co.uk/solar-panels/how-many-do-i-need
-
+    PANEL_HEIGHT_M = 1.9
+    PANEL_WIDTH_M = 1.0
+    KW_PEAK_PER_PANEL = 0.35  # output with incident radiation of 1kW/m2
+    # Panel dimensions and kW_peak from https://www.greenmatch.co.uk/blog/how-many-solar-panels-do-i-need
+    PCT_OF_DIMENSION_USABLE = 0.9  # a guess
 
 @dataclass
 class TariffConstants:
