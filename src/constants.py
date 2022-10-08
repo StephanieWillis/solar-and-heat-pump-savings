@@ -15,6 +15,7 @@ class Fuel:
     units: str = 'kWh'
     converter_consumption_units_to_kWh: float = 1
 
+
 KWH_PER_LITRE_OF_OIL = 10.35
 # https: // www.thegreenage.co.uk / is -heating - oil - a - cheap - way - to - heat - my - home /
 ELECTRICITY = Fuel('electricity')
@@ -30,10 +31,19 @@ class HeatingConstants:
     fuel: Fuel
 
 
-DEFAULT_HEATING_CONSTANTS = {'Gas boiler': HeatingConstants(0.85, 0.8, GAS),
-                             'Oil boiler': HeatingConstants(0.8, 0.75, OIL),
-                             'Direct electric': HeatingConstants(1.0, 1.0, ELECTRICITY),
-                             'Heat pump': HeatingConstants(3.5, 3.0, ELECTRICITY)}
+DEFAULT_HEATING_CONSTANTS = {
+    'Gas boiler': HeatingConstants(space_heating_efficiency=0.85,
+                                   water_heating_efficiency=0.8,
+                                   fuel=GAS),
+    'Oil boiler': HeatingConstants(space_heating_efficiency=0.8,
+                                   water_heating_efficiency=0.75,
+                                   fuel=OIL),
+    'Direct electric': HeatingConstants(space_heating_efficiency=1.0,
+                                        water_heating_efficiency=1.0,
+                                        fuel=ELECTRICITY),
+    'Heat pump': HeatingConstants(space_heating_efficiency=3.5,
+                                  water_heating_efficiency=3.0,
+                                  fuel=ELECTRICITY)}
 
 
 @dataclass
@@ -48,6 +58,7 @@ class SolarConstants:
     # Panel dimensions and kW_peak from https://www.greenmatch.co.uk/blog/how-many-solar-panels-do-i-need
     PCT_OF_DIMENSION_USABLE = 0.9  # a guess
 
+
 @dataclass
 class TariffConstants:
     p_per_kWh_gas: float
@@ -55,6 +66,7 @@ class TariffConstants:
     p_per_day_gas: float
     p_per_day_elec: float
     p_per_L_oil: float
+
 
 STANDARD_TARIFF = TariffConstants(p_per_kWh_gas=10.3,
                                   p_per_kWh_elec=34.0,
