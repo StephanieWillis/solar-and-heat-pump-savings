@@ -17,7 +17,7 @@ class Fuel:
 
 
 KWH_PER_LITRE_OF_OIL = 10.35
-# https: // www.thegreenage.co.uk / is -heating - oil - a - cheap - way - to - heat - my - home /
+# https://www.thegreenage.co.uk/is-heating-oil-a-cheap-way-to-heat-my-home/
 ELECTRICITY = Fuel('electricity')
 GAS = Fuel(name='gas')
 OIL = Fuel(name='oil', units='litres', converter_consumption_units_to_kWh=KWH_PER_LITRE_OF_OIL)
@@ -46,7 +46,6 @@ DEFAULT_HEATING_CONSTANTS = {
                                   fuel=ELECTRICITY)}
 
 
-@dataclass
 class SolarConstants:
     SOLAR_ORIENTATIONS = ['South', 'Southwest', 'West', 'Northwest', 'North', 'Northeast', 'East', 'Southeast']
     MIN_ROOF_AREA = 0
