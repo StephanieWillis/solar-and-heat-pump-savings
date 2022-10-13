@@ -64,8 +64,30 @@ def test_solar():
     return solar_install
 
 
+def test_upgrade_homes():
+    house_floor_area_m2 = 100
+    house_type = "terrace"
+    envelope = building_model.BuildingEnvelope(house_type=house_type, floor_area_m2=house_floor_area_m2)
+    oil_house = building_model.House.set_up_from_heating_name(envelope=envelope, heating_name='Oil boiler')
+
+    upgrade_heating = building_model.HeatingSystem.from_constants(name='Heat pump',
+                                                                  parameters=constants.DEFAULT_HEATING_CONSTANTS[
+                                                                      'Heat pump'])
+    solar_install = building_model.Solar(orientation='South',
+                                         roof_width_m=12,
+                                         roof_height_m=4,
+                                         postcode='0000 000')
+    hp_house, solar_house, both_house = building_model.upgrade_buildings(baseline_house=oil_house,
+                                                                         upgrade_heating=upgrade_heating,
+                                                                         upgrade_solar=solar_install)
+    assert hp_house.solar.generation.annual_sum_kwh == 0
+    assert abs(both_house.solar.generation.annual_sum_kwh) > 0
+    assert hp_house.total_annual_bill > both_house.total_annual_bill
+
+
 if __name__ == '__main__':
     hp_house_check, gas_house_check, oil_house_check = test_set_up_house()
     results_df = building_model.combined_results_dfs_multiple_houses([oil_house_check, hp_house_check],
                                                                      ['oil', 'heat pump'])
     solar_install_trial = test_solar()
+    test_upgrade_homes()

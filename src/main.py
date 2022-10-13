@@ -13,6 +13,6 @@ use_qs_tab, solar_qs_tab, savings_tab = st.tabs(["Usage Questions", "Solar Quest
 with use_qs_tab:
     house = usage_questions.render()
 with solar_qs_tab:
-    solar_install = solar_questions.render()
+    solar = solar_questions.render()
 with savings_tab:
-    house = savings_outputs.render(house=house)
+    savings_outputs.render(house=house, solar=solar)

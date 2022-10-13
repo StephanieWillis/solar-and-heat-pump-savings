@@ -1,13 +1,13 @@
-import copy
+from typing import Tuple
 
-import streamlit as st
 import plotly.express as px
+import streamlit as st
 
+import building_model
 from building_model import *
 
 
-def render(house: 'House') -> 'House':
-
+def render(house: 'House', solar='Solar'):
     st.header("Your Heat Pump and Solar Savings")
     st.subheader("Energy Bills")
     bills_chart = st.empty()
@@ -20,17 +20,20 @@ def render(house: 'House') -> 'House':
     carbon_text = st.empty()
 
     st.header("Detailed Inputs - Current")
-    house = render_and_allow_overwrite_of_current_home(house)
+    house = render_and_update_current_home(house)
 
     st.header("Detailed Inputs - Improvement Options")
-    upgrade_heating = render_and_allow_overwrite_of_improvement_options()
+    upgrade_heating, upgrade_solar = render_and_update_improvement_options(solar=solar)
 
     # Upgraded buildings
-    hp_house = copy.deepcopy(house)  # do after modifications so modifications flow through
-    hp_house.heating_system = upgrade_heating
+    hp_house, solar_house, both_house = building_model.upgrade_buildings(baseline_house=house,
+                                                                         upgrade_heating=upgrade_heating,
+                                                                         upgrade_solar=upgrade_solar)
 
     # Combine results
-    results_df = combined_results_dfs_multiple_houses([house, hp_house], ['Current', 'With a heat pump'])
+    results_df = combined_results_dfs_multiple_houses([house, solar_house, hp_house,  both_house],
+                                                      ['Current', 'With solar', 'With a heat pump',
+                                                       'With solar and a heat pump'])
 
     with bills_chart:
         render_bill_chart(results_df)
@@ -47,43 +50,31 @@ def render(house: 'House') -> 'House':
     with carbon_text:
         st.write("Coming soon :)")
 
-    return house
 
-
-def render_and_allow_overwrite_of_current_home(house: House):
+def render_and_update_current_home(house: House):
     st.write("We have estimated your homes current energy use and bills using assumptions based on your answers."
              " You can edit those assumptions below ")
     with st.expander("Demand assumptions"):
-        house.envelope = render_and_allow_overwrite_of_envelope_outputs(envelope=house.envelope)
+        house.envelope = render_and_update_envelope_outputs(envelope=house.envelope)
     with st.expander("Baseline heating system assumptions"):
-        house.heating_system = render_and_allow_overwrite_of_heating_system(heating_system=house.heating_system)
+        house.heating_system = render_and_update_heating_system(heating_system=house.heating_system)
     with st.expander("Tariff assumptions"):
-        house = render_and_allow_overwrite_of_tariffs(house=house)
+        house = render_and_update_tariffs(house=house)
     return house
 
 
-def render_and_allow_overwrite_of_improvement_options() -> HeatingSystem:
-    st.write("We have used various assumptions to estimate the improvement potential of your home.."
-             " You can edit those assumptions below.")
-    with st.expander("Upgrade heating system assumptions"):
-        upgrade_heating = HeatingSystem.from_constants(name='Heat pump',
-                                                       parameters=constants.DEFAULT_HEATING_CONSTANTS['Heat pump'])
-        upgrade_heating = render_and_allow_overwrite_of_heating_system(heating_system=upgrade_heating)
-    return upgrade_heating
-
-
-def render_and_allow_overwrite_of_envelope_outputs(envelope: 'BuildingEnvelope') -> 'BuildingEnvelope':
+def render_and_update_envelope_outputs(envelope: 'BuildingEnvelope') -> 'BuildingEnvelope':
     st.write(f"We assume that an {envelope.floor_area_m2}m\u00b2 {envelope.house_type.lower()} needs about: ")
-    envelope.space_heating_demand = render_and_allow_overwrite_of_annual_demand(label='Heating (kwh): ',
-                                                                                demand=envelope.space_heating_demand)
-    envelope.water_heating_demand = render_and_allow_overwrite_of_annual_demand(label='Hot water (kwh): ',
-                                                                                demand=envelope.water_heating_demand)
-    envelope.base_demand = render_and_allow_overwrite_of_annual_demand(label='Other (lighting/appliances etc.) (kwh): ',
-                                                                       demand=envelope.base_demand)
+    envelope.space_heating_demand = render_and_update_annual_demand(label='Heating (kwh): ',
+                                                                    demand=envelope.space_heating_demand)
+    envelope.water_heating_demand = render_and_update_annual_demand(label='Hot water (kwh): ',
+                                                                    demand=envelope.water_heating_demand)
+    envelope.base_demand = render_and_update_annual_demand(label='Other (lighting/appliances etc.) (kwh): ',
+                                                           demand=envelope.base_demand)
     return envelope
 
 
-def render_and_allow_overwrite_of_annual_demand(label: str, demand: 'Demand') -> 'Demand':
+def render_and_update_annual_demand(label: str, demand: 'Demand') -> 'Demand':
     """ If user overwrites annual total then scale whole profile by multiplier"""
     demand_overwrite = st.number_input(label=label, min_value=0, max_value=100000, value=int(demand.annual_sum))
     if demand_overwrite != int(demand.annual_sum):  # scale profile  by correction factor
@@ -91,7 +82,7 @@ def render_and_allow_overwrite_of_annual_demand(label: str, demand: 'Demand') ->
     return demand
 
 
-def render_and_allow_overwrite_of_heating_system(heating_system: 'HeatingSystem') -> 'HeatingSystem':
+def render_and_update_heating_system(heating_system: 'HeatingSystem') -> 'HeatingSystem':
     heating_system.space_heating_efficiency = st.number_input(label='Efficiency for space heating: ',
                                                               min_value=0.0,
                                                               max_value=8.0,
@@ -103,30 +94,7 @@ def render_and_allow_overwrite_of_heating_system(heating_system: 'HeatingSystem'
     return heating_system
 
 
-def render_consumption_outputs(house: 'House', hp_house: 'House'):
-    if house.heating_system.fuel.name == 'electricity':
-        # TODO: catch case where there is already a heat pump?
-        st.write(
-            f"We calculate that your house currently needs about "
-            f"{int(house.consumption_profile_per_fuel['electricity'].annual_sum_kwh):,} kwh of electricity a year. "
-            f" \nWith a heat pump that value would fall to "
-            f"{int(hp_house.consumption_profile_per_fuel['electricity'].annual_sum_kwh):,} kwh of electricity a year")
-    else:
-        st.write(
-            f"We calculate that your house needs about "
-            f"{int(house.consumption_profile_per_fuel['electricity'].annual_sum_kwh):,} kwh of electricity per year"
-            f" and {int(house.consumption_profile_per_fuel[house.heating_system.fuel.name].annual_sum_fuel_units):,}"
-            f" {house.heating_system.fuel.units} of {house.heating_system.fuel.name}. "
-            f"  \nWith a heat pump that value would fall to "
-            f"{int(hp_house.consumption_profile_per_fuel['electricity'].annual_sum_kwh):,} kwh of electricity a year")
-
-
-def render_consumption_chart(results_df: pd.DataFrame):
-    energy_fig = px.bar(results_df, x='Upgrade option', y='Your annual energy use kwh', color='fuel')
-    st.plotly_chart(energy_fig, use_container_width=False, sharing="streamlit")
-
-
-def render_and_allow_overwrite_of_tariffs(house: 'House') -> 'House':
+def render_and_update_tariffs(house: 'House') -> 'House':
     st.write(f"We have assumed that you are on a default energy tariff, but if you have fixed at a different rate"
              " then you can edit the numbers. Unfortunately we can't deal with variable rates like Octopus Agile/Go "
              "or Economy 7 right now, but we are working on it!")
@@ -160,7 +128,55 @@ def render_and_allow_overwrite_of_tariffs(house: 'House') -> 'House':
     return house
 
 
-def render_bill_chart(results_df:pd.DataFrame):
+def render_and_update_improvement_options(solar: Solar) -> Tuple[HeatingSystem, Solar]:
+    st.write("We have used various assumptions to estimate the improvement potential of your home.."
+             " You can edit those assumptions below.")
+    with st.expander("Upgrade heating system assumptions"):
+        upgrade_heating = HeatingSystem.from_constants(name='Heat pump',
+                                                       parameters=constants.DEFAULT_HEATING_CONSTANTS['Heat pump'])
+        upgrade_heating = render_and_update_heating_system(heating_system=upgrade_heating)
+    with st.expander("Solar PV assumptions "):
+        solar = render_and_update_solar(solar=solar)
+
+    return upgrade_heating, solar
+
+
+def render_and_update_solar(solar: 'Solar'):
+    solar.number_of_panels = st.number_input(label='Number of panels',
+                                             min_value=0,
+                                             max_value=40,
+                                             value=solar.number_of_panels)
+    solar.kwp_per_panel = st.number_input(label='capacity_per_panel',
+                                          min_value=0.0,
+                                          max_value=0.8,
+                                          value=solar.kwp_per_panel)
+    return solar
+
+
+def render_consumption_outputs(house: 'House', hp_house: 'House'):
+    if house.heating_system.fuel.name == 'electricity':
+        # TODO: catch case where there is already a heat pump?
+        st.write(
+            f"We calculate that your house currently needs about "
+            f"{int(house.consumption_profile_per_fuel['electricity'].annual_sum_kwh):,} kwh of electricity a year. "
+            f" \nWith a heat pump that value would fall to "
+            f"{int(hp_house.consumption_profile_per_fuel['electricity'].annual_sum_kwh):,} kwh of electricity a year")
+    else:
+        st.write(
+            f"We calculate that your house needs about "
+            f"{int(house.consumption_profile_per_fuel['electricity'].annual_sum_kwh):,} kwh of electricity per year"
+            f" and {int(house.consumption_profile_per_fuel[house.heating_system.fuel.name].annual_sum_fuel_units):,}"
+            f" {house.heating_system.fuel.units} of {house.heating_system.fuel.name}. "
+            f"  \nWith a heat pump that value would fall to "
+            f"{int(hp_house.consumption_profile_per_fuel['electricity'].annual_sum_kwh):,} kwh of electricity a year")
+
+
+def render_consumption_chart(results_df: pd.DataFrame):
+    energy_fig = px.bar(results_df, x='Upgrade option', y='Your annual energy use kwh', color='fuel')
+    st.plotly_chart(energy_fig, use_container_width=False, sharing="streamlit")
+
+
+def render_bill_chart(results_df: pd.DataFrame):
     bills_fig = px.bar(results_df, x='Upgrade option', y='Your annual energy bill £', color='fuel')
     st.plotly_chart(bills_fig, use_container_width=False, sharing="streamlit")
 
@@ -178,11 +194,3 @@ def render_bill_outputs(house: 'House', hp_house: 'House'):
              f' \nWith a heat pump we calculate that your energy bills will {verb} '
              f'to £{int(hp_house.total_annual_bill):,}.'
              f'  \nThat is a saving of £{int(house.total_annual_bill - hp_house.total_annual_bill):,}.')
-
-
-def render_solar_outputs(solar_install: 'Solar'):
-    st.header("Solar potential")
-    st.write(f'Your roof faces {solar_install.orientation} and could fit  {solar_install.number_of_panels} panels')
-    st.write(f'That amounts to {round(solar_install.peak_capacity_kw_out_per_kw_in_per_m2, 1)} kw of peak capacity.')
-    st.write(f'We estimate that would generate {int(solar_install.generation.annual_sum_kwh):,} '
-             f' kwh of electricity per year')

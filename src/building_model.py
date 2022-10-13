@@ -1,3 +1,4 @@
+import copy
 from dataclasses import dataclass
 from typing import Dict, List
 
@@ -6,6 +7,16 @@ import pandas as pd
 
 import constants
 from constants import SolarConstants
+
+
+def upgrade_buildings(baseline_house, upgrade_heating, upgrade_solar):
+    hp_house = copy.deepcopy(baseline_house)  # do after modifications so modifications flow through
+    solar_house = copy.deepcopy(baseline_house)
+    hp_house.heating_system = upgrade_heating
+    solar_house.solar = upgrade_solar
+    both_house = copy.deepcopy(hp_house)
+    both_house.solar = upgrade_solar
+    return hp_house, solar_house, both_house
 
 
 def combined_results_dfs_multiple_houses(houses: List['House'], keys: List['str']):
@@ -223,13 +234,10 @@ class Solar:
     def __init__(self, orientation: str, roof_height_m: float, roof_width_m: float, postcode: str):
 
         self.orientation = orientation
+        self.profile_kwh_per_m2 = self.get_generation_profile()
+
         self.number_of_panels = self.get_number_of_panels(roof_width_m, roof_height_m)
-        self.peak_capacity_kw_out_per_kw_in_per_m2 = self.get_peak_capacity(
-            kwp_per_panel=SolarConstants.KW_PEAK_PER_PANEL)
-        profile_kwh_per_m2 = self.get_generation_profile(postcode=postcode)
-        # set negative as generation not consumption
-        profile_kwh = -1 * profile_kwh_per_m2 * self.peak_capacity_kw_out_per_kw_in_per_m2
-        self.generation = Consumption(profile_kwh=profile_kwh, fuel=constants.ELECTRICITY)
+        self.kwp_per_panel = SolarConstants.KW_PEAK_PER_PANEL
 
     @staticmethod
     def get_number_of_panels(roof_width_m: float, roof_height_m: float) -> float:
@@ -242,11 +250,8 @@ class Solar:
         number_of_panels = number_of_columns * number_of_rows
         return number_of_panels
 
-    def get_peak_capacity(self, kwp_per_panel: float):
-        return self.number_of_panels * kwp_per_panel
-
     @staticmethod
-    def get_generation_profile(postcode: str):
+    def get_generation_profile():
         # TODO properly using orientation and postcode
 
         # Stand in for now in absense of proper data
@@ -260,3 +265,15 @@ class Solar:
         # If not importing this from elsewhere think about whether need to integrate (take the previous half hour)
 
         return profile_kwh_per_m2
+
+    @property
+    def peak_capacity_kw_out_per_kw_in_per_m2(self):
+        return self.number_of_panels * self.kwp_per_panel
+
+    @property
+    def generation(self):
+        # set negative as generation not consumption
+        profile_kwh = -1 * self.profile_kwh_per_m2 * self.peak_capacity_kw_out_per_kw_in_per_m2
+        generation = Consumption(profile_kwh=profile_kwh, fuel=constants.ELECTRICITY)
+        return generation
+
