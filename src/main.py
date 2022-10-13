@@ -1,6 +1,6 @@
 import streamlit as st
 
-import usage
+import usage_interface
 import solar
 
 st.info("This tool is to help you get a rough idea of how much money and carbon you might save by installing a "
@@ -10,9 +10,9 @@ st.info("This tool is to help you get a rough idea of how much money and carbon 
 
 use_qs_tab, solar_qs_tab, savings_tab = st.tabs(["Usage Questions", "Solar Questions", "Your Savings Potential"])
 with use_qs_tab:
-    house = usage.render_questions()
+    house = usage_interface.render_questions()
 with solar_qs_tab:
     solar_install = solar.render_questions()
 with savings_tab:
-    house = usage.render_outputs(house=house)
+    house = usage_interface.render_outputs(house=house)
     # solar.render_outputs(solar_install=solar_install)
