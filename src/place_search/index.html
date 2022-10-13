@@ -2,7 +2,7 @@
   <body>
     <!-- Set up your HTML here -->
     <input id="postcode" value="" style="width: 100%; height: 30px" class="stTextInput"/>
-    <div id="output" value="" hidden/>
+    <div id="output" value=""  style="z-index: 99999"/>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDE1h8LmQYFqt5_aHPd_7KKF-wpv14sJBA&libraries=places&callback=autoComplete&locationbias=ipBias"
         async defer></script>
     <script>
@@ -116,7 +116,7 @@
 
       // Optionally, if the automatic height computation fails you, give this component a height manually
       // by commenting out below:
-      setFrameHeight(50);
+      setFrameHeight(100);
     </script>
   </body>
 </html>

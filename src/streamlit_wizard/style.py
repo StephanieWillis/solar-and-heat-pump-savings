@@ -19,6 +19,7 @@ div.custom_centred {
     text-align: center;
 }
 
+
 @media only screen and (max-width: 650px) {
   button.css-1q8dd3e {
     text-align: center;
