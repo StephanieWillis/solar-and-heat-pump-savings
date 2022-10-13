@@ -57,7 +57,7 @@ def render_outputs(house: 'House') -> 'House':
         render_bill_outputs(house=house, hp_house=hp_house)
 
     with energy_chart:
-        energy_fig = px.bar(results_df, x='Upgrade option', y='Your annual energy use kWh', color='fuel')
+        energy_fig = px.bar(results_df, x='Upgrade option', y='Your annual energy use kwh', color='fuel')
         st.plotly_chart(energy_fig, use_container_width=False, sharing="streamlit")
     with energy_text:
         render_consumption_outputs(house=house, hp_house=hp_house)
@@ -92,11 +92,11 @@ def render_heating_system_questions() -> str:
 
 def render_and_allow_overwrite_of_envelope_outputs(envelope: 'BuildingEnvelope') -> 'BuildingEnvelope':
     st.write(f"We assume that an {envelope.floor_area_m2}m\u00b2 {envelope.house_type.lower()} needs about: ")
-    envelope.space_heating_demand = render_and_allow_overwrite_of_annual_demand(label='Heating (kWh): ',
+    envelope.space_heating_demand = render_and_allow_overwrite_of_annual_demand(label='Heating (kwh): ',
                                                                                 demand=envelope.space_heating_demand)
-    envelope.water_heating_demand = render_and_allow_overwrite_of_annual_demand(label='Hot water (kWh): ',
+    envelope.water_heating_demand = render_and_allow_overwrite_of_annual_demand(label='Hot water (kwh): ',
                                                                                 demand=envelope.water_heating_demand)
-    envelope.base_demand = render_and_allow_overwrite_of_annual_demand(label='Other (lighting/appliances etc.) (kWh): ',
+    envelope.base_demand = render_and_allow_overwrite_of_annual_demand(label='Other (lighting/appliances etc.) (kwh): ',
                                                                        demand=envelope.base_demand)
     return envelope
 
@@ -105,7 +105,7 @@ def render_and_allow_overwrite_of_annual_demand(label: str, demand: 'Demand') ->
     """ If user overwrites annual total then scale whole profile by multiplier"""
     demand_overwrite = st.number_input(label=label, min_value=0, max_value=100000, value=int(demand.annual_sum))
     if demand_overwrite != int(demand.annual_sum):  # scale profile  by correction factor
-        demand.profile_kWh = demand_overwrite / int(demand.annual_sum) * demand.profile_kWh
+        demand.profile_kwh = demand_overwrite / int(demand.annual_sum) * demand.profile_kwh
     return demand
 
 
@@ -126,17 +126,17 @@ def render_consumption_outputs(house: 'House', hp_house: 'House'):
         # TODO: catch case where there is already a heat pump?
         st.write(
             f"We calculate that your house currently needs about "
-            f"{int(house.consumption_profile_per_fuel['electricity'].annual_sum):,} kWh of electricity a year"
+            f"{int(house.consumption_profile_per_fuel['electricity'].annual_sum_kwh):,} kwh of electricity a year"
             f" \nWith a heat pump that value would fall to "
-            f"{int(hp_house.consumption_profile_per_fuel['electricity'].annual_sum):,} kWh of electricity a year")
+            f"{int(hp_house.consumption_profile_per_fuel['electricity'].annual_sum_kwh):,} kwh of electricity a year")
     else:
         st.write(
             f"We calculate that your house needs about "
-            f"{int(house.consumption_profile_per_fuel['electricity'].annual_sum):,} kWh of electricity per year"
-            f" and {int(house.consumption_profile_per_fuel[house.heating_system.fuel.name].annual_sum):,}"
+            f"{int(house.consumption_profile_per_fuel['electricity'].annual_sum_kwh):,} kwh of electricity per year"
+            f" and {int(house.consumption_profile_per_fuel[house.heating_system.fuel.name].annual_sum_fuel_units):,}"
             f" {house.heating_system.fuel.units} of {house.heating_system.fuel.name}. "
             f"  \nWith a heat pump that value would fall to "
-            f"{int(hp_house.consumption_profile_per_fuel['electricity'].annual_sum):,} kWh of electricity a year")
+            f"{int(hp_house.consumption_profile_per_fuel['electricity'].annual_sum_kwh):,} kwh of electricity a year")
 
 
 def render_and_allow_overwrite_of_tariffs(house: 'House') -> 'House':
@@ -145,7 +145,7 @@ def render_and_allow_overwrite_of_tariffs(house: 'House') -> 'House':
              "or Economy 7 right now, but we are working on it!")
 
     st.subheader('Electricity')
-    house.tariffs['electricity'].p_per_unit = st.number_input(label='Unit rate (p/kWh), electricity',
+    house.tariffs['electricity'].p_per_unit = st.number_input(label='Unit rate (p/kwh), electricity',
                                                               min_value=0.0,
                                                               max_value=100.0,
                                                               value=house.tariffs['electricity'].p_per_unit)
@@ -156,7 +156,7 @@ def render_and_allow_overwrite_of_tariffs(house: 'House') -> 'House':
     match house.heating_system.fuel.name:
         case 'gas':
             st.subheader('Gas')
-            house.tariffs['gas'].p_per_unit = st.number_input(label='Unit rate (p/kWh), gas',
+            house.tariffs['gas'].p_per_unit = st.number_input(label='Unit rate (p/kwh), gas',
                                                               min_value=0.0,
                                                               max_value=100.0,
                                                               value=house.tariffs['gas'].p_per_unit)
@@ -207,12 +207,12 @@ class House:
 
     def set_up_standard_tariffs(self) -> Dict[str, 'Tariff']:
 
-        tariffs = {'electricity': Tariff(p_per_unit=constants.STANDARD_TARIFF.p_per_kWh_elec,
+        tariffs = {'electricity': Tariff(p_per_unit=constants.STANDARD_TARIFF.p_per_kwh_elec,
                                          p_per_day=constants.STANDARD_TARIFF.p_per_day_elec,
                                          fuel=constants.ELECTRICITY)}
         match self.heating_system.fuel.name:
             case 'gas':
-                tariffs['gas'] = Tariff(p_per_unit=constants.STANDARD_TARIFF.p_per_kWh_gas,
+                tariffs['gas'] = Tariff(p_per_unit=constants.STANDARD_TARIFF.p_per_kwh_gas,
                                         p_per_day=constants.STANDARD_TARIFF.p_per_day_gas,
                                         fuel=self.heating_system.fuel)
             case 'oil':
@@ -229,7 +229,7 @@ class House:
     def consumption_profile_per_fuel(self) -> Dict[str, 'Consumption']:
 
         # Base demand is always electricity (lighting/plug loads etc.)
-        base_consumption = Consumption(profile=self.envelope.base_demand.profile_kWh,
+        base_consumption = Consumption(profile_kwh=self.envelope.base_demand.profile_kwh,
                                        fuel=constants.ELECTRICITY)
         space_heating_consumption = self.heating_system.calculate_space_heating_consumption(
             self.envelope.space_heating_demand)
@@ -247,12 +247,12 @@ class House:
         return consumption_dict
 
     @property
-    def annual_consumption_per_fuel(self) -> Dict[str, float]:
-        return {fuel: consumption.annual_sum for fuel, consumption in self.consumption_profile_per_fuel.items()}
+    def annual_consumption_per_fuel_kwh(self) -> Dict[str, float]:
+        return {fuel: consumption.annual_sum_kwh for fuel, consumption in self.consumption_profile_per_fuel.items()}
 
     @property
-    def total_annual_consumption(self) -> float:
-        return sum(self.annual_consumption_per_fuel.values())
+    def total_annual_consumption_kwh(self) -> float:
+        return sum(self.annual_consumption_per_fuel_kwh.values())
 
     @property
     def annual_bill_per_fuel(self) -> Dict[str, float]:
@@ -268,7 +268,7 @@ class House:
     @property
     def energy_and_bills_df(self) -> pd.DataFrame:
         """ To make it easy to plot the results using plotly"""
-        df = pd.DataFrame(data={'Your annual energy use kWh': self.annual_consumption_per_fuel,
+        df = pd.DataFrame(data={'Your annual energy use kwh': self.annual_consumption_per_fuel_kwh,
                                 'Your annual energy bill £': self.annual_bill_per_fuel})
         df.index.name = 'fuel'
         df = df.reset_index()
@@ -283,51 +283,56 @@ class BuildingEnvelope:
         self.floor_area_m2 = floor_area_m2
         self.house_type = house_type
         self.time_series_idx: pd.Index = constants.BASE_YEAR_HALF_HOUR_INDEX
-        self.units: str = 'kWh'
+        self.units: str = 'kwh'
 
         # Set initial demand values - user can overwrite later
         # Dummy data for now TODO get profiles from elsewhere
-        self.base_demand = Demand(profile_kWh=pd.Series(index=self.time_series_idx, data=0.001 * self.floor_area_m2))
+        self.base_demand = Demand(profile_kwh=pd.Series(index=self.time_series_idx, data=0.001 * self.floor_area_m2))
         self.water_heating_demand = Demand(
-            profile_kWh=pd.Series(index=self.time_series_idx, data=0.004 * self.floor_area_m2))
+            profile_kwh=pd.Series(index=self.time_series_idx, data=0.004 * self.floor_area_m2))
         self.space_heating_demand = Demand(
-            profile_kWh=pd.Series(index=self.time_series_idx, data=0.005 * self.floor_area_m2))
+            profile_kwh=pd.Series(index=self.time_series_idx, data=0.005 * self.floor_area_m2))
 
 
 @dataclass
 class Demand:
-    profile_kWh: pd.Series  # TODO: figure out how to specify index should be datetime in typing?
+    profile_kwh: pd.Series  # TODO: figure out how to specify index should be datetime in typing?
 
     @property
     def annual_sum(self) -> float:
-        annual_sum = self.profile_kWh.sum()
+        annual_sum = self.profile_kwh.sum()
         return annual_sum
 
     def add(self, other: 'Demand') -> 'Demand':
-        combined_time_series = self.profile_kWh + other.profile_kWh
-        combined = Demand(profile_kWh=combined_time_series)
+        combined_time_series = self.profile_kwh + other.profile_kwh
+        combined = Demand(profile_kwh=combined_time_series)
         return combined
 
 
 @dataclass
 class Consumption:
-    profile: pd.Series
+    profile_kwh: pd.Series
     fuel: constants.Fuel = constants.ELECTRICITY
-
-    @classmethod
-    def from_kwh_profile(cls, profile_kwh, fuel):
-        profile = fuel.convert_kwh_to_fuel_units(profile_kwh)
-        return cls(profile=profile, fuel=fuel)
+    
+    @property
+    def profile_fuel_units(self):
+        profile_fuel_units = self.fuel.convert_kwh_to_fuel_units(self.profile_kwh)
+        return profile_fuel_units
 
     @property
-    def annual_sum(self) -> float:
-        annual_sum = self.profile.sum()
+    def annual_sum_kwh(self) -> float:
+        annual_sum = self.profile_kwh.sum()
+        return annual_sum
+    
+    @property
+    def annual_sum_fuel_units(self) -> float:
+        annual_sum = self.profile_fuel_units.sum()
         return annual_sum
 
     def add(self, other: 'Consumption') -> 'Consumption':
         if self.fuel == other.fuel:
-            combined_time_series = self.profile + other.profile
-            combined = Consumption(profile=combined_time_series, fuel=self.fuel)
+            combined_time_series_kwh = self.profile_kwh + other.profile_kwh
+            combined = Consumption(profile_kwh=combined_time_series_kwh, fuel=self.fuel)
         else:
             raise ValueError("The fuel of the two consumptions must match")
             # idea: maybe this should work and just return a list?
@@ -359,8 +364,8 @@ class HeatingSystem:
         return self.calculate_consumption(demand=water_heating_demand, efficiency=self.water_heating_efficiency)
 
     def calculate_consumption(self, demand: Demand, efficiency: float) -> Consumption:
-        profile_kwh = demand.profile_kWh / efficiency
-        consumption = Consumption.from_kwh_profile(profile_kwh=profile_kwh, fuel=self.fuel)
+        profile_kwh = demand.profile_kwh / efficiency
+        consumption = Consumption(profile_kwh=profile_kwh, fuel=self.fuel)
         return consumption
 
 
@@ -374,5 +379,5 @@ class Tariff:
         if self.fuel != consumption.fuel:
             raise ValueError("To calculate annual costs the tariff fuel must match the consumption fuel, they are"
                              f"{self.fuel} and {consumption.fuel}")
-        annual_cost = (365 * self.p_per_day + consumption.annual_sum * self.p_per_unit) / 100
+        annual_cost = (365 * self.p_per_day + consumption.annual_sum_fuel_units * self.p_per_unit) / 100
         return annual_cost

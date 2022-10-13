@@ -22,7 +22,7 @@ def test_solar():
     assert isinstance(solar_install.number_of_panels, int)
     assert isinstance(solar_install.peak_capacity_kW_out_per_kW_in_per_m2, float)
     assert isinstance(solar_install.generation.profile, pd.Series)
-    assert isinstance(solar_install.generation.annual_sum, float)
+    assert isinstance(solar_install.generation.annual_sum_kwh, float)
 
 
     # fig = px.line(profile.loc["2020-01-01": "2020-01-03"])

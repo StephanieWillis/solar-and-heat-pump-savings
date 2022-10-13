@@ -11,19 +11,23 @@ EMPTY_TIMESERIES = pd.Series(index=BASE_YEAR_HALF_HOUR_INDEX, data=0)
 @dataclass
 class Fuel:
     name: str
-    units: str = 'kWh'
-    converter_consumption_units_to_kWh: float = 1
+    units: str = 'kwh'
+    converter_consumption_units_to_kwh: float = 1
 
     def convert_kwh_to_fuel_units(self, value_kwh: [float | pd.Series | pd.DataFrame]):
-        value_fuel_units = value_kwh / self.converter_consumption_units_to_kWh
+        value_fuel_units = value_kwh / self.converter_consumption_units_to_kwh
         return value_fuel_units
 
+    def convert_fuel_units_to_kwh(self, value_fuel_units: [float | pd.Series | pd.DataFrame]):
+        value_kwh = value_fuel_units * self.converter_consumption_units_to_kwh
+        return value_kwh
 
-KWH_PER_LITRE_OF_OIL = 10.35
+
+kwh_PER_LITRE_OF_OIL = 10.35
 # https://www.thegreenage.co.uk/is-heating-oil-a-cheap-way-to-heat-my-home/
 ELECTRICITY = Fuel('electricity')
 GAS = Fuel(name='gas')
-OIL = Fuel(name='oil', units='litres', converter_consumption_units_to_kWh=KWH_PER_LITRE_OF_OIL)
+OIL = Fuel(name='oil', units='litres', converter_consumption_units_to_kwh=kwh_PER_LITRE_OF_OIL)
 FUELS = [ELECTRICITY, GAS, OIL]
 
 
@@ -49,6 +53,22 @@ DEFAULT_HEATING_CONSTANTS = {
                                   fuel=ELECTRICITY)}
 
 
+@dataclass
+class TariffConstants:
+    p_per_kwh_gas: float
+    p_per_kwh_elec: float
+    p_per_day_gas: float
+    p_per_day_elec: float
+    p_per_L_oil: float
+
+
+STANDARD_TARIFF = TariffConstants(p_per_kwh_gas=10.3,
+                                  p_per_kwh_elec=34.0,
+                                  p_per_day_gas=28.0,
+                                  p_per_day_elec=46.0,
+                                  p_per_L_oil=95.0)
+
+
 class SolarConstants:
     SOLAR_ORIENTATIONS = ['South', 'Southwest', 'West', 'Northwest', 'North', 'Northeast', 'East', 'Southeast']
     MIN_ROOF_AREA = 0
@@ -61,17 +81,3 @@ class SolarConstants:
     PCT_OF_DIMENSION_USABLE = 0.9  # a guess
 
 
-@dataclass
-class TariffConstants:
-    p_per_kWh_gas: float
-    p_per_kWh_elec: float
-    p_per_day_gas: float
-    p_per_day_elec: float
-    p_per_L_oil: float
-
-
-STANDARD_TARIFF = TariffConstants(p_per_kWh_gas=10.3,
-                                  p_per_kWh_elec=34.0,
-                                  p_per_day_gas=28.0,
-                                  p_per_day_elec=46.0,
-                                  p_per_L_oil=95.0)
