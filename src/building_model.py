@@ -112,10 +112,18 @@ class House:
         return sum(self.annual_bill_per_fuel.values())
 
     @property
+    def annual_tco2_per_fuel(self) -> Dict[str, float]:
+        carbon_dict = {}
+        for fuel_name, consumption in self.consumption_profile_per_fuel.items():
+            carbon_dict[fuel_name] = consumption.annual_sum_tco2
+        return carbon_dict
+
+    @property
     def energy_and_bills_df(self) -> pd.DataFrame:
         """ To make it easy to plot the results using plotly"""
         df = pd.DataFrame(data={'Your annual energy use kwh': self.annual_consumption_per_fuel_kwh,
-                                'Your annual energy bill £': self.annual_bill_per_fuel})
+                                'Your annual energy bill £': self.annual_bill_per_fuel,
+                                'Your annual carbon emissions tCO2': self.annual_tco2_per_fuel})
         df.index.name = 'fuel'
         df = df.reset_index()
         return df
@@ -174,6 +182,11 @@ class Consumption:
     def annual_sum_fuel_units(self) -> float:
         annual_sum = self.profile_fuel_units.sum()
         return annual_sum
+
+    @property
+    def annual_sum_tco2(self) -> float:
+        annual_tco2 = self.fuel.calculate_annual_tco2(self.annual_sum_kwh)
+        return annual_tco2
 
     def add(self, other: 'Consumption') -> 'Consumption':
         if self.fuel == other.fuel:

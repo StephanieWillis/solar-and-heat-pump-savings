@@ -1,5 +1,6 @@
 from typing import Tuple
 
+import pandas as pd
 import plotly.express as px
 import streamlit as st
 
@@ -7,7 +8,7 @@ import building_model
 from building_model import *
 
 
-def render(house: 'House', solar='Solar'):
+def render(house: 'House', solar: 'Solar'):
     st.header("Your Heat Pump and Solar Savings")
     st.subheader("Energy Bills")
     bills_chart = st.empty()
@@ -31,24 +32,24 @@ def render(house: 'House', solar='Solar'):
                                                                          upgrade_solar=upgrade_solar)
 
     # Combine results
-    results_df = combined_results_dfs_multiple_houses([house, solar_house, hp_house,  both_house],
+    results_df = combined_results_dfs_multiple_houses([house, solar_house, hp_house, both_house],
                                                       ['Current', 'With solar', 'With a heat pump',
                                                        'With solar and a heat pump'])
 
     with bills_chart:
         render_bill_chart(results_df)
     with bills_text:
-        render_bill_outputs(house=house, hp_house=hp_house)
+        render_bill_outputs(house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
 
     with energy_chart:
         render_consumption_chart(results_df)
     with energy_text:
-        render_consumption_outputs(house=house, hp_house=hp_house)
+        render_consumption_outputs(house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
 
-    # with carbon_chart:
-    #     NotImplemented
+    with carbon_chart:
+        render_carbon_chart(results_df)
     with carbon_text:
-        st.write("Coming soon :)")
+        render_carbon_outputs(house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
 
 
 def render_and_update_current_home(house: House):
@@ -153,7 +154,11 @@ def render_and_update_solar(solar: 'Solar'):
     return solar
 
 
-def render_consumption_outputs(house: 'House', hp_house: 'House'):
+def render_consumption_chart(results_df: pd.DataFrame):
+    render_savings_chart(results_df=results_df, y_variable='Your annual energy use kwh')
+
+
+def render_consumption_outputs(house: 'House', solar_house: 'House', hp_house: 'House', both_house: 'House'):
     if house.heating_system.fuel.name == 'electricity':
         # TODO: catch case where there is already a heat pump?
         st.write(
@@ -171,26 +176,44 @@ def render_consumption_outputs(house: 'House', hp_house: 'House'):
             f"{int(hp_house.consumption_profile_per_fuel['electricity'].annual_sum_kwh):,} kwh of electricity a year")
 
 
-def render_consumption_chart(results_df: pd.DataFrame):
-    energy_fig = px.bar(results_df, x='Upgrade option', y='Your annual energy use kwh', color='fuel')
-    st.plotly_chart(energy_fig, use_container_width=False, sharing="streamlit")
-
-
 def render_bill_chart(results_df: pd.DataFrame):
-    bills_fig = px.bar(results_df, x='Upgrade option', y='Your annual energy bill £', color='fuel')
-    st.plotly_chart(bills_fig, use_container_width=False, sharing="streamlit")
+    render_savings_chart(results_df=results_df, y_variable='Your annual energy bill £')
 
 
-def render_bill_outputs(house: 'House', hp_house: 'House'):
+def render_bill_outputs(house: 'House', solar_house: 'House', hp_house: 'House', both_house: 'House'):
+
+    st.write(f'With your current system {produce_bill_sentence(house)}.  \n'
+             f'With solar alone {produce_bill_sentence(solar_house)}.  \n'
+             f' {produce_saving_sentence(house=solar_house, baseline_house=house)}.  \n'
+             f'With a heat pump alone {produce_bill_sentence(hp_house)}.  \n '
+             f' {produce_saving_sentence(house=hp_house, baseline_house=house)}.  \n'
+             f'With solar and a heat pump {produce_bill_sentence(both_house)}.  \n  '
+             f' {produce_saving_sentence(house=both_house, baseline_house=house)}.  \n'
+             )
+
+
+def produce_bill_sentence(house) -> str:
     breakdown = (
-        f'({", ".join(f"£{int(amount):,} for {fuel_name}" for fuel_name, amount in house.annual_bill_per_fuel.items())})')
-    if house.total_annual_bill > hp_house.total_annual_bill:
-        verb = 'drop'
-    else:
-        verb = 'increase'
+        f'({", ".join(f"£{int(amount):,} for {fuel_name}" for fuel_name, amount in house.annual_bill_per_fuel.items())}'
+        f')')
+    sentence = (f'your energy bills for the next year will be'
+                f' £{int(house.total_annual_bill):,} {breakdown if house.has_multiple_fuels else ""} ')
+    return sentence
 
-    st.write(f'We calculate that your energy bills for the next year will be'
-             f' £{int(house.total_annual_bill):,} {breakdown if house.has_multiple_fuels else ""}. '
-             f' \nWith a heat pump we calculate that your energy bills will {verb} '
-             f'to £{int(hp_house.total_annual_bill):,}.'
-             f'  \nThat is a saving of £{int(house.total_annual_bill - hp_house.total_annual_bill):,}.')
+
+def produce_saving_sentence(house: 'House', baseline_house: 'House') -> str:
+    sentence = f"  That's a saving of £{int(baseline_house.total_annual_bill - house.total_annual_bill):,}"
+    return sentence
+
+
+def render_carbon_chart(results_df: pd.DataFrame):
+    render_savings_chart(results_df=results_df, y_variable='Your annual carbon emissions tCO2')
+
+
+def render_carbon_outputs(house: 'House', solar_house: 'House', hp_house: 'House', both_house: 'House'):
+    st.write("Coming soon :)")
+
+
+def render_savings_chart(results_df: pd.DataFrame, y_variable: str):
+    bills_fig = px.bar(results_df, x='Upgrade option', y=y_variable, color='fuel')
+    st.plotly_chart(bills_fig, use_container_width=False, sharing="streamlit")
