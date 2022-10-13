@@ -1,21 +1,12 @@
 import copy
 
-import pandas as pd
 import streamlit as st
 import plotly.express as px
 
-from usage import *
+from building_model import *
 
 
-def render_questions() -> 'House':
-    st.header("Your House")
-    envelope = render_house_questions()
-    heating_system_name = render_heating_system_questions()
-    house = House.set_up_from_heating_name(envelope=envelope, heating_name=heating_system_name)
-    return house
-
-
-def render_outputs(house: 'House') -> 'House':
+def render(house: 'House') -> 'House':
 
     st.header("Your Heat Pump and Solar Savings")
     st.subheader("Energy Bills")
@@ -57,18 +48,6 @@ def render_outputs(house: 'House') -> 'House':
         st.write("Coming soon :)")
 
     return house
-
-
-def render_house_questions() -> 'BuildingEnvelope':
-    house_type = st.selectbox('House Type', options=constants.HOUSE_TYPES)
-    house_floor_area_m2 = st.number_input(label='House floor area (m2)', min_value=0, max_value=500, value=80)
-    envelope = BuildingEnvelope(house_type=house_type, floor_area_m2=house_floor_area_m2)
-    return envelope
-
-
-def render_heating_system_questions() -> str:
-    heating_system_name = st.selectbox('Heating System', options=constants.DEFAULT_HEATING_CONSTANTS.keys())
-    return heating_system_name
 
 
 def render_and_allow_overwrite_of_current_home(house: House):
@@ -199,3 +178,11 @@ def render_bill_outputs(house: 'House', hp_house: 'House'):
              f' \nWith a heat pump we calculate that your energy bills will {verb} '
              f'to £{int(hp_house.total_annual_bill):,}.'
              f'  \nThat is a saving of £{int(house.total_annual_bill - hp_house.total_annual_bill):,}.')
+
+
+def render_solar_outputs(solar_install: 'Solar'):
+    st.header("Solar potential")
+    st.write(f'Your roof faces {solar_install.orientation} and could fit  {solar_install.number_of_panels} panels')
+    st.write(f'That amounts to {round(solar_install.peak_capacity_kw_out_per_kw_in_per_m2, 1)} kw of peak capacity.')
+    st.write(f'We estimate that would generate {int(solar_install.generation.annual_sum_kwh):,} '
+             f' kwh of electricity per year')

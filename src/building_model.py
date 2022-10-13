@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 from typing import Dict, List
 
+import numpy as np
 import pandas as pd
 
 import constants
+from constants import SolarConstants
 
 
 def combined_results_dfs_multiple_houses(houses: List['House'], keys: List['str']):
@@ -17,13 +19,16 @@ def combined_results_dfs_multiple_houses(houses: List['House'], keys: List['str'
 class House:
     """ Stores info on consumption and bills """
 
-    def __init__(self, envelope: 'BuildingEnvelope', heating_system: 'HeatingSystem'):
+    def __init__(self, envelope: 'BuildingEnvelope', heating_system: 'HeatingSystem', solar: 'Solar' = None):
 
         self.envelope = envelope
         # Set up initial values for heating system and tariffs but allow to be modified by the user later
-        # Maybe I should be using getters and setters here?
         self.heating_system = heating_system
         self.tariffs = self.set_up_standard_tariffs()
+
+        if solar is None:
+            solar = Solar(orientation='South', roof_width_m=0, roof_height_m=0, postcode='0000 000')
+        self.solar = solar
 
     @classmethod
     def set_up_from_heating_name(cls, envelope: 'BuildingEnvelope', heating_name: str) -> 'House':
@@ -57,6 +62,10 @@ class House:
         # Base demand is always electricity (lighting/plug loads etc.)
         base_consumption = Consumption(profile_kwh=self.envelope.base_demand.profile_kwh,
                                        fuel=constants.ELECTRICITY)
+        # Solar
+        electricity_consumption = base_consumption.add(self.solar.generation)
+
+        # Heating
         space_heating_consumption = self.heating_system.calculate_space_heating_consumption(
             self.envelope.space_heating_demand)
         water_heating_consumption = self.heating_system.calculate_water_heating_consumption(
@@ -65,9 +74,9 @@ class House:
 
         match self.heating_system.fuel:
             case base_consumption.fuel:  # only one fuel (electricity)
-                consumption_dict = {self.heating_system.fuel.name: base_consumption.add(heating_consumption)}
+                consumption_dict = {self.heating_system.fuel.name: electricity_consumption.add(heating_consumption)}
             case _:
-                consumption_dict = {base_consumption.fuel.name: base_consumption,
+                consumption_dict = {electricity_consumption.fuel.name: electricity_consumption,
                                     heating_consumption.fuel.name: heating_consumption}
 
         return consumption_dict
@@ -207,3 +216,47 @@ class Tariff:
                              f"{self.fuel} and {consumption.fuel}")
         annual_cost = (365 * self.p_per_day + consumption.annual_sum_fuel_units * self.p_per_unit) / 100
         return annual_cost
+
+
+class Solar:
+
+    def __init__(self, orientation: str, roof_height_m: float, roof_width_m: float, postcode: str):
+
+        self.orientation = orientation
+        self.number_of_panels = self.get_number_of_panels(roof_width_m, roof_height_m)
+        self.peak_capacity_kw_out_per_kw_in_per_m2 = self.get_peak_capacity(
+            kwp_per_panel=SolarConstants.KW_PEAK_PER_PANEL)
+        profile_kwh_per_m2 = self.get_generation_profile(postcode=postcode)
+        # set negative as generation not consumption
+        profile_kwh = -1 * profile_kwh_per_m2 * self.peak_capacity_kw_out_per_kw_in_per_m2
+        self.generation = Consumption(profile_kwh=profile_kwh, fuel=constants.ELECTRICITY)
+
+    @staticmethod
+    def get_number_of_panels(roof_width_m: float, roof_height_m: float) -> float:
+        height_available_for_panels = roof_height_m * SolarConstants.PCT_OF_DIMENSION_USABLE
+        width_available_for_panels = roof_width_m * SolarConstants.PCT_OF_DIMENSION_USABLE
+
+        number_of_rows = int(height_available_for_panels/SolarConstants.PANEL_HEIGHT_M)
+        number_of_columns = int(width_available_for_panels/SolarConstants.PANEL_WIDTH_M)
+
+        number_of_panels = number_of_columns * number_of_rows
+        return number_of_panels
+
+    def get_peak_capacity(self, kwp_per_panel: float):
+        return self.number_of_panels * kwp_per_panel
+
+    @staticmethod
+    def get_generation_profile(postcode: str):
+        # TODO properly using orientation and postcode
+
+        # Stand in for now in absense of proper data
+        idx = constants.BASE_YEAR_HALF_HOUR_INDEX
+        minute_of_the_day = idx.hour * 60 + idx.minute
+        kw_per_m2_peak = 0.3
+        generation = - np.cos(minute_of_the_day * np.pi * 2/(24 * 60)) * kw_per_m2_peak
+        profile_kw_per_m2 = pd.Series(index=constants.BASE_YEAR_HALF_HOUR_INDEX, data=generation)
+        profile_kw_per_m2.loc[profile_kw_per_m2 < 0] = 0
+        profile_kwh_per_m2 = profile_kw_per_m2/2  # because we know the time base is half hourly
+        # If not importing this from elsewhere think about whether need to integrate (take the previous half hour)
+
+        return profile_kwh_per_m2
