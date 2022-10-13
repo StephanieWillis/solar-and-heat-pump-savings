@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Dict
 
 import pandas as pd
 
@@ -14,6 +13,10 @@ class Fuel:
     name: str
     units: str = 'kWh'
     converter_consumption_units_to_kWh: float = 1
+
+    def convert_kwh_to_fuel_units(self, value_kwh: [float | pd.Series | pd.DataFrame]):
+        value_fuel_units = value_kwh / self.converter_consumption_units_to_kWh
+        return value_fuel_units
 
 
 KWH_PER_LITRE_OF_OIL = 10.35

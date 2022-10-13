@@ -267,6 +267,7 @@ class House:
 
     @property
     def energy_and_bills_df(self) -> pd.DataFrame:
+        """ To make it easy to plot the results using plotly"""
         df = pd.DataFrame(data={'Your annual energy use kWh': self.annual_consumption_per_fuel,
                                 'Your annual energy bill £': self.annual_bill_per_fuel})
         df.index.name = 'fuel'
@@ -313,6 +314,11 @@ class Consumption:
     profile: pd.Series
     fuel: constants.Fuel = constants.ELECTRICITY
 
+    @classmethod
+    def from_kwh_profile(cls, profile_kwh, fuel):
+        profile = fuel.convert_kwh_to_fuel_units(profile_kwh)
+        return cls(profile=profile, fuel=fuel)
+
     @property
     def annual_sum(self) -> float:
         annual_sum = self.profile.sum()
@@ -354,8 +360,8 @@ class HeatingSystem:
 
     def calculate_consumption(self, demand: Demand, efficiency: float) -> Consumption:
         profile_kwh = demand.profile_kWh / efficiency
-        profile = profile_kwh / self.fuel.converter_consumption_units_to_kWh
-        return Consumption(profile=profile, fuel=self.fuel)
+        consumption = Consumption.from_kwh_profile(profile_kwh=profile_kwh, fuel=self.fuel)
+        return consumption
 
 
 @dataclass
