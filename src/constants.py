@@ -1,7 +1,8 @@
 from dataclasses import dataclass
-from enum import Enum
 
 import pandas as pd
+
+from fuels import Fuel
 
 HOUSE_TYPES = ['Terrace', 'Semi-detached', 'Detached', 'Flat']
 
@@ -9,26 +10,12 @@ BASE_YEAR_HALF_HOUR_INDEX = pd.date_range(start="2020-01-01", end="2021-01-01", 
 EMPTY_TIMESERIES = pd.Series(index=BASE_YEAR_HALF_HOUR_INDEX, data=0)
 
 
-@dataclass
-class Fuel:
-    name: str
-    units: str = 'kwh'
-    converter_consumption_units_to_kwh: float = 1
-
-    def convert_kwh_to_fuel_units(self, value_kwh: [float | pd.Series | pd.DataFrame]):
-        value_fuel_units = value_kwh / self.converter_consumption_units_to_kwh
-        return value_fuel_units
-
-    def convert_fuel_units_to_kwh(self, value_fuel_units: [float | pd.Series | pd.DataFrame]):
-        value_kwh = value_fuel_units * self.converter_consumption_units_to_kwh
-        return value_kwh
-
-
 kwh_PER_LITRE_OF_OIL = 10.35
 # https://www.thegreenage.co.uk/is-heating-oil-a-cheap-way-to-heat-my-home/
-ELECTRICITY = Fuel('electricity')
-GAS = Fuel(name='gas')
-OIL = Fuel(name='oil', units='litres', converter_consumption_units_to_kwh=kwh_PER_LITRE_OF_OIL)
+# TODO later: get reasonable values
+ELECTRICITY = Fuel('electricity', tco2_per_kwh=180/1000)
+GAS = Fuel(name='gas', tco2_per_kwh=300/1000)
+OIL = Fuel(name='oil', units='litres', converter_consumption_units_to_kwh=kwh_PER_LITRE_OF_OIL, tco2_per_kwh=400/1000)
 FUELS = [ELECTRICITY, GAS, OIL]
 
 
