@@ -120,6 +120,10 @@ class House:
         return carbon_dict
 
     @property
+    def total_annual_tco2(self) -> float:
+        return sum(self.annual_tco2_per_fuel.values())
+
+    @property
     def energy_and_bills_df(self) -> pd.DataFrame:
         """ To make it easy to plot the results using plotly"""
         df = pd.DataFrame(data={'Your annual energy use kwh': self.annual_consumption_per_fuel_kwh,

@@ -12,9 +12,9 @@ EMPTY_TIMESERIES = pd.Series(index=BASE_YEAR_HALF_HOUR_INDEX, data=0)
 
 kwh_PER_LITRE_OF_OIL = 10.35  # https://www.thegreenage.co.uk/is-heating-oil-a-cheap-way-to-heat-my-home/
 
-ELECTRICITY = Fuel("electricity", tco2_per_kwh=180/1000)  # Emission factors approximate for now
-GAS = Fuel(name="gas", tco2_per_kwh=300/1000)
-OIL = Fuel(name="oil", units="litres", converter_consumption_units_to_kwh=kwh_PER_LITRE_OF_OIL, tco2_per_kwh=400/1000)
+ELECTRICITY = Fuel("electricity", tco2_per_kwh=180/10**6)  # Emission factors approximate for now
+GAS = Fuel(name="gas", tco2_per_kwh=300/10**6)
+OIL = Fuel(name="oil", units="litres", converter_consumption_units_to_kwh=kwh_PER_LITRE_OF_OIL, tco2_per_kwh=400/10**6)
 FUELS = [ELECTRICITY, GAS, OIL]
 
 
