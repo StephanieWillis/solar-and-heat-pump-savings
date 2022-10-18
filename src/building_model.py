@@ -39,7 +39,7 @@ class House:
         self.tariffs = self.set_up_standard_tariffs()
 
         if solar is None:
-            solar = Solar(orientation='South', roof_area=0)
+            solar = Solar(orientation='South', roof_plan_area=0)
         self.solar = solar
 
     @classmethod
@@ -245,17 +245,18 @@ class Tariff:
 
 class Solar:
 
-    def __init__(self, orientation: str, roof_area: float):
+    def __init__(self, orientation: str, roof_plan_area: float):
         """ Roof plan area because based on lat long therefore doesn't account for roof pitch"""
 
         self.orientation = orientation
         self.profile_kwh_per_m2 = self.get_generation_profile()
 
-        self.number_of_panels = self.get_number_of_panels(roof_area)
+        self.number_of_panels = self.get_number_of_panels(roof_plan_area)
         self.kwp_per_panel = SolarConstants.KW_PEAK_PER_PANEL
 
     @staticmethod
-    def get_number_of_panels(roof_area: float) -> float:
+    def get_number_of_panels(roof_plan_area: float) -> float:
+        roof_area = roof_plan_area/np.cos(np.radians(SolarConstants.ROOF_PITCH_DEGREES))
         usable_area = roof_area * SolarConstants.PERCENT_SQUARE_USABLE
         number_of_panels = floor(usable_area / SolarConstants.PANEL_AREA)
 

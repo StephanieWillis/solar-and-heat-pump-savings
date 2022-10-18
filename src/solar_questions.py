@@ -16,7 +16,7 @@ def render() -> 'Solar':
 
     orientation: str = st.selectbox("Solar Orientation", SolarConstants.SOLAR_ORIENTATIONS)
 
-    solar_install = Solar(orientation=orientation, roof_area=polygons.area if polygons else 0)
+    solar_install = Solar(orientation=orientation, roof_plan_area=polygons.area if polygons else 0)
     if polygons:
         st.write(f"We estimate you can fit {solar_install.number_of_panels} solar panels on your roof!")
 
