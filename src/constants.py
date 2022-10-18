@@ -58,4 +58,4 @@ class SolarConstants:
     PANEL_AREA = PANEL_HEIGHT_M * PANEL_WIDTH_M
     KW_PEAK_PER_PANEL = 0.30  # output with incident radiation of 1kW/m2
     # Panel dimensions and kW_peak from https://www.greenmatch.co.uk/blog/how-many-solar-panels-do-i-need
-    PERCENT_SQUARE_USABLE = 1  # complete guess
+    PERCENT_SQUARE_USABLE = 0.8  # complete guess

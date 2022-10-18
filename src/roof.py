@@ -73,7 +73,7 @@ class Polygon:
 
 def roof_mapper(width: int, height: int) -> Optional[Polygon]:
     """
-    Render a map, returning co-ordinates of any shapes drawn upon the map
+    Render a map, returning co-ordinates of the most recently drawn shape
     """
     selected_location = place_search()
 
@@ -96,7 +96,4 @@ def roof_mapper(width: int, height: int) -> Optional[Polygon]:
             polygon = Polygon(_points=drawing["geometry"]["coordinates"][0])
             polygons.append(polygon)
 
-        if len(polygons) > 1:
-            st.error("Please draw a single polygon")
-
-        return polygons[0]
+        return polygons[-1]
