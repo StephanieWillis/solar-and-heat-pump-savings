@@ -7,7 +7,7 @@ import pandas as pd
 class Fuel:
     name: str
     tco2_per_kwh: float  # could be a time series later
-    units: str = 'kwh'
+    units: str = "kwh"
     converter_consumption_units_to_kwh: float = 1
 
     def convert_kwh_to_fuel_units(self, value_kwh: [float | pd.Series | pd.DataFrame]):

@@ -1,5 +1,6 @@
 import copy
 from dataclasses import dataclass
+from math import floor
 from typing import Dict, List
 
 import numpy as np
@@ -38,7 +39,7 @@ class House:
         self.tariffs = self.set_up_standard_tariffs()
 
         if solar is None:
-            solar = Solar(orientation='South', roof_width_m=0, roof_height_m=0, postcode='0000 000')
+            solar = Solar(orientation='South', roof_area=0)
         self.solar = solar
 
     @classmethod
@@ -244,23 +245,20 @@ class Tariff:
 
 class Solar:
 
-    def __init__(self, orientation: str, roof_height_m: float, roof_width_m: float, postcode: str):
+    def __init__(self, orientation: str, roof_area: float):
+        """ Roof plan area because based on lat long therefore doesn't account for roof pitch"""
 
         self.orientation = orientation
         self.profile_kwh_per_m2 = self.get_generation_profile()
 
-        self.number_of_panels = self.get_number_of_panels(roof_width_m, roof_height_m)
+        self.number_of_panels = self.get_number_of_panels(roof_area)
         self.kwp_per_panel = SolarConstants.KW_PEAK_PER_PANEL
 
     @staticmethod
-    def get_number_of_panels(roof_width_m: float, roof_height_m: float) -> float:
-        height_available_for_panels = roof_height_m * SolarConstants.PCT_OF_DIMENSION_USABLE
-        width_available_for_panels = roof_width_m * SolarConstants.PCT_OF_DIMENSION_USABLE
+    def get_number_of_panels(roof_area: float) -> float:
+        usable_area = roof_area * SolarConstants.PERCENT_SQUARE_USABLE
+        number_of_panels = floor(usable_area / SolarConstants.PANEL_AREA)
 
-        number_of_rows = int(height_available_for_panels/SolarConstants.PANEL_HEIGHT_M)
-        number_of_columns = int(width_available_for_panels/SolarConstants.PANEL_WIDTH_M)
-
-        number_of_panels = number_of_columns * number_of_rows
         return number_of_panels
 
     @staticmethod
@@ -289,4 +287,3 @@ class Solar:
         profile_kwh = -1 * self.profile_kwh_per_m2 * self.peak_capacity_kw_out_per_kw_in_per_m2
         generation = Consumption(profile_kwh=profile_kwh, fuel=constants.ELECTRICITY)
         return generation
-

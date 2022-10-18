@@ -40,13 +40,9 @@ def test_set_up_house():
 
 def test_solar():
     orientation = 'South'
-    roof_height = 2
-    roof_width = 7
-    postcode = 'DN20 0RG'
+    roof_area = 14
     solar_install = building_model.Solar(orientation=orientation,
-                                         roof_width_m=roof_width,
-                                         roof_height_m=roof_height,
-                                         postcode=postcode)
+                                         roof_area=roof_area)
     assert solar_install.generation.fuel.name == 'electricity'
     assert solar_install.number_of_panels > 0
     assert abs(solar_install.generation.annual_sum_kwh) > 0
@@ -74,9 +70,7 @@ def test_upgrade_homes():
                                                                   parameters=constants.DEFAULT_HEATING_CONSTANTS[
                                                                       'Heat pump'])
     solar_install = building_model.Solar(orientation='South',
-                                         roof_width_m=12,
-                                         roof_height_m=4,
-                                         postcode='0000 000')
+                                         roof_area=48)
     hp_house, solar_house, both_house = building_model.upgrade_buildings(baseline_house=oil_house,
                                                                          upgrade_heating=upgrade_heating,
                                                                          upgrade_solar=solar_install)
