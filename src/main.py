@@ -11,8 +11,9 @@ class WelcomePage(Page):
         st.write(
             "This tool helps you get a rough idea of how much money and carbon you might save by installing a "
             "heat pump and/or solar panels. The real costs and performance will depend on the specifics of your home."
-            " Throughout the tool we have made estimates of various values, but you can overwrite them at the bottom "
-            "of the Savings Potential page if you have better info."
+            "  \n  \n"
+            " Throughout the tool we will make estimates of various values based on your inputs."
+            " You can overwrite those assumptions in the sidebar of the results page if you have better info."
         )
 
 
