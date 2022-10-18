@@ -1,9 +1,23 @@
+import copy
 from dataclasses import dataclass
+from math import floor
 from typing import Dict, List
 
+import numpy as np
 import pandas as pd
 
 import constants
+from constants import SolarConstants
+
+
+def upgrade_buildings(baseline_house, upgrade_heating, upgrade_solar):
+    hp_house = copy.deepcopy(baseline_house)  # do after modifications so modifications flow through
+    solar_house = copy.deepcopy(baseline_house)
+    hp_house.heating_system = upgrade_heating
+    solar_house.solar = upgrade_solar
+    both_house = copy.deepcopy(hp_house)
+    both_house.solar = upgrade_solar
+    return hp_house, solar_house, both_house
 
 
 def combined_results_dfs_multiple_houses(houses: List['House'], keys: List['str']):
@@ -17,13 +31,16 @@ def combined_results_dfs_multiple_houses(houses: List['House'], keys: List['str'
 class House:
     """ Stores info on consumption and bills """
 
-    def __init__(self, envelope: 'BuildingEnvelope', heating_system: 'HeatingSystem'):
+    def __init__(self, envelope: 'BuildingEnvelope', heating_system: 'HeatingSystem', solar: 'Solar' = None):
 
         self.envelope = envelope
         # Set up initial values for heating system and tariffs but allow to be modified by the user later
-        # Maybe I should be using getters and setters here?
         self.heating_system = heating_system
         self.tariffs = self.set_up_standard_tariffs()
+
+        if solar is None:
+            solar = Solar(orientation='South', roof_plan_area=0)
+        self.solar = solar
 
     @classmethod
     def set_up_from_heating_name(cls, envelope: 'BuildingEnvelope', heating_name: str) -> 'House':
@@ -49,7 +66,11 @@ class House:
 
     @property
     def has_multiple_fuels(self) -> bool:
-        return len(self.tariffs) > 1
+        if self.heating_system.fuel.name == 'electricity':
+            has_multiple_fuels = False
+        else:
+            has_multiple_fuels = True
+        return has_multiple_fuels
 
     @property
     def consumption_profile_per_fuel(self) -> Dict[str, 'Consumption']:
@@ -57,6 +78,10 @@ class House:
         # Base demand is always electricity (lighting/plug loads etc.)
         base_consumption = Consumption(profile_kwh=self.envelope.base_demand.profile_kwh,
                                        fuel=constants.ELECTRICITY)
+        # Solar
+        electricity_consumption = base_consumption.add(self.solar.generation)
+
+        # Heating
         space_heating_consumption = self.heating_system.calculate_space_heating_consumption(
             self.envelope.space_heating_demand)
         water_heating_consumption = self.heating_system.calculate_water_heating_consumption(
@@ -65,9 +90,9 @@ class House:
 
         match self.heating_system.fuel:
             case base_consumption.fuel:  # only one fuel (electricity)
-                consumption_dict = {self.heating_system.fuel.name: base_consumption.add(heating_consumption)}
+                consumption_dict = {self.heating_system.fuel.name: electricity_consumption.add(heating_consumption)}
             case _:
-                consumption_dict = {base_consumption.fuel.name: base_consumption,
+                consumption_dict = {electricity_consumption.fuel.name: electricity_consumption,
                                     heating_consumption.fuel.name: heating_consumption}
 
         return consumption_dict
@@ -92,10 +117,22 @@ class House:
         return sum(self.annual_bill_per_fuel.values())
 
     @property
+    def annual_tco2_per_fuel(self) -> Dict[str, float]:
+        carbon_dict = {}
+        for fuel_name, consumption in self.consumption_profile_per_fuel.items():
+            carbon_dict[fuel_name] = consumption.annual_sum_tco2
+        return carbon_dict
+
+    @property
+    def total_annual_tco2(self) -> float:
+        return sum(self.annual_tco2_per_fuel.values())
+
+    @property
     def energy_and_bills_df(self) -> pd.DataFrame:
         """ To make it easy to plot the results using plotly"""
         df = pd.DataFrame(data={'Your annual energy use kwh': self.annual_consumption_per_fuel_kwh,
-                                'Your annual energy bill £': self.annual_bill_per_fuel})
+                                'Your annual energy bill £': self.annual_bill_per_fuel,
+                                'Your annual carbon emissions tCO2': self.annual_tco2_per_fuel})
         df.index.name = 'fuel'
         df = df.reset_index()
         return df
@@ -155,6 +192,11 @@ class Consumption:
         annual_sum = self.profile_fuel_units.sum()
         return annual_sum
 
+    @property
+    def annual_sum_tco2(self) -> float:
+        annual_tco2 = self.fuel.calculate_annual_tco2(self.annual_sum_kwh)
+        return annual_tco2
+
     def add(self, other: 'Consumption') -> 'Consumption':
         if self.fuel == other.fuel:
             combined_time_series_kwh = self.profile_kwh + other.profile_kwh
@@ -207,3 +249,50 @@ class Tariff:
                              f"{self.fuel} and {consumption.fuel}")
         annual_cost = (365 * self.p_per_day + consumption.annual_sum_fuel_units * self.p_per_unit) / 100
         return annual_cost
+
+
+class Solar:
+
+    def __init__(self, orientation: str, roof_plan_area: float):
+        """ Roof plan area because based on lat long therefore doesn't account for roof pitch"""
+
+        self.orientation = orientation
+        self.profile_kwh_per_m2 = self.get_generation_profile()
+
+        self.number_of_panels = self.get_number_of_panels(roof_plan_area)
+        self.kwp_per_panel = SolarConstants.KW_PEAK_PER_PANEL
+
+    @staticmethod
+    def get_number_of_panels(roof_plan_area: float) -> int:
+        roof_area = roof_plan_area/np.cos(np.radians(SolarConstants.ROOF_PITCH_DEGREES))
+        usable_area = roof_area * SolarConstants.PERCENT_SQUARE_USABLE
+        number_of_panels = floor(usable_area / SolarConstants.PANEL_AREA)
+
+        return number_of_panels
+
+    @staticmethod
+    def get_generation_profile():
+        # TODO properly using orientation and postcode
+
+        # Stand in for now in absense of proper data
+        idx = constants.BASE_YEAR_HALF_HOUR_INDEX
+        minute_of_the_day = idx.hour * 60 + idx.minute
+        kw_per_m2_peak = 0.3
+        generation = - np.cos(minute_of_the_day * np.pi * 2/(24 * 60)) * kw_per_m2_peak
+        profile_kw_per_m2 = pd.Series(index=constants.BASE_YEAR_HALF_HOUR_INDEX, data=generation)
+        profile_kw_per_m2.loc[profile_kw_per_m2 < 0] = 0
+        profile_kwh_per_m2 = profile_kw_per_m2/2  # because we know the time base is half hourly
+        # If not importing this from elsewhere think about whether need to integrate (take the previous half hour)
+
+        return profile_kwh_per_m2
+
+    @property
+    def peak_capacity_kw_out_per_kw_in_per_m2(self):
+        return self.number_of_panels * self.kwp_per_panel
+
+    @property
+    def generation(self):
+        # set negative as generation not consumption
+        profile_kwh = -1 * self.profile_kwh_per_m2 * self.peak_capacity_kw_out_per_kw_in_per_m2
+        generation = Consumption(profile_kwh=profile_kwh, fuel=constants.ELECTRICITY)
+        return generation

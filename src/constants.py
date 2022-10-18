@@ -2,32 +2,19 @@ from dataclasses import dataclass
 
 import pandas as pd
 
+from fuels import Fuel
+
 HOUSE_TYPES = ["Terrace", "Semi-detached", "Detached", "Flat"]
 
 BASE_YEAR_HALF_HOUR_INDEX = pd.date_range(start="2020-01-01", end="2021-01-01", freq="30T")
 EMPTY_TIMESERIES = pd.Series(index=BASE_YEAR_HALF_HOUR_INDEX, data=0)
 
 
-@dataclass
-class Fuel:
-    name: str
-    units: str = "kwh"
-    converter_consumption_units_to_kwh: float = 1
+kwh_PER_LITRE_OF_OIL = 10.35  # https://www.thegreenage.co.uk/is-heating-oil-a-cheap-way-to-heat-my-home/
 
-    def convert_kwh_to_fuel_units(self, value_kwh: [float | pd.Series | pd.DataFrame]):
-        value_fuel_units = value_kwh / self.converter_consumption_units_to_kwh
-        return value_fuel_units
-
-    def convert_fuel_units_to_kwh(self, value_fuel_units: [float | pd.Series | pd.DataFrame]):
-        value_kwh = value_fuel_units * self.converter_consumption_units_to_kwh
-        return value_kwh
-
-
-kwh_PER_LITRE_OF_OIL = 10.35
-# https://www.thegreenage.co.uk/is-heating-oil-a-cheap-way-to-heat-my-home/
-ELECTRICITY = Fuel("electricity")
-GAS = Fuel(name="gas")
-OIL = Fuel(name="oil", units="litres", converter_consumption_units_to_kwh=kwh_PER_LITRE_OF_OIL)
+ELECTRICITY = Fuel("electricity", tco2_per_kwh=180/10**6)  # Emission factors approximate for now
+GAS = Fuel(name="gas", tco2_per_kwh=300/10**6)
+OIL = Fuel(name="oil", units="litres", converter_consumption_units_to_kwh=kwh_PER_LITRE_OF_OIL, tco2_per_kwh=400/10**6)
 FUELS = [ELECTRICITY, GAS, OIL]
 
 
@@ -65,10 +52,10 @@ class SolarConstants:
     MIN_ROOF_AREA = 0
     MAX_ROOF_AREA = 20
     DEFAULT_ROOF_AREA = 20
-    PANEL_HEIGHT_M = 1.9
+    ROOF_PITCH_DEGREES = 30
+    PANEL_HEIGHT_M = 1.67
     PANEL_WIDTH_M = 1.0
     PANEL_AREA = PANEL_HEIGHT_M * PANEL_WIDTH_M
-    KW_PEAK_PER_PANEL = 0.35  # output with incident radiation of 1kW/m2
+    KW_PEAK_PER_PANEL = 0.30  # output with incident radiation of 1kW/m2
     # Panel dimensions and kW_peak from https://www.greenmatch.co.uk/blog/how-many-solar-panels-do-i-need
-    PCT_OF_DIMENSION_USABLE = 0.9  # a guess
-    PERCENT_ROOF_USABLE = 0.8  # complete guess
+    PERCENT_SQUARE_USABLE = 0.8  # complete guess

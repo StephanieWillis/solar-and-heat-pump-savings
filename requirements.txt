@@ -1,5 +1,6 @@
 protobuf ==  3.19
 streamlit==1.11.1
+numpy
 pandas
 plotly
 streamlit-drawable-canvas
