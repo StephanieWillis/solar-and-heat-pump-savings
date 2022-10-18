@@ -13,12 +13,12 @@ def render(house: 'House', solar: 'Solar'):
     st.subheader("Energy Bills")
     bills_chart = st.empty()
     bills_text = st.empty()
-    st.subheader("Energy Consumption")
-    energy_chart = st.empty()
-    energy_text = st.empty()
     st.subheader("Carbon Emissions")
     carbon_chart = st.empty()
     carbon_text = st.empty()
+    st.subheader("Energy Consumption")
+    energy_chart = st.empty()
+    energy_text = st.empty()
 
     st.header("Detailed Inputs - Current")
     house = render_and_update_current_home(house)
@@ -154,55 +154,33 @@ def render_and_update_solar(solar: 'Solar'):
     return solar
 
 
-def render_consumption_chart(results_df: pd.DataFrame):
-    render_savings_chart(results_df=results_df, y_variable='Your annual energy use kwh')
-
-
-def render_consumption_outputs(house: 'House', solar_house: 'House', hp_house: 'House', both_house: 'House'):
-    if house.heating_system.fuel.name == 'electricity':
-        # TODO: catch case where there is already a heat pump?
-        st.write(
-            f"We calculate that your house currently needs about "
-            f"{int(house.consumption_profile_per_fuel['electricity'].annual_sum_kwh):,} kwh of electricity a year. "
-            f" \nWith a heat pump that value would fall to "
-            f"{int(hp_house.consumption_profile_per_fuel['electricity'].annual_sum_kwh):,} kwh of electricity a year")
-    else:
-        st.write(
-            f"We calculate that your house needs about "
-            f"{int(house.consumption_profile_per_fuel['electricity'].annual_sum_kwh):,} kwh of electricity per year"
-            f" and {int(house.consumption_profile_per_fuel[house.heating_system.fuel.name].annual_sum_fuel_units):,}"
-            f" {house.heating_system.fuel.units} of {house.heating_system.fuel.name}. "
-            f"  \nWith a heat pump that value would fall to "
-            f"{int(hp_house.consumption_profile_per_fuel['electricity'].annual_sum_kwh):,} kwh of electricity a year")
-
-
 def render_bill_chart(results_df: pd.DataFrame):
     render_savings_chart(results_df=results_df, y_variable='Your annual energy bill £')
 
 
 def render_bill_outputs(house: 'House', solar_house: 'House', hp_house: 'House', both_house: 'House'):
-
-    st.write(f'With your current system {produce_bill_sentence(house)}.  \n'
-             f'With solar alone {produce_bill_sentence(solar_house)}.  \n'
-             f' {produce_saving_sentence(house=solar_house, baseline_house=house)}.  \n'
-             f'With a heat pump alone {produce_bill_sentence(hp_house)}.  \n '
-             f' {produce_saving_sentence(house=hp_house, baseline_house=house)}.  \n'
-             f'With solar and a heat pump {produce_bill_sentence(both_house)}.  \n  '
-             f' {produce_saving_sentence(house=both_house, baseline_house=house)}.  \n'
+    st.write(f'We calculate that {produce_current_bill_sentence(house)}  \n'
+             f'- with solar {produce_hypothetical_bill_sentence(solar_house)}, '
+             f' {produce_bill_saving_sentence(house=solar_house, baseline_house=house)}  \n'
+             f'- with a heat pump {produce_hypothetical_bill_sentence(hp_house)}, '
+             f' {produce_bill_saving_sentence(house=hp_house, baseline_house=house)}  \n'
+             f'- with solar and a heat pump {produce_hypothetical_bill_sentence(both_house)}, '
+             f' {produce_bill_saving_sentence(house=both_house, baseline_house=house)}  \n'
              )
 
 
-def produce_bill_sentence(house) -> str:
-    breakdown = (
-        f'({", ".join(f"£{int(amount):,} for {fuel_name}" for fuel_name, amount in house.annual_bill_per_fuel.items())}'
-        f')')
-    sentence = (f'your energy bills for the next year will be'
-                f' £{int(house.total_annual_bill):,} {breakdown if house.has_multiple_fuels else ""} ')
+def produce_current_bill_sentence(house) -> str:
+    sentence = f'your energy bills for the next year will be £{int(house.total_annual_bill):,}'
     return sentence
 
 
-def produce_saving_sentence(house: 'House', baseline_house: 'House') -> str:
-    sentence = f"  That's a saving of £{int(baseline_house.total_annual_bill - house.total_annual_bill):,}"
+def produce_hypothetical_bill_sentence(house) -> str:
+    sentence = f'they would be £{int(house.total_annual_bill):,}'
+    return sentence
+
+
+def produce_bill_saving_sentence(house: 'House', baseline_house: 'House') -> str:
+    sentence = f"that's a saving of £{int(baseline_house.total_annual_bill - house.total_annual_bill):,}"
     return sentence
 
 
@@ -211,9 +189,41 @@ def render_carbon_chart(results_df: pd.DataFrame):
 
 
 def render_carbon_outputs(house: 'House', solar_house: 'House', hp_house: 'House', both_house: 'House'):
-    st.write("Coming soon :)")
+    st.write(
+        f"We calculate that your house emits {house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
+        f"- with solar that would fall to {solar_house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
+        f"- with a heat pump that would fall to {hp_house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
+        f"- with solar and a heat pump that would fall to {both_house.total_annual_tco2:.2f} "
+        f"tonnes of CO2 per year  \n"
+    )
+
+
+def render_consumption_chart(results_df: pd.DataFrame):
+    render_savings_chart(results_df=results_df, y_variable='Your annual energy use kwh')
+
+
+def render_consumption_outputs(house: 'House', solar_house: 'House', hp_house: 'House', both_house: 'House'):
+    st.write(
+        f"We calculate that your house currently needs {produce_consumption_sentence(house)}  \n"
+        f"- with solar that would fall to {produce_consumption_sentence(solar_house)}  \n"
+        f"- with a heat pump that would fall to {produce_consumption_sentence(hp_house)}  \n"
+        f"- with solar and a heat pump that would fall to {produce_consumption_sentence(both_house)} "
+        )
+
+
+def produce_consumption_sentence(house):
+    if house.has_multiple_fuels:
+        sentence = (f"{int(house.consumption_profile_per_fuel['electricity'].annual_sum_kwh):,} "
+                    f"kwh of electricity and "
+                    f"{int(house.consumption_profile_per_fuel[house.heating_system.fuel.name].annual_sum_fuel_units):,}"
+                    f" {house.heating_system.fuel.units} of {house.heating_system.fuel.name} per year")
+    else:
+        sentence = f"{int(house.consumption_profile_per_fuel['electricity'].annual_sum_kwh):,}" \
+                   f" kwh of electricity per year "
+    return sentence
 
 
 def render_savings_chart(results_df: pd.DataFrame, y_variable: str):
     bills_fig = px.bar(results_df, x='Upgrade option', y=y_variable, color='fuel')
-    st.plotly_chart(bills_fig, use_container_width=False, sharing="streamlit")
+    st.plotly_chart(bills_fig, use_container_width=True, sharing="streamlit")
+
