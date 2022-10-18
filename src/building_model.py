@@ -259,7 +259,7 @@ class Solar:
         self.kwp_per_panel = SolarConstants.KW_PEAK_PER_PANEL
 
     @staticmethod
-    def get_number_of_panels(roof_plan_area: float) -> float:
+    def get_number_of_panels(roof_plan_area: float) -> int:
         roof_area = roof_plan_area/np.cos(np.radians(SolarConstants.ROOF_PITCH_DEGREES))
         usable_area = roof_area * SolarConstants.PERCENT_SQUARE_USABLE
         number_of_panels = floor(usable_area / SolarConstants.PANEL_AREA)

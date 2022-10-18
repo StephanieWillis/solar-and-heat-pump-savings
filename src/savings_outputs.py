@@ -146,7 +146,7 @@ def render_and_update_solar(solar: 'Solar'):
     solar.number_of_panels = st.number_input(label='Number of panels',
                                              min_value=0,
                                              max_value=40,
-                                             value=solar.number_of_panels)
+                                             value=int(solar.number_of_panels))
     solar.kwp_per_panel = st.number_input(label='capacity_per_panel',
                                           min_value=0.0,
                                           max_value=0.8,
