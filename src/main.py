@@ -1,6 +1,6 @@
 import streamlit as st
 
-import usage
+import usage_interface
 import solar
 from streamlit_wizard import Wizard, Page
 
