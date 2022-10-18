@@ -20,11 +20,13 @@ def render(house: 'House', solar: 'Solar'):
     energy_chart = st.empty()
     energy_text = st.empty()
 
-    st.header("Detailed Inputs - Current")
-    house = render_and_update_current_home(house)
+    with st.sidebar:
+        st.header("Assumptions")
+        st.subheader("Current Performance")
+        house = render_and_update_current_home(house)
 
-    st.header("Detailed Inputs - Improvement Options")
-    upgrade_heating, upgrade_solar = render_and_update_improvement_options(solar=solar)
+        st.subheader("Improvement Options")
+        upgrade_heating, upgrade_solar = render_and_update_improvement_options(solar=solar)
 
     # Upgraded buildings
     hp_house, solar_house, both_house = building_model.upgrade_buildings(baseline_house=house,
@@ -53,8 +55,6 @@ def render(house: 'House', solar: 'Solar'):
 
 
 def render_and_update_current_home(house: House):
-    st.write("We have estimated your homes current energy use and bills using assumptions based on your answers."
-             " You can edit those assumptions below ")
     with st.expander("Demand assumptions"):
         house.envelope = render_and_update_envelope_outputs(envelope=house.envelope)
     with st.expander("Baseline heating system assumptions"):
@@ -65,7 +65,7 @@ def render_and_update_current_home(house: House):
 
 
 def render_and_update_envelope_outputs(envelope: 'BuildingEnvelope') -> 'BuildingEnvelope':
-    st.write(f"We assume that an {envelope.floor_area_m2}m\u00b2 {envelope.house_type.lower()} needs about: ")
+    st.write(f"We assume that an {envelope.floor_area_m2}m\u00b2 {envelope.house_type.lower()} needs: ")
     envelope.space_heating_demand = render_and_update_annual_demand(label='Heating (kwh): ',
                                                                     demand=envelope.space_heating_demand)
     envelope.water_heating_demand = render_and_update_annual_demand(label='Hot water (kwh): ',
@@ -96,9 +96,6 @@ def render_and_update_heating_system(heating_system: 'HeatingSystem') -> 'Heatin
 
 
 def render_and_update_tariffs(house: 'House') -> 'House':
-    st.write(f"We have assumed that you are on a default energy tariff, but if you have fixed at a different rate"
-             " then you can edit the numbers. Unfortunately we can't deal with variable rates like Octopus Agile/Go "
-             "or Economy 7 right now, but we are working on it!")
 
     st.subheader('Electricity')
     house.tariffs['electricity'].p_per_unit = st.number_input(label='Unit rate (p/kwh), electricity',
@@ -130,9 +127,7 @@ def render_and_update_tariffs(house: 'House') -> 'House':
 
 
 def render_and_update_improvement_options(solar: Solar) -> Tuple[HeatingSystem, Solar]:
-    st.write("We have used various assumptions to estimate the improvement potential of your home.."
-             " You can edit those assumptions below.")
-    with st.expander("Upgrade heating system assumptions"):
+    with st.expander("Heat pump assumptions"):
         upgrade_heating = HeatingSystem.from_constants(name='Heat pump',
                                                        parameters=constants.DEFAULT_HEATING_CONSTANTS['Heat pump'])
         upgrade_heating = render_and_update_heating_system(heating_system=upgrade_heating)
