@@ -66,7 +66,11 @@ class House:
 
     @property
     def has_multiple_fuels(self) -> bool:
-        return len(self.tariffs) > 1
+        if self.heating_system.fuel.name == 'electricity':
+            has_multiple_fuels = False
+        else:
+            has_multiple_fuels = True
+        return has_multiple_fuels
 
     @property
     def consumption_profile_per_fuel(self) -> Dict[str, 'Consumption']:
