@@ -9,12 +9,12 @@ HOUSE_TYPES = ["Terrace", "Semi-detached", "Detached", "Flat"]
 BASE_YEAR_HALF_HOUR_INDEX = pd.date_range(start="2020-01-01", end="2021-01-01", freq="30T")
 EMPTY_TIMESERIES = pd.Series(index=BASE_YEAR_HALF_HOUR_INDEX, data=0)
 
-
 kwh_PER_LITRE_OF_OIL = 10.35  # https://www.thegreenage.co.uk/is-heating-oil-a-cheap-way-to-heat-my-home/
 
-ELECTRICITY = Fuel("electricity", tco2_per_kwh=180/10**6)  # Emission factors approximate for now
-GAS = Fuel(name="gas", tco2_per_kwh=300/10**6)
-OIL = Fuel(name="oil", units="litres", converter_consumption_units_to_kwh=kwh_PER_LITRE_OF_OIL, tco2_per_kwh=400/10**6)
+ELECTRICITY = Fuel("electricity", tco2_per_kwh=180 / 10 ** 6)  # Emission factors approximate for now
+GAS = Fuel(name="gas", tco2_per_kwh=300 / 10 ** 6)
+OIL = Fuel(name="oil", units="litres", converter_consumption_units_to_kwh=kwh_PER_LITRE_OF_OIL,
+           tco2_per_kwh=400 / 10 ** 6)
 FUELS = [ELECTRICITY, GAS, OIL]
 
 
@@ -36,14 +36,16 @@ DEFAULT_HEATING_CONSTANTS = {
 @dataclass
 class TariffConstants:
     p_per_kwh_gas: float
-    p_per_kwh_elec: float
+    p_per_kwh_elec_import: float
+    p_per_kwh_elec_export: float
+    p_per_L_oil: float
     p_per_day_gas: float
     p_per_day_elec: float
-    p_per_L_oil: float
 
 
 STANDARD_TARIFF = TariffConstants(
-    p_per_kwh_gas=10.3, p_per_kwh_elec=34.0, p_per_day_gas=28.0, p_per_day_elec=46.0, p_per_L_oil=95.0
+    p_per_kwh_gas=10.3, p_per_kwh_elec_import=34.0, p_per_kwh_elec_export=15.0, p_per_L_oil=95.0,
+    p_per_day_gas=28.0, p_per_day_elec=46.0
 )
 
 

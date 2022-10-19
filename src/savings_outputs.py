@@ -96,12 +96,17 @@ def render_and_update_heating_system(heating_system: 'HeatingSystem') -> 'Heatin
 
 
 def render_and_update_tariffs(house: 'House') -> 'House':
-
     st.subheader('Electricity')
-    house.tariffs['electricity'].p_per_unit = st.number_input(label='Unit rate (p/kwh), electricity',
-                                                              min_value=0.0,
-                                                              max_value=100.0,
-                                                              value=house.tariffs['electricity'].p_per_unit)
+    house.tariffs['electricity'].p_per_unit_import = st.number_input(label='Unit rate (p/kwh), electricity import',
+                                                                     min_value=0.0,
+                                                                     max_value=100.0,
+                                                                     value=house.tariffs[
+                                                                         'electricity'].p_per_unit_import)
+    house.tariffs['electricity'].p_per_unit_export = st.number_input(label='Unit rate (p/kwh), electricity export',
+                                                                     min_value=0.0,
+                                                                     max_value=100.0,
+                                                                     value=house.tariffs[
+                                                                         'electricity'].p_per_unit_export)
     house.tariffs['electricity'].p_per_day = st.number_input(label='Standing charge (p/day), electricity',
                                                              min_value=0.0,
                                                              max_value=100.0,
@@ -109,20 +114,20 @@ def render_and_update_tariffs(house: 'House') -> 'House':
     match house.heating_system.fuel.name:
         case 'gas':
             st.subheader('Gas')
-            house.tariffs['gas'].p_per_unit = st.number_input(label='Unit rate (p/kwh), gas',
-                                                              min_value=0.0,
-                                                              max_value=100.0,
-                                                              value=house.tariffs['gas'].p_per_unit)
+            house.tariffs['gas'].p_per_unit_import = st.number_input(label='Unit rate (p/kwh), gas',
+                                                                     min_value=0.0,
+                                                                     max_value=100.0,
+                                                                     value=house.tariffs['gas'].p_per_unit_import)
             house.tariffs['gas'].p_per_day = st.number_input(label='Standing charge (p/day), gas',
                                                              min_value=0.0,
                                                              max_value=100.0,
                                                              value=house.tariffs['gas'].p_per_day)
         case 'oil':
             st.subheader('Oil')
-            house.tariffs['oil'].p_per_unit = st.number_input(label='Oil price, (p/litre)',
-                                                              min_value=0.0,
-                                                              max_value=200.0,
-                                                              value=house.tariffs['oil'].p_per_unit)
+            house.tariffs['oil'].p_per_unit_import = st.number_input(label='Oil price, (p/litre)',
+                                                                     min_value=0.0,
+                                                                     max_value=200.0,
+                                                                     value=house.tariffs['oil'].p_per_unit_import)
     return house
 
 
@@ -203,17 +208,17 @@ def render_consumption_outputs(house: 'House', solar_house: 'House', hp_house: '
         f"- with solar that would fall to {produce_consumption_sentence(solar_house)}  \n"
         f"- with a heat pump that would fall to {produce_consumption_sentence(hp_house)}  \n"
         f"- with solar and a heat pump that would fall to {produce_consumption_sentence(both_house)} "
-        )
+    )
 
 
 def produce_consumption_sentence(house):
     if house.has_multiple_fuels:
-        sentence = (f"{int(house.consumption_profile_per_fuel['electricity'].annual_sum_kwh):,} "
+        sentence = (f"{int(house.consumption_per_fuel['electricity'].overall.annual_sum_kwh):,} "
                     f"kwh of electricity and "
-                    f"{int(house.consumption_profile_per_fuel[house.heating_system.fuel.name].annual_sum_fuel_units):,}"
+                    f"{int(house.consumption_per_fuel[house.heating_system.fuel.name].overall.annual_sum_fuel_units):,}"
                     f" {house.heating_system.fuel.units} of {house.heating_system.fuel.name} per year")
     else:
-        sentence = f"{int(house.consumption_profile_per_fuel['electricity'].annual_sum_kwh):,}" \
+        sentence = f"{int(house.consumption_per_fuel['electricity'].overall.annual_sum_kwh):,}" \
                    f" kwh of electricity per year "
     return sentence
 
@@ -221,4 +226,3 @@ def produce_consumption_sentence(house):
 def render_savings_chart(results_df: pd.DataFrame, y_variable: str):
     bills_fig = px.bar(results_df, x='Upgrade option', y=y_variable, color='fuel')
     st.plotly_chart(bills_fig, use_container_width=True, sharing="streamlit")
-
