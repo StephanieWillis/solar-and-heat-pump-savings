@@ -39,3 +39,19 @@ def test_peak_capacity_kw_out_per_kw_in_per_m2():
     solar_install = solar.Solar(orientation=orientation,
                                 roof_plan_area=roof_area)
     assert isinstance(solar_install.peak_capacity_kw_out_per_kw_in_per_m2, float)
+
+
+def test_get_hourly_radiation_from_eu_api():
+    response = solar.get_hourly_radiation_from_eu_api(lat=51.681,
+                                                      lon=-3.724,
+                                                      peak_capacity_kw_out_per_kw_in_per_m2=4,
+                                                      pitch=30,
+                                                      azimuth=-90
+                                                      )
+    assert isinstance(response.text, str)
+    return response
+
+
+response = test_get_hourly_radiation_from_eu_api()
+
+

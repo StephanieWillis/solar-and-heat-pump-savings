@@ -2,12 +2,11 @@ from math import floor
 
 import numpy as np
 import pandas as pd
+import requests
 
 import constants
 from consumption import Consumption
 from constants import SolarConstants
-
-API_end_point = 'https://re.jrc.ec.europa.eu/api/v5_2/tool_name?param1=value1&param2=value2&...'
 
 
 class Solar:
@@ -53,3 +52,39 @@ class Solar:
         profile_kwh = -1 * self.profile_kwh_per_m2 * self.peak_capacity_kw_out_per_kw_in_per_m2
         generation = Consumption(profile_kwh=profile_kwh, fuel=constants.ELECTRICITY)
         return generation
+
+
+def get_hourly_radiation_from_eu_api(lat: float, lon: float, peak_capacity_kw_out_per_kw_in_per_m2: float,
+                                     pitch: float, azimuth: float):
+    # Latitude, in decimal degrees, south is negative.
+    # Longitude, in decimal degrees, west is negative.
+
+    # hourly radiation
+    tool_name = 'seriescalc'
+    api_url = f'https://re.jrc.ec.europa.eu/api/v5_2/{tool_name}'
+
+    params = {'lat': lat,
+              'lon': lon,
+              'startyear': 2015,  # just take one year for now
+              'endyear': 2015,  # defaults here are first and last year they have data for
+              'pvcalculation': 1,  # estimate hourly PV production
+              'peakpower': peak_capacity_kw_out_per_kw_in_per_m2,  # installed capacity
+              'mountingplace': "building",
+              'angle': pitch,
+              'aspect': azimuth,
+              'outputformat': "json"
+              }
+    response = requests.get(api_url, params=params)
+
+    if response.status_code == 200:
+        if response.text == '':
+            print("Empty response")
+        else:
+            print("Good response - now to unpack it")
+            # df = pd.DataFrame(columns=dictr['column-names'], data=dictr['rows'])
+    else:
+        print(response.status_code)
+        raise requests.ConnectionError
+    return response
+
+
