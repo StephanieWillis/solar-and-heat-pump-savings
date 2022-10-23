@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 import constants
-from building_model import Consumption
+from consumption import Consumption
 from constants import SolarConstants
 
 API_end_point = 'https://re.jrc.ec.europa.eu/api/v5_2/tool_name?param1=value1&param2=value2&...'

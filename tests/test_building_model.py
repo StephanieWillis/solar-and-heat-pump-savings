@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
 
-import constants
-import building_model
-import solar
+from src import constants
+from src import building_model
+from src import solar
 
 
 def test_set_up_house():
@@ -66,7 +66,7 @@ def test_solar():
     return solar_install
 
 
-def test_upgrade_homes():
+def test_upgrade_buildings():
     house_floor_area_m2 = 100
     house_type = "terrace"
     envelope = building_model.BuildingEnvelope(house_type=house_type, floor_area_m2=house_floor_area_m2)
@@ -86,11 +86,3 @@ def test_upgrade_homes():
                                    + both_house.consumption_per_fuel['electricity'].imported.annual_sum_kwh,
                                    both_house.consumption_per_fuel['electricity'].overall.annual_sum_kwh)
     assert hp_house.total_annual_bill > both_house.total_annual_bill
-
-
-if __name__ == '__main__':
-    hp_house_check, gas_house_check, oil_house_check = test_set_up_house()
-    results_df = building_model.combined_results_dfs_multiple_houses([oil_house_check, hp_house_check],
-                                                                     ['oil', 'heat pump'])
-    solar_install_trial = test_solar()
-    test_upgrade_homes()
