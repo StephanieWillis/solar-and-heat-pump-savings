@@ -2,7 +2,7 @@ import streamlit as st
 
 from constants import SolarConstants
 import roof
-from building_model import Solar
+from solar import Solar
 
 
 def render() -> 'Solar':

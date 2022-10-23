@@ -3,6 +3,7 @@ import numpy as np
 
 import constants
 import building_model
+import solar
 
 
 def test_set_up_house():
@@ -44,8 +45,8 @@ def test_set_up_house():
 def test_solar():
     orientation = 'South'
     roof_area = 14
-    solar_install = building_model.Solar(orientation=orientation,
-                                         roof_plan_area=roof_area)
+    solar_install = solar.Solar(orientation=orientation,
+                                roof_plan_area=roof_area)
     assert solar_install.generation.fuel.name == 'electricity'
     assert solar_install.number_of_panels > 0
     assert (solar_install.generation.exported.annual_sum_kwh == solar_install.generation.overall.annual_sum_kwh)
@@ -74,8 +75,8 @@ def test_upgrade_homes():
     upgrade_heating = building_model.HeatingSystem.from_constants(name='Heat pump',
                                                                   parameters=constants.DEFAULT_HEATING_CONSTANTS[
                                                                       'Heat pump'])
-    solar_install = building_model.Solar(orientation='South',
-                                         roof_plan_area=48)
+    solar_install = solar.Solar(orientation='South',
+                                roof_plan_area=48)
     hp_house, solar_house, both_house = building_model.upgrade_buildings(baseline_house=oil_house,
                                                                          upgrade_heating=upgrade_heating,
                                                                          upgrade_solar=solar_install)

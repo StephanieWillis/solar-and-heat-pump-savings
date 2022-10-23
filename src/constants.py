@@ -61,3 +61,23 @@ class SolarConstants:
     KW_PEAK_PER_PANEL = 0.30  # output with incident radiation of 1kW/m2
     # Panel dimensions and kW_peak from https://www.greenmatch.co.uk/blog/how-many-solar-panels-do-i-need
     PERCENT_SQUARE_USABLE = 0.8  # complete guess
+
+
+@dataclass()
+class Orientation:
+    """ Azimuth is degrees clockwise from South, max absolute value of 180"""
+    azimuth_degrees: float
+    # https://re.jrc.ec.europa.eu/pvg_tools/en/
+
+    def __post_init__(self):
+        if self.azimuth_degrees > 180:
+            self.azimuth_degrees += -360
+        elif self.azimuth_degrees <= -180:
+            self.azimuth_degrees += 360
+
+
+SOUTH = Orientation(0)
+WEST = Orientation(90)
+NORTH = Orientation(180)
+EAST = Orientation(-90)
+

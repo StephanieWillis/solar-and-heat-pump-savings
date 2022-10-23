@@ -1,11 +1,9 @@
-from typing import Tuple
-
-import pandas as pd
 import plotly.express as px
 import streamlit as st
 
 import building_model
 from building_model import *
+from solar import Solar
 
 
 def render(house: 'House', solar: 'Solar'):
