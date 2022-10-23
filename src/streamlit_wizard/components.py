@@ -39,6 +39,10 @@ class Wizard:
         if "page_state" not in st.session_state:
             st.session_state["page_state"] = defaultdict(lambda: dict())
 
+    def go_to_named_page(self, page_name: str):
+        idx = self.page_names.index(page_name)
+        self.current_page_idx = idx
+
     @property
     def page_names(self):
         return [page.name for page in self.pages]
@@ -77,10 +81,10 @@ class Wizard:
 
     def render(self):
         with st.container():
-
+            self.progress_bar()
             state = self.current_page.render()
             self.store_current_page_state(state)
-            self.progress_bar()
+
             self.buttons()
             inject_style()
 
@@ -102,6 +106,9 @@ class Wizard:
     def progress_bar(self):
 
         _, col1, _ = st.columns((2, 4, 2))
+        clicked_value = stepper(value=self.page_names[:self.current_page_idx+1])
+        if clicked_value:
+            self.go_to_named_page(clicked_value)
 
-        current_page = stepper(value=self.page_names[:self.current_page_idx+1])
+
 
