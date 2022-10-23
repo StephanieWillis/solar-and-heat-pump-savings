@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import List
 
 import streamlit as st
-
+from stepper import stepper
 from .style import inject_style
 
 
@@ -40,6 +40,10 @@ class Wizard:
             st.session_state["page_state"] = defaultdict(lambda: dict())
 
     @property
+    def page_names(self):
+        return [page.name for page in self.pages]
+
+    @property
     def total_pages(self) -> int:
         return len(self.pages)
 
@@ -73,6 +77,7 @@ class Wizard:
 
     def render(self):
         with st.container():
+
             state = self.current_page.render()
             self.store_current_page_state(state)
             self.progress_bar()
@@ -80,7 +85,7 @@ class Wizard:
             inject_style()
 
     def buttons(self):
-        col1,_,  col2 = st.columns((1,7, 1))
+        col1, _, col2 = st.columns((1, 7, 1))
         previous = col1.button("Previous")
 
         if self.on_final_page:
@@ -97,11 +102,6 @@ class Wizard:
     def progress_bar(self):
 
         _, col1, _ = st.columns((2, 4, 2))
-        if self.display_page_count:
-            col1.markdown(
-                f'<div class="custom_centred" style="margin-top: 30px"  > This is page {self.current_page_idx + 1} of {self.total_pages} <div>',
-                unsafe_allow_html=True,
-            )
 
-        col1.write("")
-        col1.progress(((self.current_page_idx + 1) / self.total_pages))
+        current_page = stepper(value=self.page_names[:self.current_page_idx+1])
+

@@ -4,7 +4,7 @@
 primaryColor = 'hsl(220, 60%, 30%)'
 
 ## Background color for the main content area
-#backgroundColor = 'hsl(220, 5%, 95%)'
+backgroundColor = 'hsl(220, 5%, 99%)'
 #
 ## Background color for sidebar and most interactive widgets
 #secondaryBackgroundColor = '#B9F1C0'

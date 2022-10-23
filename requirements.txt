@@ -6,4 +6,3 @@ plotly
 streamlit-drawable-canvas
 leafmap
 streamlit-folium
-extra-streamlit-components

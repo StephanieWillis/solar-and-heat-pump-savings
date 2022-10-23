@@ -11,34 +11,52 @@ primary_light = f'hsl({primary_hue},50%,90%)'
 primary_desat = f'hsl({primary_hue},5%,95%)'
 
 style = """
-p {
-font-size: 1.2em;
-color: hsl(0, 0%, 5%);
+
+/* Remove the labels on selectboxes */
+label.css-15tx938 {
+    display: None;
 }
 
-
+p {
+    font-size: 0.9em;
+    color: hsl(0, 0%, 5%);
+}
 
 
 .title {
-    font-size: 2.2em;
+    font-size: 2.8em;
     font-weight: bold;
-    line-height: 1.4em;
+    line-height: 1.1em;
+}
+
+.description {
+ font-size: 1.4em;
+ color: hsl(158, 10%, 40%);
+
 }
 
 h2 {
-    font-size: 1.2em;
+    font-size: 1.6em;
     font-weight: bold;
     line-height: 1.4em;
+    space-after: 1em;
 }
 
 /* This is the main container */
-
-div.css-1n76uvr.e1tzin5v0{
+#root > div:nth-child(1) > div.withScreencast > div > div > div > section > div > div:nth-child(1) > div > div:nth-child(2) > div{
+    
     border-radius: 10px;
-    padding: 40px;
     box-shadow: 0 1px 5px hsla(0, 0%, 0%, .3);
     background-color: white;
-    overflow: wrap;
+    box-sizing: content-box;
+    
+    margin: 0 auto;
+    padding: 30px;
+}
+
+
+#text {
+    padding: 10px;
 }
 
 div.custom_centred {
