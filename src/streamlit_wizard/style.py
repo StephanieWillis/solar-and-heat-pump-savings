@@ -19,6 +19,7 @@ label.css-15tx938 {
 
 p {
     font-size: 0.9em;
+    vertical-align: middle;
     color: hsl(0, 0%, 5%);
 }
 
@@ -65,6 +66,16 @@ div.custom_centred {
 
 button {
     box-shadow: 0 1px 1px hsla(0, 0%, 0%, .3);
+}
+
+button.css-sc7x0u.edgvbvh9 {
+    background-color: hsl(220, 60%, 30%);
+    color: hsl(0,0%,100%);    
+}
+
+#root > div:nth-child(1) > div.withScreencast > div > div > div > section > div > div:nth-child(1) > div > div:nth-child(2) > div > div.css-434r0z.e1tzin5v4 > div:nth-child(2) > div:nth-child(1) > div > div > div > button{
+background-color: hsl(0,0%,100%);
+color: hsl(0,0%,0%); 
 }
 
 @media only screen and (max-width: 650px) {

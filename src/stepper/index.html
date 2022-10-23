@@ -1,0 +1,148 @@
+<!-- awesome.html -->
+
+<style>
+
+    .stepper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 25px;
+        color: hsl(220, 30%, 90%);
+
+    }
+
+    .stepper-icons{
+        cursor: pointer;
+    }
+
+    .stepper-label-container {
+        display: flex;
+        justify-content: center;
+
+    }
+
+
+    .stepper-label{
+        font-family: "Source Sans Pro", sans-serif;
+        font-size: 16px;
+        text-align: center;
+        text-transform: uppercase;
+        margin-left: 25px;
+        margin-right: 25px;
+    }
+
+    .selected {
+        color: hsl(220, 60%, 30%);
+
+    }
+
+    .line {
+        width: 53px;
+        height: 0;
+        border: 1px solid hsl(220, 30%, 90%);
+        display: inline-block;
+    }
+
+    .selected-line {
+        border: 1px solid hsl(220, 60%, 30%);
+    }
+
+</style>
+<html>
+<body>
+<script src="https://kit.fontawesome.com/2c74303849.js" crossorigin="anonymous"></script>
+<!-- Set up your HTML here -->
+<div class="stepper" id="myinput">
+    <div id="house">
+    <div class="line" id="house-line" style="display: none"></div>
+    <span onclick="sendDataToPython({value:'house', dataType: 'json'})" class="stepper-icons fa-stack fa-1x">
+        <i class="fa-solid fa-circle fa-stack-2x"></i>
+        <i class="fa-solid fa-house-fire fa-stack-1x fa-inverse"></i>
+    </span>
+
+        </div>
+    <div class="line" id="solar-line"></div>
+    <div onclick="sendDataToPython({value:'solar', dataType: 'json'})" class="stepper-icons fa-stack fa-1x" id="solar">
+        <i class="fa-solid fa-circle fa-stack-2x"></i>
+        <i class="fa-solid fa-solar-panel fa-stack-1x fa-inverse"></i>
+    </div>
+    <div class="line" id="results-line"></div>
+    <div onclick="sendDataToPython({value:'results', dataType: 'json'})" class="stepper-icons fa-stack fa-1x"
+         id="results">
+        <i class="fa-solid fa-circle fa-stack-2x"></i>
+        <i class="fa-solid fa-check fa-stack-1x fa-inverse"></i>
+    </div>
+</div>
+
+
+<script>
+    // ----------------------------------------------------
+    // Just copy/paste these functions as-is:
+
+    function sendMessageToStreamlitClient(type, data) {
+        var outData = Object.assign({
+            isStreamlitMessage: true,
+            type: type,
+        }, data);
+        window.parent.postMessage(outData, "*");
+    }
+
+    function init() {
+        sendMessageToStreamlitClient("streamlit:componentReady", {apiVersion: 1});
+    }
+
+    function setFrameHeight(height) {
+        sendMessageToStreamlitClient("streamlit:setFrameHeight", {height: height});
+    }
+
+    // The `data` argument can be any JSON-serializable value.
+    function sendDataToPython(data) {
+        sendMessageToStreamlitClient("streamlit:setComponentValue", data);
+    }
+
+    // ----------------------------------------------------
+    // Now modify this part of the code to fit your needs:
+
+    var myInput = document.getElementById("myinput");
+
+    // data is any JSON-serializable value you sent from Python,
+    // and it's already deserialized for you.
+
+    function formatSelectedIcons(selector) {
+        var selected = document.getElementById(selector);
+        selected.classList.add("selected")
+        var selectedLine = document.getElementById(selector+'-line');
+        selectedLine.classList.add("selected-line")
+    }
+
+    function onDataFromPython(event) {
+        if (event.data.type !== "streamlit:render") return;
+        console.log(event.data)
+        event.data.args.value.map(formatSelectedIcons)
+
+    }
+
+    myInput.addEventListener("change", function () {
+        sendDataToPython({
+            value: myInput.value,
+            dataType: "json",
+        });
+    })
+
+    // Hook things up!
+    window.addEventListener("message", onDataFromPython);
+    init();
+
+    // Hack to autoset the iframe height.
+    // window.addEventListener("load", function () {
+    //     window.setTimeout(function () {
+    //         setFrameHeight(document.documentElement.clientHeight)
+    //     }, 0);
+    // });
+
+    // Optionally, if the automatic height computation fails you, give this component a height manually
+    // by commenting out below:
+    setFrameHeight(70);
+</script>
+</body>
+</html>

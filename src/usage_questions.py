@@ -16,7 +16,7 @@ def render_building_envelope_questions() -> "building_model.BuildingEnvelope":
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
-            st.write("I live in a...")
+            st.write("I live in a")
         with col2:
             house_type = st.selectbox("", options=constants.HOUSE_TYPES)
 

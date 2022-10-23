@@ -67,6 +67,10 @@ class Wizard:
         return self.pages[self.current_page_idx]
 
     @property
+    def on_first_page(self) -> bool:
+        return self.current_page_idx ==0
+
+    @property
     def on_final_page(self) -> bool:
         return self.current_page_idx == (self.total_pages - 1)
 
@@ -89,13 +93,17 @@ class Wizard:
             inject_style()
 
     def buttons(self):
-        col1, _, col2 = st.columns((1, 7, 1))
-        previous = col1.button("Previous")
+        _, col1, col2 = st.columns((7, 1, 1), gap="medium")
+
+        if not self.on_first_page:
+            previous = col1.button("Previous")
+        else:
+            previous = None
 
         if self.on_final_page:
             next_ = col2.button("Finish")
         else:
-            next_ = col2.button("Next ")
+            next_ = col2.button("Next")
 
         if previous:
             self.go_to_previous_page()
