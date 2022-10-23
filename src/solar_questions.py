@@ -14,7 +14,8 @@ def render() -> 'Solar':
     )
     polygons = roof.roof_mapper(800, 400)
 
-    orientation: str = st.selectbox("Solar Orientation", SolarConstants.SOLAR_ORIENTATIONS)
+    orientation_options = [orientation.name for orientation in SolarConstants.SOLAR_ORIENTATIONS]
+    orientation: str = st.selectbox("Solar Orientation", orientation_options)
 
     solar_install = Solar(orientation=orientation, roof_plan_area=polygons.area if polygons else 0)
     if polygons:

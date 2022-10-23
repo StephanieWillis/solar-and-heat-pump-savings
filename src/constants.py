@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import Enum
 
 import pandas as pd
 
@@ -49,23 +50,6 @@ STANDARD_TARIFF = TariffConstants(
 )
 
 
-class SolarConstants:
-    SOLAR_ORIENTATIONS = ["South", "Southwest", "West", "Northwest", "North", "Northeast", "East", "Southeast"]
-    MIN_ROOF_AREA = 0
-    MAX_ROOF_AREA = 20
-    DEFAULT_ROOF_AREA = 20
-    ROOF_PITCH_DEGREES = 30
-    PANEL_HEIGHT_M = 1.67
-    PANEL_WIDTH_M = 1.0
-    PANEL_AREA = PANEL_HEIGHT_M * PANEL_WIDTH_M
-    KW_PEAK_PER_PANEL = 0.30  # output with incident radiation of 1kW/m2
-    # Panel dimensions and kW_peak from https://www.greenmatch.co.uk/blog/how-many-solar-panels-do-i-need
-    PERCENT_SQUARE_USABLE = 0.8  # complete guess
-    API_YEAR = 2020  # Based on quick comparison of years for one location in the uk.
-    # If you don't pass years to the API it gives you all hours from first to last year they have data for.
-    SYSTEM_LOSS = 14  # percentage loss in the system - the PVGIS documentation suggests 14 %
-
-
 @dataclass()
 class Orientation:
     """ Azimuth is degrees clockwise from South, max absolute value of 180"""
@@ -80,7 +64,31 @@ class Orientation:
             self.azimuth_degrees += 360
 
 
-SOUTH = Orientation(0)
-WEST = Orientation(90)
-NORTH = Orientation(180)
-EAST = Orientation(-90)
+@dataclass()
+class OrientationOptions:
+    SOUTH = Orientation(0)
+    SOUTHWEST = Orientation(45)
+    WEST = Orientation(90)
+    NORTHWEST = Orientation(135)
+    NORTH = Orientation(180)
+    NORTHEAST = Orientation(-45)
+    EAST = Orientation(-90)
+    SOUTHEAST = Orientation(-135)
+
+
+class SolarConstants:
+    SOLAR_ORIENTATIONS = OrientationOptions
+    MIN_ROOF_AREA = 0
+    MAX_ROOF_AREA = 20
+    DEFAULT_ROOF_AREA = 20
+    ROOF_PITCH_DEGREES = 30
+    PANEL_HEIGHT_M = 1.67
+    PANEL_WIDTH_M = 1.0
+    PANEL_AREA = PANEL_HEIGHT_M * PANEL_WIDTH_M
+    KW_PEAK_PER_PANEL = 0.30  # output with incident radiation of 1kW/m2
+    # Panel dimensions and kW_peak from https://www.greenmatch.co.uk/blog/how-many-solar-panels-do-i-need
+    PERCENT_SQUARE_USABLE = 0.8  # complete guess
+    API_YEAR = 2020  # Based on quick comparison of years for one location in the uk.
+    # If you don't pass years to the API it gives you all hours from first to last year they have data for.
+    SYSTEM_LOSS = 14  # percentage loss in the system - the PVGIS documentation suggests 14 %
+
