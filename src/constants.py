@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from enum import Enum
 
 import pandas as pd
 
@@ -64,20 +63,21 @@ class Orientation:
             self.azimuth_degrees += 360
 
 
-@dataclass()
-class OrientationOptions:
-    SOUTH = Orientation(0)
-    SOUTHWEST = Orientation(45)
-    WEST = Orientation(90)
-    NORTHWEST = Orientation(135)
-    NORTH = Orientation(180)
-    NORTHEAST = Orientation(-45)
-    EAST = Orientation(-90)
-    SOUTHEAST = Orientation(-135)
+OrientationOptions = {
+    'South': Orientation(0),
+    'Southwest': Orientation(45),
+    'West': Orientation(90),
+    'Northwest': Orientation(135),
+    'North': Orientation(180),
+    'Northeast': Orientation(-45),
+    'East': Orientation(-90),
+    'Southeast': Orientation(-135)}
 
 
 class SolarConstants:
-    SOLAR_ORIENTATIONS = OrientationOptions
+    ORIENTATIONS = OrientationOptions
+    DEFAULT_LAT = 51.509865
+    DEFAULT_LONG = -0.118092
     MIN_ROOF_AREA = 0
     MAX_ROOF_AREA = 20
     DEFAULT_ROOF_AREA = 20

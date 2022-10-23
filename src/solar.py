@@ -11,13 +11,14 @@ from constants import SolarConstants, Orientation
 
 class Solar:
 
-    def __init__(self, orientation: Orientation, roof_plan_area: float, latitude: float, longitude: float,
+    def __init__(self, orientation: Orientation, roof_plan_area: float,
+                 latitude: float = SolarConstants.DEFAULT_LAT, longitude: float = SolarConstants.DEFAULT_LONG,
                  pitch: float = SolarConstants.ROOF_PITCH_DEGREES):
         """ Roof plan area because based on lat long therefore doesn't account for roof pitch"""
 
         self.orientation = orientation
-        self.latitude = latitude # Latitude, in decimal degrees, south is negative
-        self.longitude = longitude   # Longitude, in decimal degrees, west is negative
+        self.latitude = latitude  # Latitude, in decimal degrees, south is negative
+        self.longitude = longitude  # Longitude, in decimal degrees, west is negative
         self.pitch = pitch
         self.roof_area = roof_plan_area / np.cos(np.radians(self.pitch))
 
@@ -37,10 +38,13 @@ class Solar:
 
     @property
     def generation(self):
-        profile_kWh = self.get_hourly_radiation_from_eu_api()
+        if self.peak_capacity_kw_out_per_kw_in_per_m2 > 0:
+            profile_kwh = self.get_hourly_radiation_from_eu_api()
+        else:
+            profile_kwh = pd.Series(index=list(range(8760)), data=0)
         # set negative as generation not consumption
-        profile_kWh_negative = profile_kWh * -1
-        generation = Consumption(profile_kwh=profile_kWh_negative, fuel=constants.ELECTRICITY)
+        profile_kwh_negative = profile_kwh * -1
+        generation = Consumption(profile_kwh=profile_kwh_negative, fuel=constants.ELECTRICITY)
         return generation
 
     def get_hourly_radiation_from_eu_api(self) -> pd.Series:
@@ -74,5 +78,3 @@ class Solar:
             raise requests.ConnectionError
 
         return pv_power_kw
-
-

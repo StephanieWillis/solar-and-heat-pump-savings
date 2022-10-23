@@ -5,6 +5,7 @@ from typing import Dict, List, Tuple
 import pandas as pd
 
 import constants
+from constants import SolarConstants
 from consumption import Demand, Consumption
 from solar import Solar
 
@@ -39,7 +40,7 @@ class House:
         self.tariffs = self.set_up_standard_tariffs()
 
         if solar is None:
-            solar = Solar(orientation='South', roof_plan_area=0)
+            solar = Solar(orientation=SolarConstants.ORIENTATIONS['South'], roof_plan_area=0)
         self.solar = solar
 
     @classmethod
