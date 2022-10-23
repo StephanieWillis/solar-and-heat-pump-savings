@@ -1,5 +1,6 @@
 import pandas as pd
 import plotly.express as px
+import numpy as np
 
 import solar
 
@@ -29,8 +30,8 @@ def test_generation():
     assert isinstance(solar_install.generation.overall.profile_kwh, pd.Series)
     assert isinstance(solar_install.generation.overall.annual_sum_kwh, float)
 
-    fig = px.line(solar_install.generation.overall.profile_kwh.loc["2020-01-01": "2020-01-03"])
-    fig.show()
+    # fig = px.line(solar_install.generation.overall.profile_kwh.loc["2020-01-01": "2020-01-03"])
+    # fig.show()
 
 
 def test_peak_capacity_kw_out_per_kw_in_per_m2():
@@ -42,16 +43,12 @@ def test_peak_capacity_kw_out_per_kw_in_per_m2():
 
 
 def test_get_hourly_radiation_from_eu_api():
-    response = solar.get_hourly_radiation_from_eu_api(lat=51.681,
-                                                      lon=-3.724,
-                                                      peak_capacity_kw_out_per_kw_in_per_m2=4,
-                                                      pitch=30,
-                                                      azimuth=-90
-                                                      )
-    assert isinstance(response.text, str)
-    return response
+    pv_power_kw = solar.get_hourly_radiation_from_eu_api(lat=51.681,
+                                                         lon=-3.724,
+                                                         peak_capacity_kw_out_per_kw_in_per_m2=4,
+                                                         pitch=30,
+                                                         azimuth=-90
+                                                         )
+    np.testing.assert_almost_equal(pv_power_kw.sum(), 3035.86684)
 
-
-response = test_get_hourly_radiation_from_eu_api()
-
-
+    return pv_power_kw

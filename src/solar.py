@@ -55,21 +55,20 @@ class Solar:
 
 
 def get_hourly_radiation_from_eu_api(lat: float, lon: float, peak_capacity_kw_out_per_kw_in_per_m2: float,
-                                     pitch: float, azimuth: float):
-    # Latitude, in decimal degrees, south is negative.
-    # Longitude, in decimal degrees, west is negative.
+                                     pitch: float, azimuth: float) -> pd.Series:
+    """ Returns series of 8760 of average solar pv power for that hour in kW. Index 0 to 8759"""
 
-    # hourly radiation
     tool_name = 'seriescalc'
     api_url = f'https://re.jrc.ec.europa.eu/api/v5_2/{tool_name}'
 
-    params = {'lat': lat,
-              'lon': lon,
+    params = {'lat': lat,  # Latitude, in decimal degrees, south is negative
+              'lon': lon,  # Longitude, in decimal degrees, west is negative.
               'startyear': 2015,  # just take one year for now
               'endyear': 2015,  # defaults here are first and last year they have data for
               'pvcalculation': 1,  # estimate hourly PV production
               'peakpower': peak_capacity_kw_out_per_kw_in_per_m2,  # installed capacity
               'mountingplace': "building",
+              'loss': 14,  # percentage loss in the system - the PVGIS documentation suggests 14 %
               'angle': pitch,
               'aspect': azimuth,
               'outputformat': "json"
@@ -77,14 +76,14 @@ def get_hourly_radiation_from_eu_api(lat: float, lon: float, peak_capacity_kw_ou
     response = requests.get(api_url, params=params)
 
     if response.status_code == 200:
-        if response.text == '':
-            print("Empty response")
-        else:
-            print("Good response - now to unpack it")
-            # df = pd.DataFrame(columns=dictr['column-names'], data=dictr['rows'])
+        dictr = response.json()
+        df = pd.DataFrame(dictr['outputs']['hourly'])
+        pv_power_kw = df['P'] / 1000  # source data in W so convert to kW
     else:
         print(response.status_code)
+        print(response.text)
         raise requests.ConnectionError
-    return response
+
+    return pv_power_kw
 
 
