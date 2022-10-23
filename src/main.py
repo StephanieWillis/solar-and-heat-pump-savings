@@ -36,5 +36,5 @@ class ResultsPage(Page):
 
 wizard = Wizard(pages=[WelcomePage("welcome"), UsagePage("usage"), SolarPage("solar"), ResultsPage("results")])
 
-st.title("Cut your bills with solar and a heat pump")
+st.markdown("<p class='title'>Cut your bills with solar and a heat pump <p>", unsafe_allow_html=True)
 wizard.render()
