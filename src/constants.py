@@ -61,12 +61,16 @@ class SolarConstants:
     KW_PEAK_PER_PANEL = 0.30  # output with incident radiation of 1kW/m2
     # Panel dimensions and kW_peak from https://www.greenmatch.co.uk/blog/how-many-solar-panels-do-i-need
     PERCENT_SQUARE_USABLE = 0.8  # complete guess
+    API_YEAR = 2020  # Based on quick comparison of years for one location in the uk.
+    # If you don't pass years to the API it gives you all hours from first to last year they have data for.
+    SYSTEM_LOSS = 14  # percentage loss in the system - the PVGIS documentation suggests 14 %
 
 
 @dataclass()
 class Orientation:
     """ Azimuth is degrees clockwise from South, max absolute value of 180"""
     azimuth_degrees: float
+
     # https://re.jrc.ec.europa.eu/pvg_tools/en/
 
     def __post_init__(self):
@@ -80,4 +84,3 @@ SOUTH = Orientation(0)
 WEST = Orientation(90)
 NORTH = Orientation(180)
 EAST = Orientation(-90)
-

@@ -63,12 +63,12 @@ def get_hourly_radiation_from_eu_api(lat: float, lon: float, peak_capacity_kw_ou
 
     params = {'lat': lat,  # Latitude, in decimal degrees, south is negative
               'lon': lon,  # Longitude, in decimal degrees, west is negative.
-              'startyear': 2015,  # just take one year for now
-              'endyear': 2015,  # defaults here are first and last year they have data for
+              'startyear': SolarConstants.API_YEAR,  # just take one year for now
+              'endyear': SolarConstants.API_YEAR,
               'pvcalculation': 1,  # estimate hourly PV production
               'peakpower': peak_capacity_kw_out_per_kw_in_per_m2,  # installed capacity
               'mountingplace': "building",
-              'loss': 14,  # percentage loss in the system - the PVGIS documentation suggests 14 %
+              'loss': SolarConstants.SYSTEM_LOSS,
               'angle': pitch,
               'aspect': azimuth,
               'outputformat': "json"
@@ -78,6 +78,7 @@ def get_hourly_radiation_from_eu_api(lat: float, lon: float, peak_capacity_kw_ou
     if response.status_code == 200:
         dictr = response.json()
         df = pd.DataFrame(dictr['outputs']['hourly'])
+        # can add timeseries as index later if needed
         pv_power_kw = df['P'] / 1000  # source data in W so convert to kW
     else:
         print(response.status_code)
