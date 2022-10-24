@@ -77,7 +77,13 @@ def roof_mapper(width: int, height: int) -> Optional[Polygon]:
     """
     selected_location = place_search()
 
+    map_styling = ".leaflet-draw-draw-polyline {" \
+                  "display: none;" \
+                  "}"
+    st.markdown(f"<style><{map_styling}/style>", unsafe_allow_html=True)
+
     centre = [selected_location["lat"], selected_location["lng"]] if selected_location else [55, 0]
+
     m = leafmap.Map(google_map="SATELLITE", location=centre, zoom_start=21 if selected_location else 4,
                     measure_control=False,
                     search_control=False,

@@ -128,9 +128,24 @@ button.css-sc7x0u.edgvbvh9 {
     color: hsl(0,0%,100%);    
 }
 
+.leaflet-draw-draw-polyline {
+    display: None;
+    color: blue;
+}
+
+/* Hiding the excess map drawing controls. Doesn't seem to work right now */
+#map_div > div.leaflet-control-container > div.leaflet-top.leaflet-left > div.leaflet-draw.leaflet-control > div:nth-child(1) > div > a.leaflet-draw-draw-polyline {
+    display: None
+}
+
+.leaflet-draw-draw-circlemarker {
+    color: rgb(200,10,10);
+}
+                  
+
 #root > div:nth-child(1) > div.withScreencast > div > div > div > section > div > div:nth-child(1) > div > div:nth-child(2) > div > div.css-434r0z.e1tzin5v4 > div:nth-child(2) > div:nth-child(1) > div > div > div > button{
-background-color: hsl(0,0%,100%);
-color: hsl(0,0%,0%); 
+    background-color: hsl(0,0%,100%);
+    color: hsl(0,0%,0%); 
 }
 
 @media only screen and (max-width: 650px) {
