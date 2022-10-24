@@ -83,6 +83,11 @@ color: hsl(0,0%,0%);
     text-align: center;
     width: 100%;
   }
+  
+  #root > div:nth-child(1) > div.withScreencast > div > div > div > section > div > div:nth-child(1) > div > div:nth-child(2) > div {
+  padding: 5px;
+  box-shadow: None;
+  }
 }
 """
 
