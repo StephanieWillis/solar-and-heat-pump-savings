@@ -6,11 +6,11 @@ from building_model import Solar
 
 
 def render() -> 'Solar':
-    st.header("Your solar potential")
+    st.header("How much solar power could you generate?")
 
     st.write(
-        "Search for your home below and draw a square where you think solar panels might go on your most South"
-        "facing roof. Use the hexagonal tool to draw the square.  "
+        "Search for your home below and draw a square where you think solar panels might go. If you have"
+        " multiple options, choose your most South facing roof. Use the hexagonal tool to draw the square.  "
     )
     polygons = roof.roof_mapper(800, 400)
 

@@ -60,6 +60,10 @@ p.bill-details{
    color: hsl(220, 30%, 70%); 
 }
 
+#postcode {
+    
+}
+
 
 a:hover {
     color: hsl(220, 60%, 10%);
