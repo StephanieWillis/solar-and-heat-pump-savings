@@ -55,11 +55,11 @@ def render(house: 'House', solar: 'Solar'):
 
 
 def render_and_update_current_home(house: House):
-    with st.expander("Demand assumptions"):
+    with st.expander("Demand"):
         house.envelope = render_and_update_envelope_outputs(envelope=house.envelope)
-    with st.expander("Baseline heating system assumptions"):
+    with st.expander("Baseline heating system"):
         house.heating_system = render_and_update_heating_system(heating_system=house.heating_system)
-    with st.expander("Tariff assumptions"):
+    with st.expander("Tariff"):
         house = render_and_update_tariffs(house=house)
     return house
 

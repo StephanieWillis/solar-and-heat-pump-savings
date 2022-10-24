@@ -6,6 +6,8 @@ import savings_outputs
 
 from streamlit_wizard import Wizard, Page
 
+st.set_page_config(initial_sidebar_state="collapsed")
+
 
 class WelcomePage(Page):
     def render(self) -> dict:
@@ -35,12 +37,13 @@ class ResultsPage(Page):
         savings_outputs.render(house=house, solar=solar)
 
 
-wizard = Wizard(pages=[UsagePage("house"),
-                       SolarPage("solar"),
-                       ResultsPage("results")])
+wizard = Wizard(pages=[UsagePage("house"), SolarPage("solar"), ResultsPage("results")])
 
-st.markdown("<p class='title'>Cut your bills with solar + heat pump </p>"
-            "<p class='description'> How much money and carbon can you save by installing a heat pump "
-         "or solar panels? Get an estimate in 5 minutes!</p>", unsafe_allow_html=True)
+st.markdown(
+    "<p class='title'>Cut your bills with solar + heat pump </p>"
+    "<p class='description'> How much money and carbon can you save by installing a heat pump "
+    "or solar panels? Get an estimate in 5 minutes!</p>",
+    unsafe_allow_html=True,
+)
 
 wizard.render()
