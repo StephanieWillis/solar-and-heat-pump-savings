@@ -6,15 +6,19 @@ from fuels import Fuel
 
 HOUSE_TYPES = ["Terrace", "Semi-detached", "Detached", "Flat"]
 
-BASE_YEAR_HALF_HOUR_INDEX = pd.date_range(start="2020-01-01", end="2021-01-01", freq="30T")
-EMPTY_TIMESERIES = pd.Series(index=BASE_YEAR_HALF_HOUR_INDEX, data=0)
+# Use same year as solar year
+BASE_YEAR_HOURLY_INDEX = pd.date_range(start="2020-01-01", end="2021-01-01", freq="1H", inclusive="left")
+EMPTY_TIMESERIES = pd.Series(index=BASE_YEAR_HOURLY_INDEX, data=0)
 
-kwh_PER_LITRE_OF_OIL = 10.35  # https://www.thegreenage.co.uk/is-heating-oil-a-cheap-way-to-heat-my-home/
+KWH_PER_LITRE_OF_OIL = 10.35  # https://www.thegreenage.co.uk/is-heating-oil-a-cheap-way-to-heat-my-home/
 
-ELECTRICITY = Fuel("electricity", tco2_per_kwh=180 / 10 ** 6)  # Emission factors approximate for now
-GAS = Fuel(name="gas", tco2_per_kwh=300 / 10 ** 6)
-OIL = Fuel(name="oil", units="litres", converter_consumption_units_to_kwh=kwh_PER_LITRE_OF_OIL,
-           tco2_per_kwh=400 / 10 ** 6)
+ELEC_TCO2_PER_KWH = 180 / 10 ** 6
+ELECTRICITY = Fuel("electricity", tco2_per_kwh=ELEC_TCO2_PER_KWH)  # Emission factors approximate for now
+GAS_TCO2_PER_KWH = 300 / 10 ** 6
+GAS = Fuel(name="gas", tco2_per_kwh=GAS_TCO2_PER_KWH)
+OIL_TCO2_PER_KWH = 400 / 10 ** 6
+OIL = Fuel(name="oil", units="litres", converter_consumption_units_to_kwh=KWH_PER_LITRE_OF_OIL,
+           tco2_per_kwh=OIL_TCO2_PER_KWH)
 FUELS = [ELECTRICITY, GAS, OIL]
 
 

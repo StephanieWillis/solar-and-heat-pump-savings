@@ -69,10 +69,10 @@ def test_generation_attributed_to_correct_fuel_and_consumption_stream():
     assert solar_install.generation.fuel.name == 'electricity'
     assert solar_install.generation.fuel.units == "kwh"
 
-    assert isinstance(solar_install.generation.overall.profile_kwh, pd.Series)
-    assert (solar_install.generation.overall.profile_kwh <= 0).all()  # export defined as negative
-    # fig = px.line(solar_install.generation.overall.profile_kwh.loc["2020-01-01": "2020-01-03"])
-    # fig.show()
+    assert isinstance(solar_install.generation.overall.hourly, pd.Series)
+    assert (solar_install.generation.overall.hourly <= 0).all()  # export defined as negative
+    fig = px.line(solar_install.generation.overall.hourly.loc["2020-01-01": "2020-01-03"])
+    fig.show()
 
     assert isinstance(solar_install.generation.overall.annual_sum_kwh, float)
     assert (solar_install.generation.exported.annual_sum_kwh == solar_install.generation.overall.annual_sum_kwh)
@@ -91,8 +91,8 @@ def test_solar_install_when_roof_area_is_zero():
     np.testing.assert_almost_equal(solar_install.generation.exported.annual_sum_kwh, 0)
     np.testing.assert_almost_equal(solar_install.generation.overall.annual_sum_kwh, 0)
     np.testing.assert_almost_equal(solar_install.generation.imported.annual_sum_kwh, 0)
-    assert (solar_install.generation.overall.profile_kwh == 0).all()
-    assert(solar_install.generation.overall.profile_kwh.index == list(range(8760))).all()
+    assert (solar_install.generation.overall.hourly == 0).all()
+    assert(solar_install.generation.overall.hourly.index == list(range(8760))).all()
     return solar_install
 
 

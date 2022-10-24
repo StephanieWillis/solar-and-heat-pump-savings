@@ -6,7 +6,7 @@ import pandas as pd
 
 import constants
 from constants import SolarConstants
-from consumption import Demand, Consumption
+from consumption import OneYearProfile, Consumption
 from solar import Solar
 
 
@@ -21,7 +21,7 @@ def upgrade_buildings(baseline_house: 'House', upgrade_heating: 'HeatingSystem',
     return hp_house, solar_house, both_house
 
 
-def combined_results_dfs_multiple_houses(houses: List['House'], keys: List['str']):
+def combine_results_dfs_multiple_houses(houses: List['House'], keys: List['str']):
     results_df = pd.concat([house.energy_and_bills_df for house in houses], keys=keys)
     results_df.index.names = ['Upgrade option', 'old_index']
     results_df = results_df.reset_index()
@@ -80,7 +80,7 @@ class House:
     def consumption_per_fuel(self) -> Dict[str, 'Consumption']:
 
         # Base demand is always electricity (lighting/plug loads etc.)
-        base_consumption = Consumption(profile_kwh=self.envelope.base_demand.profile_kwh,
+        base_consumption = Consumption(hourly_profile_kwh=self.envelope.base_demand.hourly,
                                        fuel=constants.ELECTRICITY)
         # Solar
         electricity_consumption = base_consumption.add(self.solar.generation)
@@ -150,15 +150,15 @@ class BuildingEnvelope:
     def __init__(self, floor_area_m2: float, house_type: str):
         self.floor_area_m2 = floor_area_m2
         self.house_type = house_type
-        self.time_series_idx: pd.Index = constants.BASE_YEAR_HALF_HOUR_INDEX
+        self.time_series_idx: pd.Index = constants.BASE_YEAR_HOURLY_INDEX
         self.units: str = 'kwh'
 
         # Set initial demand values - user can overwrite later
         # Dummy data for now TODO get profiles from elsewhere
-        self.base_demand = Demand(profile_kwh=pd.Series(index=self.time_series_idx, data=0.001 * self.floor_area_m2))
-        self.water_heating_demand = Demand(
+        self.base_demand = OneYearProfile(profile_kwh=pd.Series(index=self.time_series_idx, data=0.001 * self.floor_area_m2))
+        self.water_heating_demand = OneYearProfile(
             profile_kwh=pd.Series(index=self.time_series_idx, data=0.004 * self.floor_area_m2))
-        self.space_heating_demand = Demand(
+        self.space_heating_demand = OneYearProfile(
             profile_kwh=pd.Series(index=self.time_series_idx, data=0.005 * self.floor_area_m2))
 
 
@@ -180,15 +180,15 @@ class HeatingSystem:
         if self.fuel not in constants.FUELS:
             raise ValueError(f"fuel must be one of {constants.FUELS}")
 
-    def calculate_space_heating_consumption(self, space_heating_demand: Demand) -> Consumption:
+    def calculate_space_heating_consumption(self, space_heating_demand: OneYearProfile) -> Consumption:
         return self.calculate_consumption(demand=space_heating_demand, efficiency=self.space_heating_efficiency)
 
-    def calculate_water_heating_consumption(self, water_heating_demand: Demand) -> Consumption:
+    def calculate_water_heating_consumption(self, water_heating_demand: OneYearProfile) -> Consumption:
         return self.calculate_consumption(demand=water_heating_demand, efficiency=self.water_heating_efficiency)
 
-    def calculate_consumption(self, demand: Demand, efficiency: float) -> Consumption:
-        profile_kwh = demand.profile_kwh / efficiency
-        consumption = Consumption(profile_kwh=profile_kwh, fuel=self.fuel)
+    def calculate_consumption(self, demand: OneYearProfile, efficiency: float) -> Consumption:
+        profile_kwh = demand.hourly / efficiency
+        consumption = Consumption(hourly_profile_kwh=profile_kwh, fuel=self.fuel)
         return consumption
 
 

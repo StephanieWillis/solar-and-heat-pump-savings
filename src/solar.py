@@ -44,11 +44,12 @@ class Solar:
             profile_kwh = pd.Series(index=list(range(8760)), data=0)
         # set negative as generation not consumption
         profile_kwh_negative = profile_kwh * -1
-        generation = Consumption(profile_kwh=profile_kwh_negative, fuel=constants.ELECTRICITY)
+        generation = Consumption(hourly_profile_kwh=profile_kwh_negative, fuel=constants.ELECTRICITY)
         return generation
 
     def get_hourly_radiation_from_eu_api(self) -> pd.Series:
         """ Returns series of 8760 of average solar pv power for that hour in kW. Index 0 to 8759"""
+        # TODO: cache this and just scale with number of panels because too slow to hit the api each time
 
         tool_name = 'seriescalc'
         api_url = f'https://re.jrc.ec.europa.eu/api/v5_2/{tool_name}'
@@ -72,6 +73,7 @@ class Solar:
             df = pd.DataFrame(dictr['outputs']['hourly'])
             # can add timeseries as index later if needed
             pv_power_kw = df['P'] / 1000  # source data in W so convert to kW
+            pv_power_kw.index = constants.BASE_YEAR_HOURLY_INDEX
         else:
             print(response.status_code)
             print(response.text)
