@@ -1,4 +1,3 @@
-from dataclasses import asdict
 import streamlit as st
 
 from constants import SolarConstants
@@ -30,7 +29,5 @@ def render() -> 'Solar':
         st.write(f"We estimate you can fit {solar_install.number_of_panels} solar panels on your roof!")
 
     return solar_install
-
-# 8760 issue!
 
 
