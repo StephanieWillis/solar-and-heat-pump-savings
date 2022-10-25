@@ -1,3 +1,5 @@
+import copy
+
 import pandas as pd
 import plotly.express as px
 import numpy as np
@@ -96,5 +98,37 @@ def test_solar_install_when_roof_area_is_zero():
     return solar_install
 
 
+def test_cache_on_get_hourly_radiation_from_eu_api():
+
+    solar_install = solar.Solar(orientation=OrientationOptions['Southwest'],
+                                roof_plan_area=20,
+                                latitude=51.681,
+                                longitude=-3.724,
+                                pitch=30)
+
+    # check works when getting property
+    solar.Solar.get_hourly_radiation_from_eu_api.cache_clear()
+    solar_install.generation.overall.annual_sum_kwh
+    solar_install.generation.imported.annual_sum_kwh
+    solar_install.generation.exported.days_in_year
+    solar_install.generation.fuel.name
+    print(solar.Solar.get_hourly_radiation_from_eu_api.cache_info())
+    assert solar.Solar.get_hourly_radiation_from_eu_api.cache_info().hits == 3
+    assert solar.Solar.get_hourly_radiation_from_eu_api.cache_info().misses == 1
+    assert solar.Solar.get_hourly_radiation_from_eu_api.cache_info().currsize == 1
+
+    # check also works on copy
+    solar_install_two = solar_install
+    assert hash(solar_install) == hash(solar_install_two)
+    assert solar.Solar.get_hourly_radiation_from_eu_api.cache_info().hits == 4
+    assert solar.Solar.get_hourly_radiation_from_eu_api.cache_info().misses == 1
+    assert solar.Solar.get_hourly_radiation_from_eu_api.cache_info().currsize == 1
+
+    # Should miss here
+    solar_install_two.number_of_panels = 1
+    solar_install_two.generation.overall.annual_sum_kwh
+    assert solar.Solar.get_hourly_radiation_from_eu_api.cache_info().hits == 4
+    assert solar.Solar.get_hourly_radiation_from_eu_api.cache_info().misses == 2
+    assert solar.Solar.get_hourly_radiation_from_eu_api.cache_info().currsize == 2
 
 

@@ -1,3 +1,4 @@
+from functools import cache
 from math import floor
 
 import numpy as np
@@ -25,6 +26,19 @@ class Solar:
         self.number_of_panels = self.get_number_of_panels()  # not a property because want to be able to overwrite
         self.kwp_per_panel = SolarConstants.KW_PEAK_PER_PANEL
 
+    def __hash__(self):
+        return hash((self.orientation.azimuth_degrees, self.latitude, self.longitude, self.pitch, self.number_of_panels))
+
+    def __eq__(self, other: 'Solar'):
+        result = (isinstance(other, 'Solar')
+                  and self.orientation.azimuth_degrees == other.orientation.azimuth_degrees
+                  and self.latitude == other.latitude
+                  and self.longitude == other.longitude
+                  and self.pitch == other.pitch
+                  and self.number_of_panels == other.number_of_panels
+                  )
+        return result
+
     def get_number_of_panels(self) -> int:
         """ Very simplified assumption here that you can use fixed proportion of area because hard to do properly"""
         usable_area = self.roof_area * SolarConstants.PERCENT_SQUARE_USABLE
@@ -48,9 +62,12 @@ class Solar:
         generation = Consumption(hourly_profile_kwh=profile_kwh_negative, fuel=constants.ELECTRICITY)
         return generation
 
+    @cache
     def get_hourly_radiation_from_eu_api(self) -> pd.Series:
         """ Returns series of 8760 of average solar pv power for that hour in kW. Index 0 to 8759"""
-        # TODO: cache this and just scale with number of panels because too slow to hit the api each time
+        # API Documentation here: https://joint-research-centre.ec.europa.eu/
+        #   pvgis-photovoltaic-geographical-information-system/getting-started-pvgis/api-non-interactive-service_en
+        # Limit of 30 calls per second
 
         tool_name = 'seriescalc'
         api_url = f'https://re.jrc.ec.europa.eu/api/v5_2/{tool_name}'
@@ -67,6 +84,7 @@ class Solar:
                   'aspect': self.orientation.azimuth_degrees,
                   'outputformat': "json"
                   }
+        print("making api call")
         response = requests.get(api_url, params=params)
 
         if response.status_code == 200:
