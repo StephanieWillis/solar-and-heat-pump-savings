@@ -6,7 +6,7 @@ import pandas as pd
 
 import constants
 from constants import SolarConstants
-from consumption import OneYearProfile, Consumption
+from consumption import Consumption
 from solar import Solar
 
 
@@ -80,7 +80,7 @@ class House:
     def consumption_per_fuel(self) -> Dict[str, 'Consumption']:
 
         # Base demand is always electricity (lighting/plug loads etc.)
-        base_consumption = Consumption(hourly_profile_kwh=self.envelope.base_demand.hourly,
+        base_consumption = Consumption(hourly_profile_kwh=self.envelope.base_demand,
                                        fuel=constants.ELECTRICITY)
         # Solar
         electricity_consumption = base_consumption.add(self.solar.generation)
@@ -143,23 +143,23 @@ class House:
         return df
 
 
-@dataclass()
-class BuildingEnvelope:
-    """ Stores info on the building and its energy demand"""
+@dataclass
+class Tariff:
+    fuel: constants.Fuel
+    p_per_day: float
+    p_per_unit_import: float  # unit defined by the fuel
+    p_per_unit_export: float = 0
 
-    def __init__(self, floor_area_m2: float, house_type: str):
-        self.floor_area_m2 = floor_area_m2
-        self.house_type = house_type
-        self.time_series_idx: pd.Index = constants.BASE_YEAR_HOURLY_INDEX
-        self.units: str = 'kwh'
-
-        # Set initial demand values - user can overwrite later
-        # Dummy data for now TODO get profiles from elsewhere
-        self.base_demand = OneYearProfile(profile_kwh=pd.Series(index=self.time_series_idx, data=0.001 * self.floor_area_m2))
-        self.water_heating_demand = OneYearProfile(
-            profile_kwh=pd.Series(index=self.time_series_idx, data=0.004 * self.floor_area_m2))
-        self.space_heating_demand = OneYearProfile(
-            profile_kwh=pd.Series(index=self.time_series_idx, data=0.005 * self.floor_area_m2))
+    def calculate_annual_cost(self, consumption: 'Consumption') -> float:
+        """ Calculate the annual cost of the consumption of a certain fuel with this tariff"""
+        if self.fuel != consumption.fuel:
+            raise ValueError("To calculate annual costs the tariff fuel must match the consumption fuel, they are"
+                             f"{self.fuel} and {consumption.fuel}")
+        cost_p_per_day = consumption.overall.days_in_year * self.p_per_day
+        cost_p_imports = consumption.imported.annual_sum_fuel_units * self.p_per_unit_import
+        income_p_exports = consumption.exported.annual_sum_fuel_units * self.p_per_unit_export
+        annual_cost = (cost_p_per_day + cost_p_imports - income_p_exports) / 100
+        return annual_cost
 
 
 @dataclass
@@ -180,34 +180,38 @@ class HeatingSystem:
         if self.fuel not in constants.FUELS:
             raise ValueError(f"fuel must be one of {constants.FUELS}")
 
-    def calculate_space_heating_consumption(self, space_heating_demand: OneYearProfile) -> Consumption:
-        return self.calculate_consumption(demand=space_heating_demand, efficiency=self.space_heating_efficiency)
+    def calculate_space_heating_consumption(self, space_heating_demand_kwh: pd.Series) -> Consumption:
+        return self.calculate_consumption(demand_kwh=space_heating_demand_kwh, efficiency=self.space_heating_efficiency)
 
-    def calculate_water_heating_consumption(self, water_heating_demand: OneYearProfile) -> Consumption:
-        return self.calculate_consumption(demand=water_heating_demand, efficiency=self.water_heating_efficiency)
+    def calculate_water_heating_consumption(self, water_heating_demand_kwh: pd.Series) -> Consumption:
+        return self.calculate_consumption(demand_kwh=water_heating_demand_kwh, efficiency=self.water_heating_efficiency)
 
-    def calculate_consumption(self, demand: OneYearProfile, efficiency: float) -> Consumption:
-        profile_kwh = demand.hourly / efficiency
+    def calculate_consumption(self, demand_kwh: pd.Series, efficiency: float) -> Consumption:
+        profile_kwh = demand_kwh / efficiency
         consumption = Consumption(hourly_profile_kwh=profile_kwh, fuel=self.fuel)
         return consumption
 
 
-@dataclass
-class Tariff:
-    fuel: constants.Fuel
-    p_per_day: float
-    p_per_unit_import: float  # unit defined by the fuel
-    p_per_unit_export: float = 0
+@dataclass()
+class BuildingEnvelope:
+    """ Stores info on the building and its energy demand"""
 
-    def calculate_annual_cost(self, consumption: 'Consumption') -> float:
-        """ Calculate the annual cost of the consumption of a certain fuel with this tariff"""
-        if self.fuel != consumption.fuel:
-            raise ValueError("To calculate annual costs the tariff fuel must match the consumption fuel, they are"
-                             f"{self.fuel} and {consumption.fuel}")
-        cost_p_per_day = 365 * self.p_per_day
-        cost_p_imports = consumption.imported.annual_sum_fuel_units * self.p_per_unit_import
-        cost_p_exports = consumption.exported.annual_sum_fuel_units * self.p_per_unit_export
-        annual_cost = (cost_p_per_day + cost_p_imports + cost_p_exports) / 100
-        return annual_cost
+    def __init__(self, floor_area_m2: float, house_type: str):
+        self.floor_area_m2 = floor_area_m2
+        self.house_type = house_type
+        self.time_series_idx: pd.Index = constants.BASE_YEAR_HOURLY_INDEX
+        self.units: str = 'kwh'
+
+        # Set initial demand values - user can overwrite later
+        # Dummy data for now TODO get profiles from elsewhere
+        self.base_demand = pd.Series(index=self.time_series_idx, data=0.001 * self.floor_area_m2)
+        self.water_heating_demand = pd.Series(index=self.time_series_idx, data=0.004 * self.floor_area_m2)
+        self.space_heating_demand = pd.Series(index=self.time_series_idx, data=0.005 * self.floor_area_m2)
+
+
+
+
+
+
 
 

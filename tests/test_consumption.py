@@ -55,7 +55,15 @@ def test_consumption_stream_tco2():
     assert stream_oil.annual_sum_tco2 == stream_oil.annual_sum_kwh * constants.OIL_TCO2_PER_KWH
 
 
-def test_consumption():
+def test_consumption_import_only():
+    profile = pd.Series(index=constants.BASE_YEAR_HOURLY_INDEX, data=0.5)
+    consumption_gas = consumption.Consumption(hourly_profile_kwh=profile, fuel=constants.GAS)
+    assert consumption_gas.exported.annual_sum_kwh == 0
+    assert consumption_gas.imported.annual_sum_kwh == 0.5 * consumption_gas.overall.hours_in_year
+    assert (consumption_gas.imported.hourly_profile_kwh == consumption_gas.overall.hourly_profile_kwh).all()
+
+
+def test_consumption_import_and_export():
     idx = constants.BASE_YEAR_HOURLY_INDEX
     minute_of_the_day = idx.hour * 60 + idx.minute
     profile_data = - np.cos(minute_of_the_day * np.pi * 2 / (24 * 60))
@@ -64,12 +72,14 @@ def test_consumption():
 
     np.testing.assert_almost_equal(consumption_oil.overall.annual_sum_kwh, 0)  # symmetric
     assert consumption_oil.imported.annual_sum_kwh > 0
-    assert consumption_oil.exported.annual_sum_kwh < 0
-    assert consumption_oil.imported.annual_sum_kwh == consumption_oil.imported.annual_sum_kwh
-    assert consumption_oil.imported.annual_sum_fuel_units == consumption_oil.imported.annual_sum_fuel_units
+    assert consumption_oil.exported.annual_sum_kwh > 0
+    np.testing.assert_almost_equal(consumption_oil.imported.annual_sum_kwh,
+                                   consumption_oil.exported.annual_sum_kwh)
+    np.testing.assert_almost_equal(consumption_oil.imported.annual_sum_fuel_units,
+                                   consumption_oil.exported.annual_sum_fuel_units)   # symmetric
 
     assert (consumption_oil.imported.hourly_profile_kwh >= 0).all()
-    assert (consumption_oil.exported.hourly_profile_fuel_units <= 0).all()
+    assert (consumption_oil.exported.hourly_profile_fuel_units >= 0).all()
 
     consumption_oil_two = consumption.Consumption(hourly_profile_kwh=profile, fuel=constants.OIL)
     consumption_oil_added = consumption_oil_two.add(consumption_oil)

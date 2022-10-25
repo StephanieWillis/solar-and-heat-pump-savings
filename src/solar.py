@@ -40,8 +40,9 @@ class Solar:
     def generation(self):
         if self.peak_capacity_kw_out_per_kw_in_per_m2 > 0:
             profile_kwh = self.get_hourly_radiation_from_eu_api()
+            profile_kwh.index = constants.BASE_YEAR_HOURLY_INDEX
         else:
-            profile_kwh = pd.Series(index=list(range(8760)), data=0)
+            profile_kwh = pd.Series(index=constants.BASE_YEAR_HOURLY_INDEX, data=0)
         # set negative as generation not consumption
         profile_kwh_negative = profile_kwh * -1
         generation = Consumption(hourly_profile_kwh=profile_kwh_negative, fuel=constants.ELECTRICITY)
