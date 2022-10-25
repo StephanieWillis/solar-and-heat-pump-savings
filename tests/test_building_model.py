@@ -129,30 +129,30 @@ def test_set_up_house_from_heating_name():
     return hp_house, gas_house, oil_house
 
 
-# def test_upgrade_buildings():
-#     house_floor_area_m2 = 100
-#     house_type = "terrace"
-#     envelope = building_model.BuildingEnvelope(house_type=house_type, floor_area_m2=house_floor_area_m2)
-#     oil_house = building_model.House.set_up_from_heating_name(envelope=envelope, heating_name='Oil boiler')
-#
-#     upgrade_heating = building_model.HeatingSystem.from_constants(name='Heat pump',
-#                                                                   parameters=constants.DEFAULT_HEATING_CONSTANTS[
-#                                                                       'Heat pump'])
-#     solar_install = solar.Solar(orientation=SolarConstants.ORIENTATIONS['South'],
-#                                 roof_plan_area=48)
-#     hp_house, solar_house, both_house = building_model.upgrade_buildings(baseline_house=oil_house,
-#                                                                          upgrade_heating=upgrade_heating,
-#                                                                          upgrade_solar=solar_install)
-#     assert hp_house.solar.generation.overall.annual_sum_kwh == 0
-#     assert both_house.solar.generation.overall.annual_sum_kwh < 0  # export defined as negative
-#     np.testing.assert_almost_equal(both_house.consumption_per_fuel['electricity'].exported.annual_sum_kwh
-#                                    + both_house.consumption_per_fuel['electricity'].imported.annual_sum_kwh,
-#                                    both_house.consumption_per_fuel['electricity'].overall.annual_sum_kwh)
-#     assert hp_house.total_annual_bill > both_house.total_annual_bill
-#
-#     assert both_house.solar.generation.overall.annual_sum_kwh == solar_house.solar.generation.overall.annual_sum_kwh
-#
-#     return hp_house, solar_house, both_house
+def test_upgrade_buildings():
+    house_floor_area_m2 = 100
+    house_type = "terrace"
+    envelope = building_model.BuildingEnvelope(house_type=house_type, floor_area_m2=house_floor_area_m2)
+    oil_house = building_model.House.set_up_from_heating_name(envelope=envelope, heating_name='Oil boiler')
+
+    upgrade_heating = building_model.HeatingSystem.from_constants(name='Heat pump',
+                                                                  parameters=constants.DEFAULT_HEATING_CONSTANTS[
+                                                                      'Heat pump'])
+    solar_install = solar.Solar(orientation=SolarConstants.ORIENTATIONS['South'],
+                                roof_plan_area=48)
+    hp_house, solar_house, both_house = building_model.upgrade_buildings(baseline_house=oil_house,
+                                                                         upgrade_heating=upgrade_heating,
+                                                                         upgrade_solar=solar_install)
+    assert hp_house.solar.generation.overall.annual_sum_kwh == 0
+    assert both_house.solar.generation.overall.annual_sum_kwh < 0  # export defined as negative
+    np.testing.assert_almost_equal(both_house.consumption_per_fuel['electricity'].imported.annual_sum_kwh
+                                   - both_house.consumption_per_fuel['electricity'].exported.annual_sum_kwh,
+                                   both_house.consumption_per_fuel['electricity'].overall.annual_sum_kwh)
+    assert hp_house.total_annual_bill > both_house.total_annual_bill
+
+    assert both_house.solar.generation.overall.annual_sum_kwh == solar_house.solar.generation.overall.annual_sum_kwh
+
+    return hp_house, solar_house, both_house
 
 
 def test_combine_results_dfs_multiple_houses():
