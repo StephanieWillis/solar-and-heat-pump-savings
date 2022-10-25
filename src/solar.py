@@ -24,18 +24,24 @@ class Solar:
         self.roof_area = roof_plan_area / np.cos(np.radians(self.pitch))
 
         self.number_of_panels = self.get_number_of_panels()  # not a property because want to be able to overwrite
+        # Does mean that future changes in roof area won't chagne number of panels however
         self.kwp_per_panel = SolarConstants.KW_PEAK_PER_PANEL
 
     def __hash__(self):
-        return hash((self.orientation.azimuth_degrees, self.latitude, self.longitude, self.pitch, self.number_of_panels))
+        return hash((self.latitude,
+                     self.longitude,
+                     self.pitch,
+                     self.peak_capacity_kw_out_per_kw_in_per_m2,
+                     self.orientation.azimuth_degrees
+                     ))
 
     def __eq__(self, other: 'Solar'):
         result = (isinstance(other, 'Solar')
-                  and self.orientation.azimuth_degrees == other.orientation.azimuth_degrees
                   and self.latitude == other.latitude
                   and self.longitude == other.longitude
                   and self.pitch == other.pitch
-                  and self.number_of_panels == other.number_of_panels
+                  and self.peak_capacity_kw_out_per_kw_in_per_m2 == other.peak_capacity_kw_out_per_kw_in_per_m2
+                  and self.orientation.azimuth_degrees == other.orientation.azimuth_degrees
                   )
         return result
 

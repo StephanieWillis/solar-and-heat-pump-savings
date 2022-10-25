@@ -6,7 +6,7 @@ import numpy as np
 from math import floor
 
 import solar
-from constants import OrientationOptions, SolarConstants
+from constants import OrientationOptions, SolarConstants, BASE_YEAR_HOURLY_INDEX
 
 
 def test_roof_area_returns_expected_type_and_value():
@@ -55,7 +55,7 @@ def test_get_hourly_radiation_from_eu_api_returns_expected_annual_sum():
     assert solar_install.peak_capacity_kw_out_per_kw_in_per_m2 == 3.0
     pv_power_kw = solar_install.get_hourly_radiation_from_eu_api()
     np.testing.assert_almost_equal(pv_power_kw.sum(), 2271.12168)
-    np.testing.assert_almost_equal(solar_install.generation.exported.annual_sum_kwh, - 2271.12168)
+    np.testing.assert_almost_equal(solar_install.generation.exported.annual_sum_kwh, 2271.12168)
     np.testing.assert_almost_equal(solar_install.generation.overall.annual_sum_kwh, - 2271.12168)
     np.testing.assert_almost_equal(solar_install.generation.imported.annual_sum_kwh, 0)
 
@@ -71,13 +71,15 @@ def test_generation_attributed_to_correct_fuel_and_consumption_stream():
     assert solar_install.generation.fuel.name == 'electricity'
     assert solar_install.generation.fuel.units == "kwh"
 
-    assert isinstance(solar_install.generation.overall.hourly, pd.Series)
-    assert (solar_install.generation.overall.hourly <= 0).all()  # export defined as negative
-    fig = px.line(solar_install.generation.overall.hourly.loc["2020-01-01": "2020-01-03"])
-    fig.show()
+    assert isinstance(solar_install.generation.overall.hourly_profile_kwh, pd.Series)
+    assert (solar_install.generation.overall.hourly_profile_kwh <= 0).all()  # export defined as negative
+    assert (solar_install.generation.exported.hourly_profile_kwh >= 0).all()  # but positive when 'exported' property
+    assert (solar_install.generation.imported.hourly_profile_kwh == 0).all()
+    # fig = px.line(solar_install.generation.overall.hourly_profile_kwh.loc["2020-01-01": "2020-01-03"])
+    # fig.show()
 
     assert isinstance(solar_install.generation.overall.annual_sum_kwh, float)
-    assert (solar_install.generation.exported.annual_sum_kwh == solar_install.generation.overall.annual_sum_kwh)
+    assert (solar_install.generation.exported.annual_sum_kwh == - solar_install.generation.overall.annual_sum_kwh)
     assert (solar_install.generation.imported.annual_sum_kwh == 0)
 
     return solar_install
@@ -93,8 +95,8 @@ def test_solar_install_when_roof_area_is_zero():
     np.testing.assert_almost_equal(solar_install.generation.exported.annual_sum_kwh, 0)
     np.testing.assert_almost_equal(solar_install.generation.overall.annual_sum_kwh, 0)
     np.testing.assert_almost_equal(solar_install.generation.imported.annual_sum_kwh, 0)
-    assert (solar_install.generation.overall.hourly == 0).all()
-    assert(solar_install.generation.overall.hourly.index == list(range(8760))).all()
+    assert (solar_install.generation.overall.hourly_profile_kwh == 0).all()
+    assert(solar_install.generation.overall.hourly_profile_kwh.index == BASE_YEAR_HOURLY_INDEX).all()
     return solar_install
 
 
@@ -117,18 +119,29 @@ def test_cache_on_get_hourly_radiation_from_eu_api():
     assert solar.Solar.get_hourly_radiation_from_eu_api.cache_info().misses == 1
     assert solar.Solar.get_hourly_radiation_from_eu_api.cache_info().currsize == 1
 
-    # check also works on copy
+    # check also works on copy - should hit
     solar_install_two = solar_install
+    solar_install_two.generation.overall.annual_sum_kwh
     assert hash(solar_install) == hash(solar_install_two)
+    print(solar.Solar.get_hourly_radiation_from_eu_api.cache_info())
     assert solar.Solar.get_hourly_radiation_from_eu_api.cache_info().hits == 4
     assert solar.Solar.get_hourly_radiation_from_eu_api.cache_info().misses == 1
     assert solar.Solar.get_hourly_radiation_from_eu_api.cache_info().currsize == 1
 
-    # Should miss here
+    # Change number of panels - should miss
     solar_install_two.number_of_panels = 1
     solar_install_two.generation.overall.annual_sum_kwh
+    print(solar.Solar.get_hourly_radiation_from_eu_api.cache_info())
     assert solar.Solar.get_hourly_radiation_from_eu_api.cache_info().hits == 4
     assert solar.Solar.get_hourly_radiation_from_eu_api.cache_info().misses == 2
     assert solar.Solar.get_hourly_radiation_from_eu_api.cache_info().currsize == 2
+
+    # Change orientation - should miss
+    solar_install.orientation = OrientationOptions['South']
+    solar_install.generation.overall.annual_sum_kwh
+    print(solar.Solar.get_hourly_radiation_from_eu_api.cache_info())
+    assert solar.Solar.get_hourly_radiation_from_eu_api.cache_info().hits == 4
+    assert solar.Solar.get_hourly_radiation_from_eu_api.cache_info().misses == 3
+    assert solar.Solar.get_hourly_radiation_from_eu_api.cache_info().currsize == 3
 
 
