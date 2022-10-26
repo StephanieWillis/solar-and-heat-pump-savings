@@ -12,11 +12,11 @@ EMPTY_TIMESERIES = pd.Series(index=BASE_YEAR_HOURLY_INDEX, data=0)
 
 KWH_PER_LITRE_OF_OIL = 10.35  # https://www.thegreenage.co.uk/is-heating-oil-a-cheap-way-to-heat-my-home/
 
-ELEC_TCO2_PER_KWH = 180 / 10 ** 6
-ELECTRICITY = Fuel("electricity", tco2_per_kwh=ELEC_TCO2_PER_KWH)  # Emission factors approximate for now
-GAS_TCO2_PER_KWH = 300 / 10 ** 6
+ELEC_TCO2_PER_KWH = 186 / 10 ** 6
+ELECTRICITY = Fuel("electricity", tco2_per_kwh=ELEC_TCO2_PER_KWH)
+GAS_TCO2_PER_KWH = 202 / 10 ** 6
 GAS = Fuel(name="gas", tco2_per_kwh=GAS_TCO2_PER_KWH)
-OIL_TCO2_PER_KWH = 400 / 10 ** 6
+OIL_TCO2_PER_KWH = 260 / 10 ** 6
 OIL = Fuel(name="oil", units="litres", converter_consumption_units_to_kwh=KWH_PER_LITRE_OF_OIL,
            tco2_per_kwh=OIL_TCO2_PER_KWH)
 FUELS = [ELECTRICITY, GAS, OIL]
@@ -31,9 +31,9 @@ class HeatingConstants:
 
 DEFAULT_HEATING_CONSTANTS = {
     "Gas boiler": HeatingConstants(space_heating_efficiency=0.85, water_heating_efficiency=0.8, fuel=GAS),
-    "Oil boiler": HeatingConstants(space_heating_efficiency=0.8, water_heating_efficiency=0.75, fuel=OIL),
+    "Oil boiler": HeatingConstants(space_heating_efficiency=0.85, water_heating_efficiency=0.8, fuel=OIL),
     "Direct electric": HeatingConstants(space_heating_efficiency=1.0, water_heating_efficiency=1.0, fuel=ELECTRICITY),
-    "Heat pump": HeatingConstants(space_heating_efficiency=3.5, water_heating_efficiency=3.0, fuel=ELECTRICITY),
+    "Heat pump": HeatingConstants(space_heating_efficiency=3.4, water_heating_efficiency=3.0, fuel=ELECTRICITY),
 }
 
 
