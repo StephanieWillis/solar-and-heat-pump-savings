@@ -6,7 +6,30 @@ of solar generation that is used within the home vs. exported.
 ## Data sources
 
 
-### Annual demand
+### Annual electricity demand excluding space and water heating
+
+Electricity demand: Use Elexon Class 1 data, using 2021 as a base year. Assign days to seasons. Note half hourly
+so needs splitting. Consider whether ok to use or includes too much space heating. Credit cutmyenergybill project if use 
+this. That app uses a heating degree day approach to gas use. Not ideal.
+
+
+### Annual heat demand profile
+
+Half-hourly heating demand profiles for each heating system are taken from the UKERC dataset
+["Spatio-temporal heat demand for LSOAs in England and Wales"](https://ukerc.rl.ac.uk/DC/cgi-bin/edc_search.pl?WantComp=165).
+The methodology use to produce this data can be found in [this paper](https://www.nature.com/articles/s41597-022-01356-9),
+and the code itself can be found [here](https://github.com/AlexandreLab/UKERC-data).
+
+From their Readme: "The normalised profiles have been temperature corrected based on the number of degree days difference between a typical 
+year and year 2013. Hence, the sum of the values of a normalised heat production profile is equal to 0.961203 instead of 1.""
+In the step where we pickle the demand profile we normalize it so the profiles sum to 1. 
+
+TODO: remove below
+2900 for elec and 12000 for gas typical apparently
+
+
+### Possible cost data
+Heat pump cost tool, doesn't work all that well: http://asf-hp-cost-demo-l-b-1046547218.eu-west-1.elb.amazonaws.com
 
 
 ### Heating system efficiencies
@@ -16,6 +39,7 @@ of solar generation that is used within the home vs. exported.
  with flow temperature of 50C for space heating and 55C for water heating. These efficiencies are above
 recorded averages (2.76 according to this [nesta analysis](https://www.nesta.org.uk/report/reduce-the-cost-of-heat-pumps/))
 but lower than reported values for high quality installs. 
+# TODO: use efficiencies at 55C for space and derate somewhat for water
 
 **Gas boiler** - using 85% for space heating, a widely used assumption including in this 
 [nesta analysis](https://www.nesta.org.uk/report/reduce-the-cost-of-heat-pumps/)). Using 80% for water heating due to lower
@@ -53,6 +77,8 @@ Gas and oil numbers from BEIS UK Government GHG Conversion Factors for Company R
 and Burning oil.
 Electricity emissions factors are UK average from the start of 2022 to 2022-10-26. Data from 
 [National Grid ESO](https://data.nationalgrideso.com/carbon-intensity1/historic-generation-mix/r/historic_gb_generation_mix).
+
+# TODO: check SAP elec carbon, apparently its 0.136
 
 ### Tariffs
 
