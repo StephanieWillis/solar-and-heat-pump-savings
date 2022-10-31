@@ -5,10 +5,10 @@ import pandas as pd
 from fuels import Fuel
 
 # based on data from
-HEATING_DEMAND_BY_HOUSE_TYPE = {"Detached": 14000,
+HEATING_DEMAND_BY_HOUSE_TYPE = {"Terrace": 9900,  # order here defines dropdown order and default, so most common first
                                 "Semi-detached": 10600,
-                                "Terrace": 9900,
-                                "Flat": 6600}
+                                "Flat": 6600,
+                                "Detached": 14000}
 
 # Use same year as solar year
 BASE_YEAR_HOURLY_INDEX = pd.date_range(start="2013-01-01", end="2014-01-01", freq="1H", inclusive="left")
@@ -45,7 +45,8 @@ DEFAULT_HEATING_CONSTANTS = {
                                    hourly_demand_profile=HOURLY_HEAT_DEMAND_DF['Normalised_Gas_boiler_heat']),
     "Direct electric": HeatingConstants(efficiency=1.0,
                                         fuel=ELECTRICITY,
-                                        hourly_demand_profile=HOURLY_HEAT_DEMAND_DF['Normalised_Resistance_heater_heat']),
+                                        hourly_demand_profile=HOURLY_HEAT_DEMAND_DF[
+                                            'Normalised_Resistance_heater_heat']),
     "Heat pump": HeatingConstants(efficiency=3.0,
                                   fuel=ELECTRICITY,
                                   hourly_demand_profile=HOURLY_HEAT_DEMAND_DF['Normalised_ASHP_heat']),
@@ -108,7 +109,6 @@ class SolarConstants:
     # Panel dimensions and kW_peak from https://www.greenmatch.co.uk/blog/how-many-solar-panels-do-i-need
     PERCENT_SQUARE_USABLE = 0.8  # complete guess
     API_YEAR = 2013
-    #Was 202 Based on quick comparison of years for one location in the uk.
+    # Was 202 Based on quick comparison of years for one location in the uk.
     # If you don't pass years to the API it gives you all hours from first to last year they have data for.
     SYSTEM_LOSS = 14  # percentage loss in the system - the PVGIS documentation suggests 14 %
-
