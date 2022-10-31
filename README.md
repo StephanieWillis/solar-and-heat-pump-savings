@@ -36,15 +36,13 @@ Heat pump cost tool, doesn't work all that well: http://asf-hp-cost-demo-l-b-104
 
 **Heat pumps** - using rounded values from 5 kW 
 [Vaillant arotherm SCOP data](https://www.vaillant.co.uk/downloads/aproducts/renewables-1/arotherm-plus/arotherm-plus-1/quick-guides/new-5/installers-quick-guide-arotherm-plus-1949445.pdf),
- with flow temperature of 50C for space heating and 55C for water heating. These efficiencies are above
+ with flow temperature of 55C. These efficiencies are above
 recorded averages (2.76 according to this [nesta analysis](https://www.nesta.org.uk/report/reduce-the-cost-of-heat-pumps/))
-but lower than reported values for high quality installs. 
-# TODO: use efficiencies at 55C for space and derate somewhat for water
+but lower than reported values for high quality installs.
 
 **Gas boiler** - using 85% for space heating, a widely used assumption including in this 
 [nesta analysis](https://www.nesta.org.uk/report/reduce-the-cost-of-heat-pumps/)). Using 80% for water heating due to lower
-efficiencies in the summer when the boiler only heats hot water. These are likely at the high end of real gas
-boiler performance. 
+efficiencies in the summer when the boiler only heats hot water.
 
 **Oil boiler** - using the same values as for a gas boiler because [SAP](https://www.bre.co.uk/filelibrary/SAP/2012/SAP-2012_9-92.pdf)
 assumptions for a condensing oil boiler are very similar to those for modern condensing gas combi. 

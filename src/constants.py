@@ -27,14 +27,31 @@ class HeatingConstants:
     space_heating_efficiency: float
     water_heating_efficiency: float
     fuel: Fuel
+    hourly_demand_profile: pd.Series
 
+
+HOURLY_HEAT_DEMAND_DF = pd.read_pickle('../src/hourly_heating_demand_profiles_2013.pkl')
 
 DEFAULT_HEATING_CONSTANTS = {
-    "Gas boiler": HeatingConstants(space_heating_efficiency=0.85, water_heating_efficiency=0.8, fuel=GAS),
-    "Oil boiler": HeatingConstants(space_heating_efficiency=0.85, water_heating_efficiency=0.8, fuel=OIL),
-    "Direct electric": HeatingConstants(space_heating_efficiency=1.0, water_heating_efficiency=1.0, fuel=ELECTRICITY),
-    "Heat pump": HeatingConstants(space_heating_efficiency=3.4, water_heating_efficiency=3.0, fuel=ELECTRICITY),
+    "Gas boiler": HeatingConstants(space_heating_efficiency=0.85,
+                                   water_heating_efficiency=0.8,
+                                   fuel=GAS,
+                                   hourly_demand_profile=HOURLY_HEAT_DEMAND_DF['Normalised_Gas_boiler_heat']),
+    "Oil boiler": HeatingConstants(space_heating_efficiency=0.85,
+                                   water_heating_efficiency=0.8,
+                                   fuel=OIL,
+                                   hourly_demand_profile=HOURLY_HEAT_DEMAND_DF['Normalised_Gas_boiler_heat']),
+    "Direct electric": HeatingConstants(space_heating_efficiency=1.0,
+                                        water_heating_efficiency=1.0,
+                                        fuel=ELECTRICITY,
+                                        hourly_demand_profile=HOURLY_HEAT_DEMAND_DF['Normalised_Resistance_heater_heat']),
+    "Heat pump": HeatingConstants(space_heating_efficiency=3.0,
+                                  water_heating_efficiency=3.0,
+                                  fuel=ELECTRICITY,
+                                  hourly_demand_profile=HOURLY_HEAT_DEMAND_DF['Normalised_ASHP_heat']),
 }
+
+
 
 
 @dataclass

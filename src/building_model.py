@@ -168,13 +168,15 @@ class HeatingSystem:
     space_heating_efficiency: float
     water_heating_efficiency: float
     fuel: constants.Fuel
+    demand_profile: pd.Series
 
     @classmethod
     def from_constants(cls, name, parameters: constants.HeatingConstants):
         return cls(name=name,
                    space_heating_efficiency=parameters.space_heating_efficiency,
                    water_heating_efficiency=parameters.water_heating_efficiency,
-                   fuel=parameters.fuel)
+                   fuel=parameters.fuel,
+                   demand_profile=parameters.hourly_demand_profile)
 
     def __post_init__(self):
         if self.fuel not in constants.FUELS:
