@@ -64,32 +64,30 @@ def render_and_update_current_home(house: House):
 
 def render_and_update_envelope_outputs(envelope: 'BuildingEnvelope') -> 'BuildingEnvelope':
     st.write(f"We assume that an {envelope.floor_area_m2}m\u00b2 {envelope.house_type.lower()} needs: ")
-    envelope.space_heating_demand = render_and_update_annual_demand(label='Heating (kwh): ',
-                                                                    demand=envelope.space_heating_demand)
-    envelope.annual_heating_demand = render_and_update_annual_demand(label='Hot water (kwh): ',
+    envelope.annual_heating_demand = render_and_update_annual_demand(label='Heating (kwh): ',
                                                                      demand=envelope.annual_heating_demand)
     envelope.base_demand = render_and_update_annual_demand(label='Other (lighting/appliances etc.) (kwh): ',
                                                            demand=envelope.base_demand)
     return envelope
 
 
-def render_and_update_annual_demand(label: str, demand: pd.Series) -> pd.Series:
+def render_and_update_annual_demand(label: str, demand: pd.Series | float) -> pd.Series:
     """ If user overwrites annual total then scale whole profile by multiplier"""
-    demand_overwrite = st.number_input(label=label, min_value=0, max_value=100000, value=int(demand.sum()))
-    if demand_overwrite != int(demand.sum()):  # scale profile  by correction factor
-        demand = demand_overwrite / int(demand.sum()) * demand
+    if type(demand) is pd.Series:
+        demand_overwrite = st.number_input(label=label, min_value=0, max_value=100000, value=int(demand.sum()))
+        if demand_overwrite != int(demand.sum()):  # scale profile  by correction factor
+            demand = demand_overwrite / int(demand.sum()) * demand
+    else:
+        demand_overwrite = st.number_input(label=label, min_value=0, max_value=100000, value=int(demand))
+        demand = demand_overwrite
     return demand
 
 
 def render_and_update_heating_system(heating_system: 'HeatingSystem') -> 'HeatingSystem':
-    heating_system.efficiency = st.number_input(label='Efficiency for space heating: ',
+    heating_system.efficiency = st.number_input(label='Heating efficiency: ',
                                                 min_value=0.0,
                                                 max_value=8.0,
                                                 value=heating_system.efficiency)
-    heating_system.water_heating_efficiency = st.number_input(label='Efficiency for water heating: ',
-                                                              min_value=0.0,
-                                                              max_value=8.0,
-                                                              value=heating_system.water_heating_efficiency)
     return heating_system
 
 
