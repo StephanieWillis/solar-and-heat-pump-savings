@@ -66,8 +66,8 @@ def render_and_update_envelope_outputs(envelope: 'BuildingEnvelope') -> 'Buildin
     st.write(f"We assume that an {envelope.floor_area_m2}m\u00b2 {envelope.house_type.lower()} needs: ")
     envelope.space_heating_demand = render_and_update_annual_demand(label='Heating (kwh): ',
                                                                     demand=envelope.space_heating_demand)
-    envelope.water_heating_demand = render_and_update_annual_demand(label='Hot water (kwh): ',
-                                                                    demand=envelope.water_heating_demand)
+    envelope.annual_heating_demand = render_and_update_annual_demand(label='Hot water (kwh): ',
+                                                                     demand=envelope.annual_heating_demand)
     envelope.base_demand = render_and_update_annual_demand(label='Other (lighting/appliances etc.) (kwh): ',
                                                            demand=envelope.base_demand)
     return envelope
@@ -82,10 +82,10 @@ def render_and_update_annual_demand(label: str, demand: pd.Series) -> pd.Series:
 
 
 def render_and_update_heating_system(heating_system: 'HeatingSystem') -> 'HeatingSystem':
-    heating_system.space_heating_efficiency = st.number_input(label='Efficiency for space heating: ',
-                                                              min_value=0.0,
-                                                              max_value=8.0,
-                                                              value=heating_system.space_heating_efficiency)
+    heating_system.efficiency = st.number_input(label='Efficiency for space heating: ',
+                                                min_value=0.0,
+                                                max_value=8.0,
+                                                value=heating_system.efficiency)
     heating_system.water_heating_efficiency = st.number_input(label='Efficiency for water heating: ',
                                                               min_value=0.0,
                                                               max_value=8.0,

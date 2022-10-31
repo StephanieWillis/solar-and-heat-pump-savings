@@ -40,8 +40,8 @@ Heat pump cost tool, doesn't work all that well: http://asf-hp-cost-demo-l-b-104
 recorded averages (2.76 according to this [nesta analysis](https://www.nesta.org.uk/report/reduce-the-cost-of-heat-pumps/))
 but lower than reported values for high quality installs.
 
-**Gas boiler** - using 85% for space heating, a widely used assumption including in this 
-[nesta analysis](https://www.nesta.org.uk/report/reduce-the-cost-of-heat-pumps/)). Using 80% for water heating due to lower
+**Gas boiler** - using 84%, as used in this 
+[Delta EE report](https://www.climatexchange.org.uk/media/1897/electrification_of_heat_and_impact_on_scottish_electricity_system_-_final_report1.pdf)). Using 80% for water heating due to lower
 efficiencies in the summer when the boiler only heats hot water.
 
 **Oil boiler** - using the same values as for a gas boiler because [SAP](https://www.bre.co.uk/filelibrary/SAP/2012/SAP-2012_9-92.pdf)

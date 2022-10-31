@@ -86,11 +86,8 @@ class House:
         electricity_consumption = base_consumption.add(self.solar.generation)
 
         # Heating
-        space_heating_consumption = self.heating_system.calculate_space_heating_consumption(
-            self.envelope.space_heating_demand)
-        water_heating_consumption = self.heating_system.calculate_water_heating_consumption(
-            self.envelope.water_heating_demand)
-        heating_consumption = water_heating_consumption.add(space_heating_consumption)
+        heating_consumption = self.heating_system.calculate_consumption(
+            self.envelope.annual_heating_demand)
 
         match self.heating_system.fuel:
             case base_consumption.fuel:  # only one fuel (electricity)
@@ -165,31 +162,23 @@ class Tariff:
 @dataclass
 class HeatingSystem:
     name: str
-    space_heating_efficiency: float
-    water_heating_efficiency: float
+    efficiency: float  # TODO: consider making efficiency a series as you can do from heating demand paper
     fuel: constants.Fuel
-    demand_profile: pd.Series
+    hourly_normalized_demand_profile: pd.Series
 
     @classmethod
     def from_constants(cls, name, parameters: constants.HeatingConstants):
         return cls(name=name,
-                   space_heating_efficiency=parameters.space_heating_efficiency,
-                   water_heating_efficiency=parameters.water_heating_efficiency,
+                   efficiency=parameters.efficiency,
                    fuel=parameters.fuel,
-                   demand_profile=parameters.hourly_demand_profile)
+                   hourly_normalized_demand_profile=parameters.hourly_demand_profile)
 
     def __post_init__(self):
         if self.fuel not in constants.FUELS:
             raise ValueError(f"fuel must be one of {constants.FUELS}")
 
-    def calculate_space_heating_consumption(self, space_heating_demand_kwh: pd.Series) -> Consumption:
-        return self.calculate_consumption(demand_kwh=space_heating_demand_kwh, efficiency=self.space_heating_efficiency)
-
-    def calculate_water_heating_consumption(self, water_heating_demand_kwh: pd.Series) -> Consumption:
-        return self.calculate_consumption(demand_kwh=water_heating_demand_kwh, efficiency=self.water_heating_efficiency)
-
-    def calculate_consumption(self, demand_kwh: pd.Series, efficiency: float) -> Consumption:
-        profile_kwh = demand_kwh / efficiency
+    def calculate_consumption(self, annual_space_heating_demand_kwh: float) -> Consumption:
+        profile_kwh = self.hourly_normalized_demand_profile / self.efficiency * annual_space_heating_demand_kwh
         consumption = Consumption(hourly_profile_kwh=profile_kwh, fuel=self.fuel)
         return consumption
 
@@ -207,8 +196,8 @@ class BuildingEnvelope:
         # Set initial demand values - user can overwrite later
         # Dummy data for now TODO get profiles from elsewhere
         self.base_demand = pd.Series(index=self.time_series_idx, data=0.001 * self.floor_area_m2)
-        self.water_heating_demand = pd.Series(index=self.time_series_idx, data=0.004 * self.floor_area_m2)
-        self.space_heating_demand = pd.Series(index=self.time_series_idx, data=0.005 * self.floor_area_m2)
+        # TODO use profiles from local area analysis in Nature paper for totals below
+        self.annual_heating_demand = 115 * self.floor_area_m2
 
 
 

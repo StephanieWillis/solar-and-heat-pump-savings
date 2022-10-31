@@ -14,26 +14,24 @@ def test_envelope():
 
     assert envelope.floor_area_m2 == house_floor_area_m2
     assert envelope.house_type == house_type
-    assert len(envelope.base_demand.index) == 8760 + 24  # leap year
+    assert len(envelope.base_demand.index) == 8760
     assert envelope.base_demand.sum() > 0
-    assert (envelope.space_heating_demand > 0).all()
-    assert (envelope.water_heating_demand > 0).all()
+    assert envelope.annual_heating_demand > 0
 
 
 def test_heating_system():
+    profile = pd.Series(index=constants.BASE_YEAR_HOURLY_INDEX, data=1/8760)
     elec_res = building_model.HeatingSystem(name='Electric storage heater',
-                                            space_heating_efficiency=1.0,
-                                            water_heating_efficiency=1.0,
-                                            fuel=constants.ELECTRICITY)
+                                            efficiency=1.0,
+                                            fuel=constants.ELECTRICITY,
+                                            hourly_normalized_demand_profile=profile)
 
-    demand = pd.Series(index=constants.BASE_YEAR_HOURLY_INDEX, data=5)
-    space_heating_consumption = elec_res.calculate_space_heating_consumption(demand)
-    water_heating_consumption = elec_res.calculate_water_heating_consumption(demand)
+    annual_demand = 10000
+    heating_consumption = elec_res.calculate_consumption(annual_space_heating_demand_kwh=annual_demand)
 
-    assert (space_heating_consumption.overall.hourly_profile_kwh == demand / elec_res.space_heating_efficiency).all()
-    assert water_heating_consumption.overall.annual_sum_kwh == demand.sum() / elec_res.water_heating_efficiency
-    assert water_heating_consumption.exported.annual_sum_kwh == 0
-    assert space_heating_consumption.imported.annual_sum_kwh == demand.sum() / elec_res.space_heating_efficiency
+    assert (heating_consumption.overall.hourly_profile_kwh == profile * annual_demand / elec_res.efficiency).all()
+    np.testing.assert_almost_equal(heating_consumption.imported.annual_sum_kwh,
+                                   annual_demand / elec_res.efficiency)
 
 
 def test_heating_system_from_constants():
@@ -44,12 +42,13 @@ def test_heating_system_from_constants():
     assert gas_boiler.fuel.units == 'kwh'
     assert gas_boiler.fuel.tco2_per_kwh == constants.GAS_TCO2_PER_KWH
     assert gas_boiler.fuel.converter_consumption_units_to_kwh == 1
+    np.testing.assert_almost_equal(gas_boiler.hourly_normalized_demand_profile.sum(), 1.0)
 
-    demand = pd.Series(index=constants.BASE_YEAR_HOURLY_INDEX, data=20)
-    space_heating_consumption = gas_boiler.calculate_space_heating_consumption(demand)
+    annual_demand = 12001
+    space_heating_consumption = gas_boiler.calculate_consumption(annual_demand)
     assert space_heating_consumption.fuel == constants.GAS
     np.testing.assert_almost_equal(space_heating_consumption.overall.annual_sum_kwh,
-                                   demand.sum() / gas_boiler.space_heating_efficiency)
+                                   annual_demand / gas_boiler.efficiency)
 
 
 def test_tariff_calculate_annual_cost():
@@ -57,12 +56,13 @@ def test_tariff_calculate_annual_cost():
                                    p_per_day=1.1,
                                    p_per_unit_import=2.0,
                                    p_per_unit_export=50)
+    profile = pd.Series(index=constants.BASE_YEAR_HOURLY_INDEX, data=1/8760)
     elec_res = building_model.HeatingSystem(name='Electric storage heater',
-                                            space_heating_efficiency=1.0,
-                                            water_heating_efficiency=1.0,
-                                            fuel=constants.ELECTRICITY)
-    demand = pd.Series(index=constants.BASE_YEAR_HOURLY_INDEX, data=10)
-    space_heating_consumption = elec_res.calculate_space_heating_consumption(demand)
+                                            efficiency=1.0,
+                                            fuel=constants.ELECTRICITY,
+                                            hourly_normalized_demand_profile=profile)
+    annual_demand = 10 * 8760
+    space_heating_consumption = elec_res.calculate_consumption(annual_demand)
     # Check cost when no export
     annual_cost = cheapo.calculate_annual_cost(consumption=space_heating_consumption)
     np.testing.assert_almost_equal(annual_cost,
