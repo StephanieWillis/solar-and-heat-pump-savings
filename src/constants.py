@@ -7,7 +7,7 @@ from fuels import Fuel
 HOUSE_TYPES = ["Terrace", "Semi-detached", "Detached", "Flat"]
 
 # Use same year as solar year
-BASE_YEAR_HOURLY_INDEX = pd.date_range(start="2020-01-01", end="2021-01-01", freq="1H", inclusive="left")
+BASE_YEAR_HOURLY_INDEX = pd.date_range(start="2013-01-01", end="2014-01-01", freq="1H", inclusive="left")
 EMPTY_TIMESERIES = pd.Series(index=BASE_YEAR_HOURLY_INDEX, data=0)
 
 KWH_PER_LITRE_OF_OIL = 10.35  # https://www.thegreenage.co.uk/is-heating-oil-a-cheap-way-to-heat-my-home/
@@ -109,7 +109,8 @@ class SolarConstants:
     KW_PEAK_PER_PANEL = 0.30  # output with incident radiation of 1kW/m2
     # Panel dimensions and kW_peak from https://www.greenmatch.co.uk/blog/how-many-solar-panels-do-i-need
     PERCENT_SQUARE_USABLE = 0.8  # complete guess
-    API_YEAR = 2020  # Based on quick comparison of years for one location in the uk.
+    API_YEAR = 2013
+    #Was 202 Based on quick comparison of years for one location in the uk.
     # If you don't pass years to the API it gives you all hours from first to last year they have data for.
     SYSTEM_LOSS = 14  # percentage loss in the system - the PVGIS documentation suggests 14 %
 
