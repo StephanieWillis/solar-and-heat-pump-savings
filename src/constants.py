@@ -4,7 +4,11 @@ import pandas as pd
 
 from fuels import Fuel
 
-HOUSE_TYPES = ["Terrace", "Semi-detached", "Detached", "Flat"]
+# based on data from
+HEATING_DEMAND_BY_HOUSE_TYPE = {"Detached": 14000,
+                                "Semi-detached": 10600,
+                                "Terrace": 9900,
+                                "Flat": 6600}
 
 # Use same year as solar year
 BASE_YEAR_HOURLY_INDEX = pd.date_range(start="2013-01-01", end="2014-01-01", freq="1H", inclusive="left")

@@ -13,9 +13,12 @@ def render() -> 'building_model.House':
 
 
 def render_building_envelope_questions() -> 'building_model.BuildingEnvelope':
-    house_type = st.selectbox('House Type', options=constants.HOUSE_TYPES)
+    house_type = st.selectbox('House Type', options=list(constants.HEATING_DEMAND_BY_HOUSE_TYPE.keys()))
     house_floor_area_m2 = st.number_input(label='House floor area (m2)', min_value=0, max_value=500, value=80)
-    envelope = building_model.BuildingEnvelope(house_type=house_type, floor_area_m2=house_floor_area_m2)
+    annual_heating_demand = constants.HEATING_DEMAND_BY_HOUSE_TYPE[house_type]
+    envelope = building_model.BuildingEnvelope(floor_area_m2=house_floor_area_m2,
+                                               house_type=house_type,
+                                               annual_heating_demand=annual_heating_demand)
     return envelope
 
 

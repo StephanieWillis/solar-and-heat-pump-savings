@@ -187,9 +187,10 @@ class HeatingSystem:
 class BuildingEnvelope:
     """ Stores info on the building and its energy demand"""
 
-    def __init__(self, floor_area_m2: float, house_type: str):
+    def __init__(self, floor_area_m2: float, house_type: str, annual_heating_demand: float):
         self.floor_area_m2 = floor_area_m2
         self.house_type = house_type
+        self.annual_heating_demand = annual_heating_demand
         self.time_series_idx: pd.Index = constants.BASE_YEAR_HOURLY_INDEX
         self.units: str = 'kwh'
 
@@ -197,7 +198,7 @@ class BuildingEnvelope:
         # Dummy data for now TODO get profiles from elsewhere
         self.base_demand = pd.Series(index=self.time_series_idx, data=0.001 * self.floor_area_m2)
         # TODO use profiles from local area analysis in Nature paper for totals below
-        self.annual_heating_demand = 115 * self.floor_area_m2
+
 
 
 

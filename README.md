@@ -12,24 +12,43 @@ Electricity demand: Use Elexon Class 1 data, using 2021 as a base year. Assign d
 so needs splitting. Consider whether ok to use or includes too much space heating. Credit cutmyenergybill project if use 
 this. That app uses a heating degree day approach to gas use. Not ideal.
 
+Table 2 of [this report](https://www.energysavingtrust.org.uk/sites/default/files/reports/PoweringthenationreportCO332.pdf)
+has overall values
 
-### Annual heat demand profile
+2900 for elec typical apparently
 
-Half-hourly heating demand profiles for each heating system are taken from the UKERC dataset
+
+### Annual heat demand
+We took annual heating demand values and half-hourly heating demand profiles from the UKERC dataset
 ["Spatio-temporal heat demand for LSOAs in England and Wales"](https://ukerc.rl.ac.uk/DC/cgi-bin/edc_search.pl?WantComp=165).
 The methodology use to produce this data can be found in [this paper](https://www.nature.com/articles/s41597-022-01356-9),
 and the code itself can be found [here](https://github.com/AlexandreLab/UKERC-data).
+#### Annual total
+
+To get indicative values of annual heating demand by building type we used the 'Annual_heating_demand_LSOA' data and 
+took the weighted average for each system/built form combination. We used the values for homes with gas boilers and 
+without energy efficiency upgrades on the basis they are likely to be most representative of the typical stock. The
+resulting values are hard coded in constants.HEATING_DEMAND_BY_BUILT_FORM
+Could at a later use values specific ot the local area using [this sort of data
+](https://www.data.gov.uk/dataset/9b090605-9861-4bb4-9fa4-6845daa2de9b/postcode-to-output-area-to-lower-layer-super-output-area-to-middle-layer-super-output-area-to-local-authority-district-february-2018-lookup-in-the-uk)
+
+To corroborate the above, this [nesta analysis
+](https://www.nesta.org.uk/report/reduce-the-cost-of-heat-pumps/))
+uses small, medium and large heat demand at 9500kWh, 14,500kWh, and 22,000 kWh respectively. This agrees well with the 
+averages produced using the process described above.
+
+#### Profiles
+Half-hourly heating demand profiles for each heating system are taken from the UKERC dataset
+["Spatio-temporal heat demand for LSOAs in England and Wales"](https://ukerc.rl.ac.uk/DC/cgi-bin/edc_search.pl?WantComp=165).
+
 
 From their Readme: "The normalised profiles have been temperature corrected based on the number of degree days difference between a typical 
 year and year 2013. Hence, the sum of the values of a normalised heat production profile is equal to 0.961203 instead of 1.""
 In the step where we pickle the demand profile we normalize it so the profiles sum to 1. 
 
-TODO: remove below
-2900 for elec and 12000 for gas typical apparently
-
 
 ### Possible cost data
-Heat pump cost tool, doesn't work all that well: http://asf-hp-cost-demo-l-b-1046547218.eu-west-1.elb.amazonaws.com
+Heat pump cost tool, doesn't work all that well: [here](http://asf-hp-cost-demo-l-b-1046547218.eu-west-1.elb.amazonaws.com)
 
 
 ### Heating system efficiencies
