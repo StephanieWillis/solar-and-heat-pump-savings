@@ -3,27 +3,46 @@
 Web app to calculate bill and carbon savings from installing solar, a heat pump, or both. Calculations account for proportion
 of solar generation that is used within the home vs. exported. 
 
+Calculations are hourly rather than half-hourly because the Solar generation API we are using gives hourly results.
+
 ## Data sources
 
+### Electricity demand excluding space and water heating
 
-### Annual electricity demand excluding space and water heating
-
-Electricity demand: Use Elexon Class 1 data, using 2021 as a base year. Assign days to seasons. Note half hourly
-so needs splitting. Consider whether ok to use or includes too much space heating. Credit cutmyenergybill project if use 
-this. That app uses a heating degree day approach to gas use. Not ideal.
-
+#### Annual totals
 Table 2 of [this report](https://www.energysavingtrust.org.uk/sites/default/files/reports/PoweringthenationreportCO332.pdf)
 has overall values
 
 2900 for elec typical apparently
 
+#### Hourly profiles
+Using Elexon's user demand profile data for Domestic Unrestricted (single rate) customers (Class 1). 
+This data gives an averaged demand profile for this user class, as explained [here
+](https://bscdocs.elexon.co.uk/guidance-notes/load-profiles-and-their-use-in-electricity-settlement).
+The fact that this data is averaged isn't ideal because it is likely smoother than a real demand profile and so may give
+estimates of solar self-use that are too high. The data also likely includes some households that use some electric resistance heating
+which may mean that we are double counting a small amount of heating consumption. If you know of better data that gets around 
+these problems please get in touch!
 
-### Annual heat demand
+Demand profiles in other sources such as [this paper](https://www.researchgate.net/publication/324141791_The_potential_for_peak_shaving_on_low_voltage_distribution_networks_using_electricity_storage)
+and [this report](https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/208097/10043_R66141HouseholdElectricitySurveyFinalReportissue4.pdf)
+are largely consistent with the elexon profiles, but they do show slightly lower winter peak demand. 
+
+Thanks to the [cutmyenergybill project](https://github.com/cutmyenergybill/domestic-energy-bill-reduction-app/)
+for alerting me to this dataset. 
+
+Still to do: Assign days to seasons. Note half hourly
+so needs splitting. Credit cutmyenergybill project if use 
+this. That app uses a heating degree day approach to gas use. Not ideal.
+
+
+### Heat demand
 We took annual heating demand values and half-hourly heating demand profiles from the UKERC dataset
 ["Spatio-temporal heat demand for LSOAs in England and Wales"](https://ukerc.rl.ac.uk/DC/cgi-bin/edc_search.pl?WantComp=165).
 The methodology use to produce this data can be found in [this paper](https://www.nature.com/articles/s41597-022-01356-9),
 and the code itself can be found [here](https://github.com/AlexandreLab/UKERC-data).
-#### Annual total
+
+#### Annual totals
 
 To get indicative values of annual heating demand by building type we used the 'Annual_heating_demand_LSOA' data and 
 took the weighted average for each system/built form combination. We used the values for homes with gas boilers and 
@@ -37,19 +56,13 @@ To corroborate the above, this [nesta analysis
 uses small, medium and large heat demand at 9500kWh, 14,500kWh, and 22,000 kWh respectively. This agrees well with the 
 averages produced using the process described above.
 
-#### Profiles
+#### Hourly profiles
 Half-hourly heating demand profiles for each heating system are taken from the UKERC dataset
 ["Spatio-temporal heat demand for LSOAs in England and Wales"](https://ukerc.rl.ac.uk/DC/cgi-bin/edc_search.pl?WantComp=165).
 
-
 From their Readme: "The normalised profiles have been temperature corrected based on the number of degree days difference between a typical 
 year and year 2013. Hence, the sum of the values of a normalised heat production profile is equal to 0.961203 instead of 1.""
-In the step where we pickle the demand profile we normalize it so the profiles sum to 1. 
-
-
-### Possible cost data
-Heat pump cost tool, doesn't work all that well: [here](http://asf-hp-cost-demo-l-b-1046547218.eu-west-1.elb.amazonaws.com)
-
+In the step where we pickle the demand profile we normalize it so the profiles sum to 1.
 
 ### Heating system efficiencies
 
@@ -105,5 +118,9 @@ which is active until April 2023.
 Without further government support, bills will increase after that date, at least in the short term. 
 The oil tariff is a rough average based on [Boiler Juice](https://www.boilerjuice.com/heating-oil-prices/) 
 data since prices stabilised in April 2022.
+
+
+### Possible cost data
+Heat pump cost tool, doesn't work all that well: [here](http://asf-hp-cost-demo-l-b-1046547218.eu-west-1.elb.amazonaws.com)
 
 
