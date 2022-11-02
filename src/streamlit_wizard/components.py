@@ -1,6 +1,6 @@
 import abc
 from collections import defaultdict
-from typing import List
+from typing import List, Dict
 
 import streamlit as st
 from stepper import stepper
@@ -40,8 +40,11 @@ class Wizard:
             st.session_state["page_state"] = defaultdict(lambda: dict())
 
     def go_to_named_page(self, page_name: str):
-        idx = self.page_names.index(page_name)
-        self.current_page_idx = idx
+        try:
+            idx = self.page_names.index(page_name)
+            self.current_page_idx = idx
+        except ValueError:
+            print(f"Cannot find {page_name} in {self.page_names}")
 
     @property
     def page_names(self):
@@ -67,8 +70,16 @@ class Wizard:
         return self.pages[self.current_page_idx]
 
     @property
+    def previous_page(self):
+        return self.pages[self.current_page_idx - 1]
+
+    @property
+    def next_page(self):
+        return self.pages[self.current_page_idx + 1]
+
+    @property
     def on_first_page(self) -> bool:
-        return self.current_page_idx ==0
+        return self.current_page_idx == 0
 
     @property
     def on_final_page(self) -> bool:
@@ -84,6 +95,13 @@ class Wizard:
         st.session_state["page_state"][self.current_page.name] = state
 
     def render(self):
+
+        query_params: Dict[str] = st.experimental_get_query_params()
+        page = query_params.get("page")
+        if page:
+            if query_params["page"] != self.current_page.name:
+                self.go_to_named_page(query_params["page"])
+
         with st.container():
             self.progress_bar()
             state = self.current_page.render()
@@ -106,17 +124,17 @@ class Wizard:
             next_ = col2.button("Next")
 
         if previous:
+            st.experimental_set_query_params(page=self.previous_page.name)
             self.go_to_previous_page()
 
         if next_:
+            st.experimental_set_query_params(page=self.next_page.name)
             self.go_to_next_page()
 
     def progress_bar(self):
 
         _, col1, _ = st.columns((2, 4, 2))
-        clicked_value = stepper(value=self.page_names[:self.current_page_idx+1])
+        clicked_value = stepper(value=self.page_names[: self.current_page_idx + 1])
+        st.write(self.page_names)
         if clicked_value:
             self.go_to_named_page(clicked_value)
-
-
-

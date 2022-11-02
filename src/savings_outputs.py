@@ -9,6 +9,29 @@ from building_model import *
 
 
 def render(house: 'House', solar: 'Solar'):
+
+
+    with st.sidebar:
+        st.header("Assumptions")
+        st.subheader("Current Performance")
+        house = render_and_update_current_home(house)
+
+        st.subheader("Improvement Options")
+        upgrade_heating, upgrade_solar = render_and_update_improvement_options(solar=solar)
+
+
+
+    # Upgraded buildings
+    hp_house, solar_house, both_house = building_model.upgrade_buildings(baseline_house=house,
+                                                                         upgrade_heating=upgrade_heating,
+                                                                         upgrade_solar=upgrade_solar)
+
+    # Combine results
+    results_df = combined_results_dfs_multiple_houses([house, solar_house, hp_house, both_house],
+                                                      ['Current', 'With solar', 'With a heat pump',
+                                                       'With solar and a heat pump'])
+
+
     st.header("Your Heat Pump and Solar Savings")
     st.subheader("Energy Bills")
     bills_chart = st.empty()
@@ -20,23 +43,6 @@ def render(house: 'House', solar: 'Solar'):
     energy_chart = st.empty()
     energy_text = st.empty()
 
-    with st.sidebar:
-        st.header("Assumptions")
-        st.subheader("Current Performance")
-        house = render_and_update_current_home(house)
-
-        st.subheader("Improvement Options")
-        upgrade_heating, upgrade_solar = render_and_update_improvement_options(solar=solar)
-
-    # Upgraded buildings
-    hp_house, solar_house, both_house = building_model.upgrade_buildings(baseline_house=house,
-                                                                         upgrade_heating=upgrade_heating,
-                                                                         upgrade_solar=upgrade_solar)
-
-    # Combine results
-    results_df = combined_results_dfs_multiple_houses([house, solar_house, hp_house, both_house],
-                                                      ['Current', 'With solar', 'With a heat pump',
-                                                       'With solar and a heat pump'])
 
     with bills_chart:
         render_bill_chart(results_df)
@@ -159,6 +165,8 @@ def render_bill_chart(results_df: pd.DataFrame):
 
 
 def render_bill_outputs(house: 'House', solar_house: 'House', hp_house: 'House', both_house: 'House'):
+
+    st.metric(label="Adding a heatpump", value=solar_house.total_annual_bill)
     st.write(f'We calculate that {produce_current_bill_sentence(house)}  \n'
              f'- with solar {produce_hypothetical_bill_sentence(solar_house)}, '
              f' {produce_bill_saving_sentence(house=solar_house, baseline_house=house)}  \n'

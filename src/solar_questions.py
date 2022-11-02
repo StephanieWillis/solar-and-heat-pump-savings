@@ -6,7 +6,7 @@ from building_model import Solar
 
 
 def render() -> 'Solar':
-    st.experimental_set_query_params(page="solar")
+
     st.header("How much solar power could you generate?")
 
     st.write(

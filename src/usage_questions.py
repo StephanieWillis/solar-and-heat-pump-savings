@@ -6,7 +6,7 @@ from savings_outputs import render_and_update_current_home
 
 
 def render() -> "building_model.House":
-    st.experimental_set_query_params(page="home")
+
     st.header("Start by telling us about your home")
     envelope = render_building_envelope_questions()
     heating_system_name = render_heating_system_questions()
