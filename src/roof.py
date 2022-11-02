@@ -22,10 +22,10 @@ def shoelace(x_y) -> float:
     x = x_y[:, 0]
     y = x_y[:, 1]
 
-    S1 = np.sum(x * np.roll(y, -1))
-    S2 = np.sum(y * np.roll(x, -1))
+    s1 = np.sum(x * np.roll(y, -1))
+    s2 = np.sum(y * np.roll(x, -1))
 
-    area = 0.5 * np.absolute(S1 - S2)
+    area = 0.5 * np.absolute(s1 - s2)
 
     return area
 
@@ -71,7 +71,7 @@ class Polygon:
         return lat * km_per_degree_lat * KM_TO_M, lng * km_per_degree_lng * KM_TO_M
 
 
-def roof_mapper(width: int, height: int) -> Optional[Polygon]:
+def roof_mapper(width: int, height: int) -> Optional[List[Polygon]]:
     """
     Render a map, returning co-ordinates of the most recently drawn shape
     """
@@ -108,4 +108,4 @@ def roof_mapper(width: int, height: int) -> Optional[Polygon]:
             polygon = Polygon(_points=drawing["geometry"]["coordinates"][0])
             polygons.append(polygon)
 
-        return polygons[-1]
+        return polygons

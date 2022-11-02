@@ -1,11 +1,9 @@
-from typing import Tuple
-
-import pandas as pd
 import plotly.express as px
 import streamlit as st
 
 import building_model
 from building_model import *
+from solar import Solar
 
 
 def render(house: 'House', solar: 'Solar'):
@@ -34,9 +32,9 @@ def render(house: 'House', solar: 'Solar'):
                                                                          upgrade_solar=upgrade_solar)
 
     # Combine results
-    results_df = combined_results_dfs_multiple_houses([house, solar_house, hp_house, both_house],
-                                                      ['Current', 'With solar', 'With a heat pump',
-                                                       'With solar and a heat pump'])
+    results_df = combine_results_dfs_multiple_houses([house, solar_house, hp_house, both_house],
+                                                     ['Current', 'With solar', 'With a heat pump',
+                                                      'With solar and a heat pump'])
 
     with bills_chart:
         render_bill_chart(results_df)
@@ -75,11 +73,11 @@ def render_and_update_envelope_outputs(envelope: 'BuildingEnvelope') -> 'Buildin
     return envelope
 
 
-def render_and_update_annual_demand(label: str, demand: 'Demand') -> 'Demand':
+def render_and_update_annual_demand(label: str, demand: pd.Series) -> pd.Series:
     """ If user overwrites annual total then scale whole profile by multiplier"""
-    demand_overwrite = st.number_input(label=label, min_value=0, max_value=100000, value=int(demand.annual_sum))
-    if demand_overwrite != int(demand.annual_sum):  # scale profile  by correction factor
-        demand.profile_kwh = demand_overwrite / int(demand.annual_sum) * demand.profile_kwh
+    demand_overwrite = st.number_input(label=label, min_value=0, max_value=100000, value=int(demand.sum()))
+    if demand_overwrite != int(demand.sum()):  # scale profile  by correction factor
+        demand = demand_overwrite / int(demand.sum()) * demand
     return demand
 
 

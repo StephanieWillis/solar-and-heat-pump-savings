@@ -6,3 +6,5 @@ plotly
 streamlit-drawable-canvas
 leafmap
 streamlit-folium
+requests
+setuptools
