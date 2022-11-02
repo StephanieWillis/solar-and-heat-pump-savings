@@ -5,6 +5,7 @@ import pandas as pd
 from fuels import Fuel
 
 HOUSE_TYPES = ["Terrace", "Semi-detached", "Detached", "Flat"]
+DEFAULT_FLOOR_AREA = 80
 
 # Use same year as solar year
 BASE_YEAR_HOURLY_INDEX = pd.date_range(start="2020-01-01", end="2021-01-01", freq="1H", inclusive="left")
