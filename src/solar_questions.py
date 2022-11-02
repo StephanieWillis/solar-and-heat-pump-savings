@@ -14,7 +14,7 @@ def render() -> 'Solar':
     )
     polygons = roof.roof_mapper(800, 400)
 
-    orientation_options = [name for name, azimuth in SolarConstants.ORIENTATIONS.items()]
+    orientation_options = [name for name, _ in SolarConstants.ORIENTATIONS.items()]
     orientation_name: str = st.selectbox("Solar Orientation", orientation_options)
     orientation = SolarConstants.ORIENTATIONS[orientation_name]
 
@@ -29,5 +29,16 @@ def render() -> 'Solar':
         st.write(f"We estimate you can fit {solar_install.number_of_panels} solar panels on your roof!")
 
     return solar_install
+
+
+def set_up_default_solar_install() -> 'Solar':
+
+    orientation_options = [name for name, _ in SolarConstants.ORIENTATIONS.items()]
+    solar_install = Solar(orientation=SolarConstants.ORIENTATIONS[orientation_options[0]],
+                          roof_plan_area=0,
+                          latitude=SolarConstants.DEFAULT_LAT,
+                          longitude=SolarConstants.DEFAULT_LONG)
+    return solar_install
+
 
 

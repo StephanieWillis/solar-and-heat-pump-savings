@@ -21,9 +21,17 @@ class SolarPage(Page):
 
 class ResultsPage(Page):
     def render(self):
-        house = st.session_state["page_state"]["house"]["house"]
-        solar = st.session_state["page_state"]["solar"]["solar"]
-        savings_outputs.render(house=house, solar=solar)
+        # produce default version of house and solar for cases where user doesn't click through all the pages
+        if st.session_state["page_state"]["house"] == {}:
+            house = house_questions.set_up_default_house()
+        else:
+            house = st.session_state["page_state"]["house"]["house"]
+        if st.session_state["page_state"]["solar"] == {}:
+            solar_install = solar_questions.set_up_default_solar_install()
+        else:
+            solar_install = st.session_state["page_state"]["solar"]["solar"]
+
+        savings_outputs.render(house=house, solar=solar_install)
 
 
 wizard = Wizard(pages=[YourHousePage("house"), SolarPage("solar"), ResultsPage("results")])
