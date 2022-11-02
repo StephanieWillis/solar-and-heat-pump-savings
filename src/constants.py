@@ -74,9 +74,9 @@ OrientationOptions = {
     'West': Orientation(azimuth_degrees=90, name='West'),
     'Northwest': Orientation(azimuth_degrees=135, name='Northwest'),
     'North': Orientation(azimuth_degrees=180, name='North'),
-    'Northeast': Orientation(azimuth_degrees=-45, name='Northeast'),
+    'Northeast': Orientation(azimuth_degrees=-135, name='Northeast'),
     'East': Orientation(azimuth_degrees=-90, name='East'),
-    'Southeast': Orientation(azimuth_degrees=-135, name='Southeast')}
+    'Southeast': Orientation(azimuth_degrees=-45, name='Southeast')}
 
 
 class SolarConstants:
