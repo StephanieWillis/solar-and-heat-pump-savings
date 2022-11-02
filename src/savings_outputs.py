@@ -4,10 +4,10 @@ import streamlit as st
 from building_model import *
 import house_questions
 from solar import Solar
-from solar_questions import render_and_update_solar
+from solar_questions import render_and_update_solar_inputs
 
 
-def render(house: 'House', solar: 'Solar'):
+def render(house: 'House', solar_install: 'Solar'):
     st.header("Your Heat Pump and Solar Savings")
     st.subheader("Energy Bills")
     bills_chart = st.empty()
@@ -25,7 +25,7 @@ def render(house: 'House', solar: 'Solar'):
         house = house_questions.render_and_update_current_home(house)
 
         st.subheader("Improvement Options")
-        upgrade_heating, upgrade_solar = render_and_update_improvement_options(solar=solar)
+        upgrade_heating, upgrade_solar = render_and_update_improvement_options(solar_install=solar_install)
 
     # Upgraded buildings
     hp_house, solar_house, both_house = upgrade_buildings(baseline_house=house,
@@ -53,15 +53,15 @@ def render(house: 'House', solar: 'Solar'):
         render_carbon_outputs(house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
 
 
-def render_and_update_improvement_options(solar: Solar) -> Tuple[HeatingSystem, Solar]:
+def render_and_update_improvement_options(solar_install: Solar) -> Tuple[HeatingSystem, Solar]:
     with st.expander("Heat pump assumptions"):
         upgrade_heating = HeatingSystem.from_constants(name='Heat pump',
                                                        parameters=constants.DEFAULT_HEATING_CONSTANTS['Heat pump'])
         upgrade_heating = house_questions.render_and_update_heating_system(heating_system=upgrade_heating)
     with st.expander("Solar PV assumptions "):
-        solar = render_and_update_solar(solar=solar)
+        solar_install = render_and_update_solar_inputs(solar=solar_install)
 
-    return upgrade_heating, solar
+    return upgrade_heating, solar_install
 
 
 def render_bill_chart(results_df: pd.DataFrame):

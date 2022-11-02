@@ -25,7 +25,7 @@ class ResultsPage(Page):
         house = house_questions.get_house_from_session_state_if_exists_or_create_default()
         solar_install = solar_questions.get_solar_install_from_session_state_if_exists_or_create_default()
 
-        savings_outputs.render(house=house, solar=solar_install)
+        savings_outputs.render(house=house, solar_install=solar_install)
 
 
 wizard = Wizard(pages=[YourHousePage("house"), SolarPage("solar"), ResultsPage("results")])
