@@ -1,6 +1,6 @@
 import streamlit as st
 
-import usage_questions
+import house_questions
 import solar_questions
 import savings_outputs
 
@@ -9,20 +9,9 @@ from streamlit_wizard import Wizard, Page
 st.set_page_config(initial_sidebar_state="collapsed")
 
 
-class WelcomePage(Page):
+class YourHousePage(Page):
     def render(self) -> dict:
-        st.write(
-            "This tool helps you get a rough idea of how much money and carbon you might save by installing a "
-            "heat pump and/or solar panels. The real costs and performance will depend on the specifics of your home."
-            "  \n  \n"
-            " Throughout the tool we will make estimates of various values based on your inputs."
-            " You can overwrite those assumptions in the sidebar of the results page if you have better info."
-        )
-
-
-class UsagePage(Page):
-    def render(self) -> dict:
-        return dict(house=usage_questions.render())
+        return dict(house=house_questions.render())
 
 
 class SolarPage(Page):
@@ -37,7 +26,7 @@ class ResultsPage(Page):
         savings_outputs.render(house=house, solar=solar)
 
 
-wizard = Wizard(pages=[UsagePage("house"), SolarPage("solar"), ResultsPage("results")])
+wizard = Wizard(pages=[YourHousePage("house"), SolarPage("solar"), ResultsPage("results")])
 
 st.markdown(
     "<p class='title'>Cut your bills with solar + heat pump </p>"
