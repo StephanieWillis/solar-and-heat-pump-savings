@@ -6,51 +6,66 @@ import constants
 
 
 def render() -> "building_model.House":
+    house = get_house_from_session_state_if_exists_or_create_default()
+
     st.header("Start by telling us about your home")
-    envelope = render_building_envelope_questions()
-    heating_system_name = render_heating_system_questions()
-    house = building_model.House.set_up_from_heating_name(envelope=envelope, heating_name=heating_system_name)
+    envelope = render_building_envelope_questions(house.envelope)
+    heating_system = render_heating_system_questions(heating_system=house.heating_system)
+    house = building_model.House(envelope=envelope, heating_system=heating_system)
 
     render_results(house)
 
     return house
 
 
+def get_house_from_session_state_if_exists_or_create_default():
+    if st.session_state["page_state"]["house"] == {}:
+        house = set_up_default_house()
+    else:
+        house = st.session_state["page_state"]["house"]["house"]
+    return house
+
+
 def set_up_default_house() -> "building_model.House":
     envelope = building_model.BuildingEnvelope(house_type=constants.HOUSE_TYPES[0],
                                                floor_area_m2=constants.DEFAULT_FLOOR_AREA)
-    heating_system_name = constants.DEFAULT_HEATING_CONSTANTS.keys()[0]
+    heating_system_name = list(constants.DEFAULT_HEATING_CONSTANTS.keys())[0]
     house = building_model.House.set_up_from_heating_name(envelope=envelope, heating_name=heating_system_name)
     return house
 
 
-def render_building_envelope_questions() -> "building_model.BuildingEnvelope":
+def render_building_envelope_questions(envelope: building_model.BuildingEnvelope) -> building_model.BuildingEnvelope:
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
             st.write("I live in a")
         with col2:
-            house_type = st.selectbox("", options=constants.HOUSE_TYPES)
+            idx = constants.HOUSE_TYPES.index(envelope.house_type)
+            envelope.house_type = st.selectbox("", options=constants.HOUSE_TYPES, index=idx)
 
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
             st.write("My floor area in metres squared is about")
         with col2:
-            house_floor_area_m2 = st.slider(label="", min_value=0, max_value=500, value=constants.DEFAULT_FLOOR_AREA)
+            envelope.floor_area_m2 = st.slider(label="", min_value=0, max_value=500, value=envelope.floor_area_m2)
 
-    envelope = building_model.BuildingEnvelope(house_type=house_type, floor_area_m2=house_floor_area_m2)
     return envelope
 
 
-def render_heating_system_questions() -> str:
+def render_heating_system_questions(heating_system: building_model.HeatingSystem) -> building_model.HeatingSystem:
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
             st.write("My home is heated with a")
         with col2:
-            heating_system_name = st.selectbox("Heating System", options=constants.DEFAULT_HEATING_CONSTANTS.keys())
-    return heating_system_name
+            idx = list(constants.DEFAULT_HEATING_CONSTANTS.keys()).index(heating_system.name)
+            heating_name = st.selectbox("Heating System", options=list(constants.DEFAULT_HEATING_CONSTANTS.keys()),
+                                        index=idx)
+            heating_system = building_model.HeatingSystem.from_constants(
+                name=heating_name,
+                parameters=constants.DEFAULT_HEATING_CONSTANTS[heating_name])
+    return heating_system
 
 
 def render_results(house) -> str:
