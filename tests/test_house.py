@@ -1,10 +1,8 @@
 import numpy as np
 import pandas as pd
 
-from src import constants
+from src import building_model, solar, constants
 from src.constants import SolarConstants
-from src import building_model
-from src import solar
 
 
 def test_envelope():
