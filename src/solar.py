@@ -38,8 +38,7 @@ class Solar:
                      ))
 
     def __eq__(self, other: 'Solar'):
-        result = (isinstance(other, 'Solar')
-                  and self.latitude == other.latitude
+        result = (self.latitude == other.latitude
                   and self.longitude == other.longitude
                   and self.pitch == other.pitch
                   and self.peak_capacity_kw_out_per_kw_in_per_m2 == other.peak_capacity_kw_out_per_kw_in_per_m2
