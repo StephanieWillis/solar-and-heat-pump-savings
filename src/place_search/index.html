@@ -1,122 +1,136 @@
 <html>
-  <body>
-    <!-- Set up your HTML here -->
-    <input id="postcode" value="" style="width: 100%; height: 30px" class="stTextInput"/>
-    <div id="output" value=""  style="z-index: 99999"/>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDE1h8LmQYFqt5_aHPd_7KKF-wpv14sJBA&libraries=places&callback=autoComplete&locationbias=ipBias"
+<body>
+<!-- Set up your HTML here -->
+<style> .postcode-input {
+    font-family: "Source Sans Pro", sans-serif;
+    padding: 8px;
+    border-radius: 5px;
+    border: None;
+    color: rgb(49, 51, 63);
+    background-color: rgb(240, 242, 246);
+    width: 100%;
+    height: 40px;
+    font-size: 16px;
+}
+</style>
+<input id="postcode" class='postcode-input' value=""  class="stTextInput"/>
+<div id="output" value="" style="z-index: 99999"/>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDE1h8LmQYFqt5_aHPd_7KKF-wpv14sJBA&libraries=places&callback=autoComplete&locationbias=ipBias"
         async defer></script>
-    <script>
-      // ----------------------------------------------------
-      // Just copy/paste these functions as-is:
+<script>
+    // ----------------------------------------------------
+    // Just copy/paste these functions as-is:
 
-      function sendMessageToStreamlitClient(type, data) {
+    function sendMessageToStreamlitClient(type, data) {
         var outData = Object.assign({
-          isStreamlitMessage: true,
-          type: type,
+            isStreamlitMessage: true,
+            type: type,
         }, data);
         window.parent.postMessage(outData, "*");
-      }
+    }
 
-      function init() {
+    function init() {
         sendMessageToStreamlitClient("streamlit:componentReady", {apiVersion: 1});
-      }
+    }
 
-      function setFrameHeight(height) {
+    function setFrameHeight(height) {
         sendMessageToStreamlitClient("streamlit:setFrameHeight", {height: height});
-      }
+    }
 
-      // The `data` argument can be any JSON-serializable value.
-      function sendDataToPython(data) {
+    // The `data` argument can be any JSON-serializable value.
+    function sendDataToPython(data) {
         sendMessageToStreamlitClient("streamlit:setComponentValue", data);
-      }
+    }
 
-      // ----------------------------------------------------
-      // Now modify this part of the code to fit your needs:
+    // ----------------------------------------------------
+    // Now modify this part of the code to fit your needs:
 
-      var myInput = document.getElementById("postcode");
+    var myInput = document.getElementById("postcode");
 
-        // This example requires the Places library. Include the libraries=places
-      // parameter when you first load the API. For example:
-      // <script src="https://maps.googleapis.com/maps/api/js?key=YOURAPIKEY&libraries=places">
+    // This example requires the Places library. Include the libraries=places
+    // parameter when you first load the API. For example:
+    // <script src="https://maps.googleapis.com/maps/api/js?key=YOURAPIKEY&libraries=places">
 
-      function autoComplete(){
-      initMap('postcode')
-      }
-      function initMap(id) {
+    function autoComplete() {
+        initMap('postcode')
+    }
+
+    function initMap(id) {
 
         var input = document.getElementById(id);
 
         //TODO make these bounds work
         const options = {
-    strictBounds: false,
-    locationBias: "ipbias"
-  };
+            strictBounds: false,
+            locationBias: "ipbias"
+        };
         var autocomplete = new google.maps.places.Autocomplete(input, options);
 
         // Set the data fields to return when the user selects a place.
         autocomplete.setFields(
             ['address_components', 'geometry', 'icon', 'name']);
 
-        autocomplete.addListener('place_changed', function() {
+        autocomplete.addListener('place_changed', function () {
 
-          var place = autocomplete.getPlace();
-          if (!place.geometry) {
-            // User entered the name of a Place that was not suggested and
-            // pressed the Enter key, or the Place Details request failed.
-            window.alert("No details available for input: '" + place.name + "'");
-            return;
-          }
+            var place = autocomplete.getPlace();
+            if (!place.geometry) {
+                // User entered the name of a Place that was not suggested and
+                // pressed the Enter key, or the Place Details request failed.
+                window.alert("No details available for input: '" + place.name + "'");
+                return;
+            }
 
-          var address = '';
-          if (place.address_components) {
-            address = [
-              (place.address_components[0] && place.address_components[0].short_name || ''),
-              (place.address_components[1] && place.address_components[1].short_name || ''),
-              (place.address_components[2] && place.address_components[2].short_name || '')
-            ].join(' ');
-          }
+            var address = '';
+            if (place.address_components) {
+                address = [
+                    (place.address_components[0] && place.address_components[0].short_name || ''),
+                    (place.address_components[1] && place.address_components[1].short_name || ''),
+                    (place.address_components[2] && place.address_components[2].short_name || '')
+                ].join(' ');
+            }
 
-          console.log(place['geometry'])
-          var output = document.getElementById("output");
-          output.value = place['geometry']['location']
-          var lat = place.geometry.location.lat();
-          var lng = place.geometry.location.lng();
+            console.log(place['geometry'])
+            var output = document.getElementById("output");
+            output.value = place['geometry']['location']
+            var lat = place.geometry.location.lat();
+            var lng = place.geometry.location.lng();
 
-          sendDataToPython({value: {"lat":lat, "lng":lng, "address": address}, dataType: "json"})
+            sendDataToPython({value: {"lat": lat, "lng": lng, "address": address}, dataType: "json"})
 
         });
 
 
-      }
+    }
 
-      // data is any JSON-serializable value you sent from Python,
-      // and it's already deserialized for you.
-      function onDataFromPython(event) {
+    // data is any JSON-serializable value you sent from Python,
+    // and it's already deserialized for you.
+    function onDataFromPython(event) {
         if (event.data.type !== "streamlit:render") return;
         // myInput.value = event.data.args.my_input_value;  // Access values sent from Python here!
-      }
-      //
-      // myInput.addEventListener("change", function() {
-      //   sendDataToPython({
-      //     value: myInput.value,
-      //     dataType: "json",
-      //   });
-      // })
+    }
 
-      // Hook things up!
-      window.addEventListener("message", onDataFromPython);
-      init();
+    //
+    // myInput.addEventListener("change", function() {
+    //   sendDataToPython({
+    //     value: myInput.value,
+    //     dataType: "json",
+    //   });
+    // })
 
-      // Hack to autoset the iframe height.
-      window.addEventListener("load", function() {
-        window.setTimeout(function() {
-          setFrameHeight(document.documentElement.clientHeight)
+    // Hook things up!
+    window.addEventListener("message", onDataFromPython);
+    init();
+
+    // Hack to autoset the iframe height.
+    window.addEventListener("load", function () {
+        window.setTimeout(function () {
+            setFrameHeight(document.documentElement.clientHeight)
         }, 0);
-      });
+    });
 
-      // Optionally, if the automatic height computation fails you, give this component a height manually
-      // by commenting out below:
-      setFrameHeight(100);
-    </script>
-  </body>
+    // Optionally, if the automatic height computation fails you, give this component a height manually
+    // by commenting out below:
+    setFrameHeight(100);
+</script>
+</body>
 </html>

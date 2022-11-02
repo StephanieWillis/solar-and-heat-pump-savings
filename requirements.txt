@@ -1,12 +1,10 @@
 protobuf ==  3.19
 streamlit==1.11.1
-numpy~=1.23.3
-pandas~=1.4.4
-plotly~=5.10.0
+numpy
+pandas
+plotly
 streamlit-drawable-canvas
-leafmap~=0.10.5
+leafmap
 streamlit-folium
-extra-streamlit-components
-folium~=0.12.1.post1
-requests~=2.28.1
-setuptools~=57.4.0
+requests
+setuptools

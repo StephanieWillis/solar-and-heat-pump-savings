@@ -3,7 +3,10 @@ import streamlit as st
 import usage_questions
 import solar_questions
 import savings_outputs
+
 from streamlit_wizard import Wizard, Page
+
+st.set_page_config(initial_sidebar_state="collapsed")
 
 
 class WelcomePage(Page):
@@ -29,12 +32,18 @@ class SolarPage(Page):
 
 class ResultsPage(Page):
     def render(self):
-        house = st.session_state["page_state"]["usage"]["house"]
+        house = st.session_state["page_state"]["house"]["house"]
         solar = st.session_state["page_state"]["solar"]["solar"]
         savings_outputs.render(house=house, solar=solar)
 
 
-wizard = Wizard(pages=[WelcomePage("welcome"), UsagePage("usage"), SolarPage("solar"), ResultsPage("results")])
+wizard = Wizard(pages=[UsagePage("house"), SolarPage("solar"), ResultsPage("results")])
 
-st.title("Cut your bills with solar and a heat pump")
+st.markdown(
+    "<p class='title'>Cut your bills with solar + heat pump </p>"
+    "<p class='description'> How much money and carbon can you save by installing a heat pump "
+    "or solar panels? Get an estimate in 5 minutes!</p>",
+    unsafe_allow_html=True,
+)
+
 wizard.render()

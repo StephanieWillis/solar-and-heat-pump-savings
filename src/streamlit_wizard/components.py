@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import List
 
 import streamlit as st
-
+from stepper import stepper
 from .style import inject_style
 
 
@@ -39,6 +39,14 @@ class Wizard:
         if "page_state" not in st.session_state:
             st.session_state["page_state"] = defaultdict(lambda: dict())
 
+    def go_to_named_page(self, page_name: str):
+        idx = self.page_names.index(page_name)
+        self.current_page_idx = idx
+
+    @property
+    def page_names(self):
+        return [page.name for page in self.pages]
+
     @property
     def total_pages(self) -> int:
         return len(self.pages)
@@ -59,6 +67,10 @@ class Wizard:
         return self.pages[self.current_page_idx]
 
     @property
+    def on_first_page(self) -> bool:
+        return self.current_page_idx ==0
+
+    @property
     def on_final_page(self) -> bool:
         return self.current_page_idx == (self.total_pages - 1)
 
@@ -73,20 +85,25 @@ class Wizard:
 
     def render(self):
         with st.container():
+            self.progress_bar()
             state = self.current_page.render()
             self.store_current_page_state(state)
-            self.progress_bar()
+
             self.buttons()
             inject_style()
 
     def buttons(self):
-        col1,_,  col2 = st.columns((1,7, 1))
-        previous = col1.button("Previous")
+        _, col1, col2 = st.columns((7, 1, 1), gap="medium")
+
+        if not self.on_first_page:
+            previous = col1.button("Previous")
+        else:
+            previous = None
 
         if self.on_final_page:
             next_ = col2.button("Finish")
         else:
-            next_ = col2.button("Next ")
+            next_ = col2.button("Next")
 
         if previous:
             self.go_to_previous_page()
@@ -97,11 +114,9 @@ class Wizard:
     def progress_bar(self):
 
         _, col1, _ = st.columns((2, 4, 2))
-        if self.display_page_count:
-            col1.markdown(
-                f'<div class="custom_centred" style="margin-top: 30px"  > This is page {self.current_page_idx + 1} of {self.total_pages} <div>',
-                unsafe_allow_html=True,
-            )
+        clicked_value = stepper(value=self.page_names[:self.current_page_idx+1])
+        if clicked_value:
+            self.go_to_named_page(clicked_value)
 
-        col1.write("")
-        col1.progress(((self.current_page_idx + 1) / self.total_pages))
+
+
