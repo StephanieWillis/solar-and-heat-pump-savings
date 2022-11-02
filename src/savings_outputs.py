@@ -4,6 +4,7 @@ import streamlit as st
 from building_model import *
 import house_questions
 from solar import Solar
+from solar_questions import render_and_update_solar
 
 
 def render(house: 'House', solar: 'Solar'):
@@ -61,18 +62,6 @@ def render_and_update_improvement_options(solar: Solar) -> Tuple[HeatingSystem, 
         solar = render_and_update_solar(solar=solar)
 
     return upgrade_heating, solar
-
-
-def render_and_update_solar(solar: 'Solar'):
-    solar.number_of_panels = st.number_input(label='Number of panels',
-                                             min_value=0,
-                                             max_value=40,
-                                             value=int(solar.number_of_panels))
-    solar.kwp_per_panel = st.number_input(label='capacity_per_panel',
-                                          min_value=0.0,
-                                          max_value=0.8,
-                                          value=solar.kwp_per_panel)
-    return solar
 
 
 def render_bill_chart(results_df: pd.DataFrame):
