@@ -5,7 +5,7 @@ import pandas as pd
 from fuels import Fuel
 
 # based on data from https://ukerc.rl.ac.uk/DC/cgi-bin/edc_search.pl?WantComp=165
-# processed in docs/Annual_heat_demand_LSOA.xlsx
+# processed in data_exploration_and_prep/Annual_heat_demand_LSOA.xlsx
 HEATING_DEMAND_BY_HOUSE_TYPE = {"Terrace": 9900,  # order here defines dropdown order and default, so most common first
                                 "Semi-detached": 10600,
                                 "Flat": 6600,

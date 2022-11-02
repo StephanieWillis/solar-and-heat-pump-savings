@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-HEATING_PROFILES_CSV = '../docs/Half-hourly_profiles_of_heating_technologies.csv'
+HEATING_PROFILES_CSV = '../data_exploration_and_prep/Half-hourly_profiles_of_heating_technologies.csv'
 COLS_TO_KEEP = ['Normalised_ASHP_heat', 'Normalised_Resistance_heater_heat', 'Normalised_Gas_boiler_heat']
 
 df_half_hourly = pd.read_csv(filepath_or_buffer=HEATING_PROFILES_CSV, index_col='index', usecols=['index'] + COLS_TO_KEEP)
