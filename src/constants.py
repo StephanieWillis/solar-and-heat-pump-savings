@@ -5,6 +5,7 @@ import pandas as pd
 from fuels import Fuel
 
 HOUSE_TYPES = ["Terrace", "Semi-detached", "Detached", "Flat"]
+DEFAULT_FLOOR_AREA = 80
 
 # Use same year as solar year
 BASE_YEAR_HOURLY_INDEX = pd.date_range(start="2020-01-01", end="2021-01-01", freq="1H", inclusive="left")
@@ -55,10 +56,10 @@ STANDARD_TARIFF = TariffConstants(
 
 @dataclass()
 class Orientation:
-    """ Azimuth is degrees clockwise from South, max absolute value of 180"""
+    """ Azimuth is degrees clockwise from South, max absolute value of 180
+    Defined like this to be consistent with  https://re.jrc.ec.europa.eu/pvg_tools/en/"""
     azimuth_degrees: float
-
-    # https://re.jrc.ec.europa.eu/pvg_tools/en/
+    name: str
 
     def __post_init__(self):
         if self.azimuth_degrees > 180:
@@ -68,14 +69,14 @@ class Orientation:
 
 
 OrientationOptions = {
-    'South': Orientation(0),
-    'Southwest': Orientation(45),
-    'West': Orientation(90),
-    'Northwest': Orientation(135),
-    'North': Orientation(180),
-    'Northeast': Orientation(-45),
-    'East': Orientation(-90),
-    'Southeast': Orientation(-135)}
+    'South': Orientation(azimuth_degrees=0, name='South'),
+    'Southwest': Orientation(azimuth_degrees=45, name='Southwest'),
+    'West': Orientation(azimuth_degrees=90, name='West'),
+    'Northwest': Orientation(azimuth_degrees=135, name='Northwest'),
+    'North': Orientation(azimuth_degrees=180, name='North'),
+    'Northeast': Orientation(azimuth_degrees=-135, name='Northeast'),
+    'East': Orientation(azimuth_degrees=-90, name='East'),
+    'Southeast': Orientation(azimuth_degrees=-45, name='Southeast')}
 
 
 class SolarConstants:

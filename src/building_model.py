@@ -15,9 +15,9 @@ def upgrade_buildings(baseline_house: 'House', upgrade_heating: 'HeatingSystem',
     hp_house = copy.deepcopy(baseline_house)  # do after modifications so modifications flow through
     solar_house = copy.deepcopy(baseline_house)
     hp_house.heating_system = upgrade_heating
-    solar_house.solar = upgrade_solar
+    solar_house.solar_install = upgrade_solar
     both_house = copy.deepcopy(hp_house)
-    both_house.solar = upgrade_solar
+    both_house.solar_install = upgrade_solar
     return hp_house, solar_house, both_house
 
 
@@ -32,16 +32,16 @@ def combine_results_dfs_multiple_houses(houses: List['House'], keys: List['str']
 class House:
     """ Stores info on consumption and bills """
 
-    def __init__(self, envelope: 'BuildingEnvelope', heating_system: 'HeatingSystem', solar: 'Solar' = None):
+    def __init__(self, envelope: 'BuildingEnvelope', heating_system: 'HeatingSystem', solar_install: 'Solar' = None):
 
         self.envelope = envelope
         # Set up initial values for heating system and tariffs but allow to be modified by the user later
         self.heating_system = heating_system
         self.tariffs = self.set_up_standard_tariffs()
 
-        if solar is None:
-            solar = Solar(orientation=SolarConstants.ORIENTATIONS['South'], roof_plan_area=0)
-        self.solar = solar
+        if solar_install is None:
+            solar_install = Solar(orientation=SolarConstants.ORIENTATIONS['South'], roof_plan_area=0)
+        self.solar_install = solar_install
 
     @classmethod
     def set_up_from_heating_name(cls, envelope: 'BuildingEnvelope', heating_name: str) -> 'House':
@@ -83,7 +83,7 @@ class House:
         base_consumption = Consumption(hourly_profile_kwh=self.envelope.base_demand,
                                        fuel=constants.ELECTRICITY)
         # Solar
-        electricity_consumption = base_consumption.add(self.solar.generation)
+        electricity_consumption = base_consumption.add(self.solar_install.generation)
 
         # Heating
         space_heating_consumption = self.heating_system.calculate_space_heating_consumption(

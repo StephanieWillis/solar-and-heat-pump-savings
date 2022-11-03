@@ -21,10 +21,12 @@ class Solar:
         self.latitude = latitude  # Latitude, in decimal degrees, south is negative
         self.longitude = longitude  # Longitude, in decimal degrees, west is negative
         self.pitch = pitch
-        self.roof_area = roof_plan_area / np.cos(np.radians(self.pitch))
+        self.roof_plan_area = roof_plan_area
 
-        self.number_of_panels = self.get_number_of_panels()  # not a property because want to be able to overwrite
-        # Does mean that future changes in roof area won't chagne number of panels however
+        # The below two can be overwritten by user, so they are not set up as properties.
+        # This means changes in roof area after initial set up won't change the number of panels
+        self.number_of_panels = self.get_number_of_panels_from_roof_area()  # not a property because want to be able to overwrite
+
         self.kwp_per_panel = SolarConstants.KW_PEAK_PER_PANEL
 
     def __hash__(self):
@@ -36,8 +38,7 @@ class Solar:
                      ))
 
     def __eq__(self, other: 'Solar'):
-        result = (isinstance(other, 'Solar')
-                  and self.latitude == other.latitude
+        result = (self.latitude == other.latitude
                   and self.longitude == other.longitude
                   and self.pitch == other.pitch
                   and self.peak_capacity_kw_out_per_kw_in_per_m2 == other.peak_capacity_kw_out_per_kw_in_per_m2
@@ -45,11 +46,19 @@ class Solar:
                   )
         return result
 
-    def get_number_of_panels(self) -> int:
+    def get_number_of_panels_from_roof_area(self) -> int:
         """ Very simplified assumption here that you can use fixed proportion of area because hard to do properly"""
         usable_area = self.roof_area * SolarConstants.PERCENT_SQUARE_USABLE
         number_of_panels = floor(usable_area / SolarConstants.PANEL_AREA)
         return number_of_panels
+
+    @property
+    def number_of_panels_has_been_overwritten(self):
+        return self.number_of_panels != self.get_number_of_panels_from_roof_area()
+
+    @property
+    def roof_area(self):
+        return self.roof_plan_area / np.cos(np.radians(self.pitch))
 
     @property
     def peak_capacity_kw_out_per_kw_in_per_m2(self):
@@ -105,3 +114,5 @@ class Solar:
             raise requests.ConnectionError
 
         return pv_power_kw
+
+
