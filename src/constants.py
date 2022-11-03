@@ -31,26 +31,32 @@ FUELS = [ELECTRICITY, GAS, OIL]
 class HeatingConstants:
     efficiency: float
     fuel: Fuel
-    hourly_demand_profile: pd.Series
+    normalized_hourly_heat_demand_profile: pd.Series
     #  Not splitting space and water heating because hourly demand profiles are combined
 
 
-HOURLY_HEAT_DEMAND_DF = pd.read_pickle('../src/hourly_heating_demand_profiles_2013.pkl')
+NORMALIZED_HOURLY_HEAT_DEMAND_DF: pd.DataFrame = pd.read_pickle('../src/hourly_heating_demand_profiles_2013.pkl')
+# based on data from https://ukerc.rl.ac.uk/DC/cgi-bin/edc_search.pl?WantComp=165
+# processed in data_exploration_and_prep
 
 DEFAULT_HEATING_CONSTANTS = {
-    "Gas boiler": HeatingConstants(efficiency=0.84,
-                                   fuel=GAS,
-                                   hourly_demand_profile=HOURLY_HEAT_DEMAND_DF['Normalised_Gas_boiler_heat']),
-    "Oil boiler": HeatingConstants(efficiency=0.84,
-                                   fuel=OIL,
-                                   hourly_demand_profile=HOURLY_HEAT_DEMAND_DF['Normalised_Gas_boiler_heat']),
-    "Direct electric": HeatingConstants(efficiency=1.0,
-                                        fuel=ELECTRICITY,
-                                        hourly_demand_profile=HOURLY_HEAT_DEMAND_DF[
-                                            'Normalised_Resistance_heater_heat']),
-    "Heat pump": HeatingConstants(efficiency=3.0,
-                                  fuel=ELECTRICITY,
-                                  hourly_demand_profile=HOURLY_HEAT_DEMAND_DF['Normalised_ASHP_heat']),
+    "Gas boiler": HeatingConstants(
+        efficiency=0.84,
+        fuel=GAS,
+        normalized_hourly_heat_demand_profile=NORMALIZED_HOURLY_HEAT_DEMAND_DF['Normalised_Gas_boiler_heat']),
+    "Oil boiler": HeatingConstants(
+        efficiency=0.84,
+        fuel=OIL,
+        normalized_hourly_heat_demand_profile=NORMALIZED_HOURLY_HEAT_DEMAND_DF['Normalised_Gas_boiler_heat']),
+    "Direct electric": HeatingConstants(
+        efficiency=1.0,
+        fuel=ELECTRICITY,
+        normalized_hourly_heat_demand_profile=NORMALIZED_HOURLY_HEAT_DEMAND_DF[
+            'Normalised_Resistance_heater_heat']),
+    "Heat pump": HeatingConstants(
+        efficiency=3.0,
+        fuel=ELECTRICITY,
+        normalized_hourly_heat_demand_profile=NORMALIZED_HOURLY_HEAT_DEMAND_DF['Normalised_ASHP_heat']),
 }
 
 
@@ -66,8 +72,7 @@ class TariffConstants:
 
 STANDARD_TARIFF = TariffConstants(
     p_per_kwh_gas=10.3, p_per_kwh_elec_import=34.0, p_per_kwh_elec_export=15.0,
-    p_per_L_oil=95.0, p_per_day_gas=28.0, p_per_day_elec=46.0
-)
+    p_per_L_oil=95.0, p_per_day_gas=28.0, p_per_day_elec=46.0)
 
 
 @dataclass()

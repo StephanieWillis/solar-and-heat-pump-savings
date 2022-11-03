@@ -171,7 +171,7 @@ class HeatingSystem:
         return cls(name=name,
                    efficiency=parameters.efficiency,
                    fuel=parameters.fuel,
-                   hourly_normalized_demand_profile=parameters.hourly_demand_profile)
+                   hourly_normalized_demand_profile=parameters.normalized_hourly_heat_demand_profile)
 
     def __post_init__(self):
         if self.fuel not in constants.FUELS:
