@@ -58,8 +58,13 @@ def render(house: 'House', solar_install: 'Solar'):
 
 def render_and_update_improvement_options(solar_install: Solar) -> Tuple[HeatingSystem, Solar]:
     with st.expander("Heat pump assumptions"):
-        upgrade_heating = HeatingSystem.from_constants(name='Heat pump',
-                                                       parameters=constants.DEFAULT_HEATING_CONSTANTS['Heat pump'])
+        if "upgrade_heating" not in st.session_state["page_state"]:
+            upgrade_heating = HeatingSystem.from_constants(name='Heat pump',
+                                                           parameters=constants.DEFAULT_HEATING_CONSTANTS['Heat pump'])
+            st.session_state["page_state"]["upgrade_heating"] = dict(upgrade_heating=upgrade_heating)  # in case this page isn't always rendered
+        else:
+            upgrade_heating = st.session_state["page_state"]["upgrade_heating"]["upgrade_heating"]
+
         upgrade_heating = house_questions.render_and_update_heating_system(heating_system=upgrade_heating)
     with st.expander("Solar PV assumptions "):
         solar_install = render_and_update_solar_inputs(solar=solar_install)
