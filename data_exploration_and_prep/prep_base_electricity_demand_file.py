@@ -27,6 +27,8 @@ df_half_hourly_day.set_index('DateTime', inplace=True)
 df_half_hourly_day.drop(columns='Time', inplace=True)
 # Initial data is in kW not in kWh so need to divide by 2 when sum
 df_hourly_day = df_half_hourly_day.resample('1H').sum() / 2
+pd.testing.assert_series_equal(left=df_hourly_day.mean(),
+                               right=df_half_hourly_day.mean())  # average power should be the same
 
 # go back to only time in the index as will need it without the date to merge into the year
 df_hourly_day.index = df_hourly_day.index.time
@@ -55,9 +57,12 @@ df_merged = pd.merge(left=df_hourly_year, right=df_hourly_day_transformed, how='
                      on=['season_group', 'day_of_week_group', 'time'])
 df_merged.set_index('datetime', inplace=True)
 
-# fig = px.line(df_merged['consumption_kWh'])
-# fig.show()
+# normalize so demand profile sums to 1
+hourly_kwh_series = df_merged['consumption_kWh']
+hourly_kwh_series_normalized = hourly_kwh_series / hourly_kwh_series.sum()
+assert (hourly_kwh_series_normalized.sum() == 1.0)
 
-pd.to_pickle(df_merged,  "../src/hourly_base_electricity_demand_profiles_2013.pkl")
+fig = px.line(hourly_kwh_series_normalized)
+fig.show()
 
-
+pd.to_pickle(hourly_kwh_series_normalized, "../src/normalized_hourly_base_electricity_demand_profile_2013.pkl")
