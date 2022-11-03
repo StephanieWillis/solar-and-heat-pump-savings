@@ -89,7 +89,7 @@ class Orientation:
             self.azimuth_degrees += 360
 
 
-OrientationOptions = {
+ORIENTATION_OPTIONS = {
     'South': Orientation(0),
     'Southwest': Orientation(45),
     'West': Orientation(90),
@@ -101,7 +101,7 @@ OrientationOptions = {
 
 
 class SolarConstants:
-    ORIENTATIONS = OrientationOptions
+    ORIENTATIONS = ORIENTATION_OPTIONS
     DEFAULT_LAT = 51.509865
     DEFAULT_LONG = -0.118092
     MIN_ROOF_AREA = 0
