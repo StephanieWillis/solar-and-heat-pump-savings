@@ -63,7 +63,7 @@ def render_and_update_current_home(house: House):
 
 
 def render_and_update_envelope_outputs(envelope: 'BuildingEnvelope') -> 'BuildingEnvelope':
-    st.write(f"We assume that an {envelope.floor_area_m2}m\u00b2 {envelope.house_type.lower()} needs: ")
+    st.write(f"We assume that a {envelope.house_type.lower()} needs: ")
     envelope.annual_heating_demand = render_and_update_annual_demand(label='Space and water heating (kwh): ',
                                                                      demand=envelope.annual_heating_demand)
     envelope.base_demand = render_and_update_annual_demand(label='Lighting, appliances, plug loads etc. (kwh): ',

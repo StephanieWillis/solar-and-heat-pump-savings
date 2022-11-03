@@ -8,7 +8,6 @@ from src import solar
 
 
 def test_envelope():
-
     house_type = "terrace"
     base_demand = constants.NORMALIZED_HOURLY_BASE_DEMAND * 1000.0
     envelope = building_model.BuildingEnvelope(house_type=house_type,
@@ -23,7 +22,7 @@ def test_envelope():
 
 
 def test_heating_system():
-    profile = pd.Series(index=constants.BASE_YEAR_HOURLY_INDEX, data=1/8760)
+    profile = pd.Series(index=constants.BASE_YEAR_HOURLY_INDEX, data=1 / 8760)
     elec_res = building_model.HeatingSystem(name='Electric storage heater',
                                             efficiency=1.0,
                                             fuel=constants.ELECTRICITY,
@@ -59,7 +58,7 @@ def test_tariff_calculate_annual_cost():
                                    p_per_day=1.1,
                                    p_per_unit_import=2.0,
                                    p_per_unit_export=50)
-    profile = pd.Series(index=constants.BASE_YEAR_HOURLY_INDEX, data=1/8760)
+    profile = pd.Series(index=constants.BASE_YEAR_HOURLY_INDEX, data=1 / 8760)
     elec_res = building_model.HeatingSystem(name='Electric storage heater',
                                             efficiency=1.0,
                                             fuel=constants.ELECTRICITY,
@@ -130,9 +129,25 @@ def test_set_up_house_from_heating_name():
     return hp_house, gas_house, oil_house
 
 
+def test_typical_home_hits_price_cap():
+    # price cap under Energy price guarantee is £2500 for house that uses 12,000kWh of gas and 2,900kWh of elec
+    gas_boiler = building_model.HeatingSystem.from_constants(
+        name='Gas boiler',
+        parameters=constants.DEFAULT_HEATING_CONSTANTS['Gas boiler'])
+    demand = 2900 * constants.NORMALIZED_HOURLY_BASE_DEMAND
+    envelope = building_model.BuildingEnvelope(house_type='typical',
+                                               annual_heating_demand=12000 * gas_boiler.efficiency,
+                                               base_electricity_demand_profile_kwh=demand)
+    gas_house = building_model.House.set_up_from_heating_name(envelope=envelope, heating_name='Gas boiler')
+    assert gas_house.has_multiple_fuels is True
+    np.testing.assert_almost_equal(gas_house.consumption_per_fuel['electricity'].overall.annual_sum_kwh, 2900)
+    np.testing.assert_almost_equal(gas_house.consumption_per_fuel['gas'].overall.annual_sum_kwh, 12000)
+    np.testing.assert_almost_equal(gas_house.total_annual_bill, 2492.1)  # looks like it isn't exactly 2500 after all
+    np.testing.assert_almost_equal(gas_house.total_annual_tco2,
+                                   (12000 * constants.GAS_TCO2_PER_KWH + 2900 * constants.ELEC_TCO2_PER_KWH))
+
+
 def test_upgrade_buildings():
-    house_floor_area_m2 = 100
-    house_type = "terrace"
     envelope = building_model.BuildingEnvelope.from_building_type_constants(constants.BUILDING_TYPE_OPTIONS['Flat'])
     oil_house = building_model.House.set_up_from_heating_name(envelope=envelope, heating_name='Oil boiler')
 
@@ -154,10 +169,3 @@ def test_upgrade_buildings():
     assert both_house.solar.generation.overall.annual_sum_kwh == solar_house.solar.generation.overall.annual_sum_kwh
 
     return hp_house, solar_house, both_house
-
-
-def test_combine_results_dfs_multiple_houses():
-    pass
-
-# TODO: solve issue where heat pump isn't using any electricity
-# TODO: solve issue wher esolar is increasing electricity bills - perhaps related to above

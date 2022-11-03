@@ -1,7 +1,8 @@
 # Heat pump and solar savings
 
-Web app to calculate bill and carbon savings from installing solar, a heat pump, or both. Calculations account for proportion
-of solar generation that is used within the home vs. exported. 
+
+Web app to estimate bill and carbon savings from installing solar, a heat pump, or both in a home. 
+Calculations account for proportion of solar generation that is used within the home vs. exported. 
 
 Calculations are hourly rather than half-hourly because the Solar generation API we are using gives hourly results.
 
