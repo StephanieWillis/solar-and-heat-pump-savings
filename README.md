@@ -5,35 +5,49 @@ of solar generation that is used within the home vs. exported.
 
 Calculations are hourly rather than half-hourly because the Solar generation API we are using gives hourly results.
 
+## Solar output calculation
+
+Using EU joint research centre calculations.
+
+- GUI [here](https://re.jrc.ec.europa.eu/pvg_tools/en/tools.html)
+- User manual [here](https://joint-research-centre.ec.europa.eu/pvgis-photovoltaic-geographical-information-system/getting-started-pvgis/pvgis-user-manual_en)
+- API instructions [here](https://joint-research-centre.ec.europa.eu/pvgis-photovoltaic-geographical-information-system/getting-started-pvgis/api-non-interactive-service_en)
+
+API. They have various options. The interesting two from our perspective are:
+1. **Hourly solar radiation and PV data**: does the solar generation calculation for you. This includes very detailed 
+calculations accounting for losses due to temperature and shading due to objects on the horizon
+2. **Typical Meteorological Year (TMY) data**: Typical year so accounts for any year-on-year variation. Does not
+include solar generation calculations.
+
+We use #1 here because the solar calculation functionality is more useful than the averaging functionality.
+A quick analysis of year-on-year variation (documented in *documentation/solar_year_on_year_variation*) shows the
+standard deviation is about 3% of the total annual generation. That does mean you could be
+quite significantly off if you chose the wrong year, but we will go with it for a minute. 
+Later we could pull multiple years and average.
+
 ## Data sources
 
 ### Electricity demand excluding space and water heating
 
 #### Annual totals
-Table 2 of [this report](https://www.energysavingtrust.org.uk/sites/default/files/reports/PoweringthenationreportCO332.pdf)
-has overall values
-
-2900 for elec typical apparently
+Annual electricity demand excluding space and water hetaing is from Table 2 of 
+[this energy savings trust report](https://www.energysavingtrust.org.uk/sites/default/files/reports/PoweringthenationreportCO332.pdf)
+The numbers are a good match for other sources such as the [ECUK 2022:Consumption data tables
+](https://www.gov.uk/government/statistics/energy-consumption-in-the-uk-2022).
 
 #### Hourly profiles
 Using Elexon's user demand profile data for Domestic Unrestricted (single rate) customers (Class 1). 
 This data gives an averaged demand profile for this user class, as explained [here
-](https://bscdocs.elexon.co.uk/guidance-notes/load-profiles-and-their-use-in-electricity-settlement).
-The fact that this data is averaged isn't ideal because it is likely smoother than a real demand profile and so may give
+](https://bscdocs.elexon.co.uk/guidance-notes/load-profiles-and-their-use-in-electricity-settlement). 
+Thanks to the [cutmyenergybill project](https://github.com/cutmyenergybill/domestic-energy-bill-reduction-app/)
+for alerting me to this dataset. The fact that this data is averaged isn't ideal because it is likely smoother than a real demand profile and so may give
 estimates of solar self-use that are too high. The data also likely includes some households that use some electric resistance heating
 which may mean that we are double counting a small amount of heating consumption. If you know of better data that gets around 
-these problems please get in touch!
+these problems please let me know. 
 
 Demand profiles in other sources such as [this paper](https://www.researchgate.net/publication/324141791_The_potential_for_peak_shaving_on_low_voltage_distribution_networks_using_electricity_storage)
 and [this report](https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/208097/10043_R66141HouseholdElectricitySurveyFinalReportissue4.pdf)
 are largely consistent with the elexon profiles, but they do show slightly lower winter peak demand. 
-
-Thanks to the [cutmyenergybill project](https://github.com/cutmyenergybill/domestic-energy-bill-reduction-app/)
-for alerting me to this dataset. 
-
-Still to do: Assign days to seasons. Note half hourly
-so needs splitting. Credit cutmyenergybill project if use 
-this. That app uses a heating degree day approach to gas use. Not ideal.
 
 
 ### Heat demand
@@ -47,9 +61,7 @@ and the code itself can be found [here](https://github.com/AlexandreLab/UKERC-da
 To get indicative values of annual heating demand by building type we used the 'Annual_heating_demand_LSOA' data and 
 took the weighted average for each system/built form combination. We used the values for homes with gas boilers and 
 without energy efficiency upgrades on the basis they are likely to be most representative of the typical stock. The
-resulting values are hard coded in constants.HEATING_DEMAND_BY_BUILT_FORM
-Could at a later use values specific ot the local area using [this sort of data
-](https://www.data.gov.uk/dataset/9b090605-9861-4bb4-9fa4-6845daa2de9b/postcode-to-output-area-to-lower-layer-super-output-area-to-middle-layer-super-output-area-to-local-authority-district-february-2018-lookup-in-the-uk)
+resulting values are hard coded in the constants module.
 
 To corroborate the above, this [nesta analysis
 ](https://www.nesta.org.uk/report/reduce-the-cost-of-heat-pumps/))
@@ -80,42 +92,22 @@ efficiencies in the summer when the boiler only heats hot water.
 assumptions for a condensing oil boiler are very similar to those for modern condensing gas combi. 
 
 
-### Solar output calculation
-
-Using EU joint research centre calculations.
-
-- GUI [here](https://re.jrc.ec.europa.eu/pvg_tools/en/tools.html)
-- User manual [here](https://joint-research-centre.ec.europa.eu/pvgis-photovoltaic-geographical-information-system/getting-started-pvgis/pvgis-user-manual_en)
-- API instructions [here](https://joint-research-centre.ec.europa.eu/pvgis-photovoltaic-geographical-information-system/getting-started-pvgis/api-non-interactive-service_en)
-
-API. They have various options. The interesting two from our perspective are:
-1. **Hourly solar radiation and PV data**: does the solar generation calculation for you. This includes very detailed 
-calculations accounting for losses due to temperature and shading due to objects on the horizon
-2. **Typical Meteorological Year (TMY) data**: Typical year so accounts for any year-on-year variation. Does not
-include solar generation calculations.
-
-We use #1 here because the solar calculation functionality is more useful than the averaging functionality.
-A quick analysis of year-on-year variation (documented in *documentation/solar_year_on_year_variation*) shows the
-standard deviation is about 3% of the total annual generation. That does mean you could be
-quite significantly off if you chose the wrong year, but we will go with it for a minute. 
-Later we could pull multiple years and average.
-
-
 ### Emissions factors
 
-Gas and oil numbers from BEIS UK Government GHG Conversion Factors for Company Reporting, kWh (Net CV) for Natural gas 
-and Burning oil.
+Gas and oil numbers from [BEIS UK Government GHG Conversion Factors for Company Reporting](https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2022)
+, kWh (Net CV) for Natural gas and Burning oil.
 Electricity emissions factors are UK average from the start of 2022 to 2022-10-26. Data from 
 [National Grid ESO](https://data.nationalgrideso.com/carbon-intensity1/historic-generation-mix/r/historic_gb_generation_mix).
 
-# TODO: check SAP elec carbon, apparently its 0.136
 
 ### Tariffs
 
 The default tariffs for gas and electricity are based on the average rate under the
 [Energy Price Guarantee](https://www.gov.uk/government/publications/energy-bills-support/energy-bills-support-factsheet-8-september-2022),
 which is active until April 2023.
-Without further government support, bills will increase after that date, at least in the short term. 
+Without further government support, bills will increase after that date, at least in the short term. Some clues
+as where rates might go in [this Cornwall Insights analysis](https://www.cornwall-insight.com/predicted-fall-in-the-april-2023-price-cap-but-prices-remain-significantly-above-the-epg/)
+and [this nesta analysis](https://www.nesta.org.uk/report/how-the-energy-crisis-affects-the-case-for-heat-pumps/how-the-costs-of-heat-pumps-compare-to-gas-boilers-since-the-energy-crisis-1/#content)
 The oil tariff is a rough average based on [Boiler Juice](https://www.boilerjuice.com/heating-oil-prices/) 
 data since prices stabilised in April 2022.
 

@@ -4,19 +4,14 @@ import pandas as pd
 
 from fuels import Fuel
 
-# based on data from https://ukerc.rl.ac.uk/DC/cgi-bin/edc_search.pl?WantComp=165
-# processed in data_exploration_and_prep/Annual_heat_demand_LSOA.xlsx
-HEATING_DEMAND_BY_HOUSE_TYPE = {"Terrace": 9900,  # order here defines dropdown order and default, so most common first
-                                "Semi-detached": 10600,
-                                "Flat": 6600,
-                                "Detached": 14000}
-
 # Use same year as solar year
 BASE_YEAR_HOURLY_INDEX = pd.date_range(start="2013-01-01", end="2014-01-01", freq="1H", inclusive="left")
 EMPTY_TIMESERIES = pd.Series(index=BASE_YEAR_HOURLY_INDEX, data=0)
 
-KWH_PER_LITRE_OF_OIL = 10.35  # https://www.thegreenage.co.uk/is-heating-oil-a-cheap-way-to-heat-my-home/
+# class here on house type?
+BASE_ELECTRICITY_DEMAND_BY_HOUSE_TYPE = {}
 
+KWH_PER_LITRE_OF_OIL = 10.35  # https://www.thegreenage.co.uk/is-heating-oil-a-cheap-way-to-heat-my-home/
 ELEC_TCO2_PER_KWH = 186 / 10 ** 6
 ELECTRICITY = Fuel("electricity", tco2_per_kwh=ELEC_TCO2_PER_KWH)
 GAS_TCO2_PER_KWH = 202 / 10 ** 6
@@ -25,6 +20,51 @@ OIL_TCO2_PER_KWH = 260 / 10 ** 6
 OIL = Fuel(name="oil", units="litres", converter_consumption_units_to_kwh=KWH_PER_LITRE_OF_OIL,
            tco2_per_kwh=OIL_TCO2_PER_KWH)
 FUELS = [ELECTRICITY, GAS, OIL]
+
+
+@dataclass
+class BuildingTypeConstants:
+    name: str
+    annual_base_electricity_demand_kWh: float
+    base_electricity_demand_profile_kWh: pd.Series
+    annual_heat_demand_kWh: float
+
+
+HEATING_DEMAND_BY_HOUSE_TYPE = {"Terrace": 9900,  # order here defines dropdown order and default, so most common first
+                                "Semi-detached": 10600,
+                                "Flat": 6600,
+                                "Detached": 14000}
+NORMALIZED_HOURLY_BASE_DEMAND: pd.Series = pd.read_pickle('../src/hourly_base_electricity_demand_profiles_2013.pkl')
+# based on elexon profiling data https://www.elexon.co.uk/operations-settlement/profiling/
+# data processing done in data_exploration_and_prep folder
+
+# Decide whether to add floor area or not? < get issue with adjusting space heating demand and then what you do
+BUILDING_TYPE_OPTIONS = {
+    "Terrace": BuildingTypeConstants(
+        name="Terrace",
+        annual_base_electricity_demand_kWh=2890,  # used value for terrace - small up to 70m2
+        base_electricity_demand_profile_kWh=NORMALIZED_HOURLY_BASE_DEMAND,
+        annual_heat_demand_kWh=9900),  # order here defines dropdown order and default, so most common first
+    "Semi-detached": BuildingTypeConstants(
+        name="Semi-detached",
+        annual_base_electricity_demand_kWh=3850,
+        base_electricity_demand_profile_kWh=NORMALIZED_HOURLY_BASE_DEMAND,
+        annual_heat_demand_kWh=10600),
+    "Flat": BuildingTypeConstants(
+        name="Semi-detached",
+        annual_base_electricity_demand_kWh=2830,
+        base_electricity_demand_profile_kWh=NORMALIZED_HOURLY_BASE_DEMAND,
+        annual_heat_demand_kWh=6600),
+    "Detached": BuildingTypeConstants(
+        name="Detached",
+        annual_base_electricity_demand_kWh=4150,
+        base_electricity_demand_profile_kWh=NORMALIZED_HOURLY_BASE_DEMAND,
+        annual_heat_demand_kWh=14000)
+}
+# Annual base electricity demand numbers based on data from
+# https://www.energysavingtrust.org.uk/sites/default/files/reports/PoweringthenationreportCO332.pdf
+# Annual heat demand numbers based on data from https://ukerc.rl.ac.uk/DC/cgi-bin/edc_search.pl?WantComp=165
+# data processing done in data_exploration_and_prep folder
 
 
 @dataclass
