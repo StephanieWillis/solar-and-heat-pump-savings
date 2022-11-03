@@ -23,10 +23,13 @@ def render(house: 'House', solar_install: 'Solar'):
         st.header("Assumptions")
         st.subheader("Current Performance")
         house = house_questions.render_and_update_current_home(house)
+        st.session_state["page_state"]["house"] = dict(house=house)  # so any overwrites saved if move tabs
+        # saving state may work without above but above makes clearer
 
         st.subheader("Improvement Options")
         upgrade_heating, upgrade_solar = render_and_update_improvement_options(solar_install=solar_install)
-
+        st.session_state["page_state"]["solar"] = dict(solar=upgrade_solar)  # so any overwrites saved if move tabs
+        # saving state may work without above but above makes clearer
     # Upgraded buildings
     hp_house, solar_house, both_house = upgrade_buildings(baseline_house=house,
                                                           upgrade_heating=upgrade_heating,

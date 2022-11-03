@@ -38,7 +38,7 @@ def render() -> 'Solar':
     # Overwrite panel capacity because not an issue to use even if it hasn't bene overwritten
     solar_install.kwp_per_panel = solar_install_in.kwp_per_panel
 
-    render_results(solar_install)
+    solar_install = render_results(solar_install)
     return solar_install
 
 
@@ -85,3 +85,4 @@ def render_results(solar_install: Solar):
         st.write(f"We estimate you can fit {solar_install.number_of_panels} solar panels on your roof. "
                  f"That's a {solar_install.peak_capacity_kw_out_per_kw_in_per_m2} kW installation which would generate "
                  f"about {int(solar_install.generation.exported.annual_sum_kwh)} kWh of electricity a year!")
+    return solar_install

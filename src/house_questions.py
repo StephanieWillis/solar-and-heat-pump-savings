@@ -9,11 +9,10 @@ def render() -> "building_model.House":
     house = get_house_from_session_state_if_exists_or_create_default()
 
     st.header("Start by telling us about your home")
-    envelope = render_building_envelope_questions(house.envelope)
-    heating_system = render_heating_system_questions(heating_system=house.heating_system)
-    house = building_model.House(envelope=envelope, heating_system=heating_system)
+    house.envelope = render_building_envelope_questions(house.envelope)
+    new_heating_system = render_heating_system_questions(heating_system=house.heating_system)
 
-    render_results(house)
+    house = render_results(house)
 
     return house
 
@@ -21,6 +20,7 @@ def render() -> "building_model.House":
 def get_house_from_session_state_if_exists_or_create_default():
     if st.session_state["page_state"]["house"] == {}:
         house = set_up_default_house()
+        st.session_state["page_state"]["house"] = dict(house=house)  # in case this page isn't always rendered
     else:
         house = st.session_state["page_state"]["house"]["house"]
     return house
@@ -62,13 +62,16 @@ def render_heating_system_questions(heating_system: building_model.HeatingSystem
             idx = list(constants.DEFAULT_HEATING_CONSTANTS.keys()).index(heating_system.name)
             heating_name = st.selectbox("Heating System", options=list(constants.DEFAULT_HEATING_CONSTANTS.keys()),
                                         index=idx)
-            heating_system = building_model.HeatingSystem.from_constants(
-                name=heating_name,
-                parameters=constants.DEFAULT_HEATING_CONSTANTS[heating_name])
+            if heating_name != heating_system.name:  # only overwrite heating system if changed by user
+                heating_system = building_model.HeatingSystem.from_constants(
+                    name=heating_name,
+                    parameters=constants.DEFAULT_HEATING_CONSTANTS[heating_name])
+            # when not overwritten by user keep old system so don't loose changes to efficiencies made at other steps
+
     return heating_system
 
 
-def render_results(house) -> str:
+def render_results(house) -> building_model.House:
     with st.sidebar:
         st.header("Assumptions")
         st.markdown("<p>If you know details of your current usage or tariff, enter below for greater accuracy</p>",
@@ -89,6 +92,7 @@ def render_results(house) -> str:
         f"</div>",
         unsafe_allow_html=True,
     )
+    return house
 
 
 def render_and_update_current_home(house: building_model.House):
