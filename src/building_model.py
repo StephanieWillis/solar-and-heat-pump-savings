@@ -162,7 +162,7 @@ class Tariff:
 @dataclass
 class HeatingSystem:
     name: str
-    efficiency: float  # TODO: consider making efficiency a series as you can do from heating demand paper
+    efficiency: float
     fuel: constants.Fuel
     hourly_normalized_demand_profile: pd.Series
 
@@ -187,23 +187,17 @@ class HeatingSystem:
 class BuildingEnvelope:
     """ Stores info on the building and its energy demand"""
 
-    def __init__(self, floor_area_m2: float, house_type: str, annual_heating_demand: float):
-        self.floor_area_m2 = floor_area_m2
+    def __init__(self, house_type: str, annual_heating_demand: float, base_electricity_demand_profile_kwh: pd.Series):
         self.house_type = house_type
         self.annual_heating_demand = annual_heating_demand
-        self.time_series_idx: pd.Index = constants.BASE_YEAR_HOURLY_INDEX
+        self.base_demand = base_electricity_demand_profile_kwh
         self.units: str = 'kwh'
 
-        # Set initial demand values - user can overwrite later
-        # Dummy data for now TODO get profiles from elsewhere
-        self.base_demand = pd.Series(index=self.time_series_idx, data=0.001 * self.floor_area_m2)
-        # TODO use profiles from local area analysis in Nature paper for totals below
-
-
-
-
-
-
-
-
-
+    @classmethod
+    def from_building_type_constants(cls, building_type_constants: constants.BuildingTypeConstants
+                                     ) -> "BuildingEnvelope":
+        base_electricity_demand_profile = (building_type_constants.annual_base_electricity_demand_kWh
+                                           * building_type_constants.normalized_base_electricity_demand_profile_kWh)
+        return cls(house_type=building_type_constants.name,
+                   annual_heating_demand=building_type_constants.annual_heat_demand_kWh,
+                   base_electricity_demand_profile_kwh=base_electricity_demand_profile)

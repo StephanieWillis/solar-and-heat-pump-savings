@@ -26,45 +26,42 @@ FUELS = [ELECTRICITY, GAS, OIL]
 class BuildingTypeConstants:
     name: str
     annual_base_electricity_demand_kWh: float
-    base_electricity_demand_profile_kWh: pd.Series
+    normalized_base_electricity_demand_profile_kWh: pd.Series
     annual_heat_demand_kWh: float
 
 
-HEATING_DEMAND_BY_HOUSE_TYPE = {"Terrace": 9900,  # order here defines dropdown order and default, so most common first
-                                "Semi-detached": 10600,
-                                "Flat": 6600,
-                                "Detached": 14000}
-NORMALIZED_HOURLY_BASE_DEMAND: pd.Series = pd.read_pickle('../src/hourly_base_electricity_demand_profiles_2013.pkl')
-# based on elexon profiling data https://www.elexon.co.uk/operations-settlement/profiling/
-# data processing done in data_exploration_and_prep folder
+NORMALIZED_HOURLY_BASE_DEMAND: pd.Series = pd.read_pickle(
+    '../src/normalized_hourly_base_electricity_demand_profile_2013.pkl')
+# Based on elexon profiling data https://www.elexon.co.uk/operations-settlement/profiling/
+# Data processing done in data_exploration_and_prep folder
 
 # Decide whether to add floor area or not? < get issue with adjusting space heating demand and then what you do
 BUILDING_TYPE_OPTIONS = {
     "Terrace": BuildingTypeConstants(
         name="Terrace",
         annual_base_electricity_demand_kWh=2890,  # used value for terrace - small up to 70m2
-        base_electricity_demand_profile_kWh=NORMALIZED_HOURLY_BASE_DEMAND,
+        normalized_base_electricity_demand_profile_kWh=NORMALIZED_HOURLY_BASE_DEMAND,
         annual_heat_demand_kWh=9900),  # order here defines dropdown order and default, so most common first
     "Semi-detached": BuildingTypeConstants(
         name="Semi-detached",
         annual_base_electricity_demand_kWh=3850,
-        base_electricity_demand_profile_kWh=NORMALIZED_HOURLY_BASE_DEMAND,
+        normalized_base_electricity_demand_profile_kWh=NORMALIZED_HOURLY_BASE_DEMAND,
         annual_heat_demand_kWh=10600),
     "Flat": BuildingTypeConstants(
         name="Semi-detached",
         annual_base_electricity_demand_kWh=2830,
-        base_electricity_demand_profile_kWh=NORMALIZED_HOURLY_BASE_DEMAND,
+        normalized_base_electricity_demand_profile_kWh=NORMALIZED_HOURLY_BASE_DEMAND,
         annual_heat_demand_kWh=6600),
     "Detached": BuildingTypeConstants(
         name="Detached",
         annual_base_electricity_demand_kWh=4150,
-        base_electricity_demand_profile_kWh=NORMALIZED_HOURLY_BASE_DEMAND,
+        normalized_base_electricity_demand_profile_kWh=NORMALIZED_HOURLY_BASE_DEMAND,
         annual_heat_demand_kWh=14000)
 }
 # Annual base electricity demand numbers based on data from
 # https://www.energysavingtrust.org.uk/sites/default/files/reports/PoweringthenationreportCO332.pdf
 # Annual heat demand numbers based on data from https://ukerc.rl.ac.uk/DC/cgi-bin/edc_search.pl?WantComp=165
-# data processing done in data_exploration_and_prep folder
+# Data processing done in data_exploration_and_prep folder
 
 
 @dataclass

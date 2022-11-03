@@ -8,15 +8,18 @@ from src import solar
 
 
 def test_envelope():
-    house_floor_area_m2 = 100
-    house_type = "terrace"
-    envelope = building_model.BuildingEnvelope(floor_area_m2=house_floor_area_m2, house_type=house_type)
 
-    assert envelope.floor_area_m2 == house_floor_area_m2
+    house_type = "terrace"
+    base_demand = constants.NORMALIZED_HOURLY_BASE_DEMAND * 1000.0
+    envelope = building_model.BuildingEnvelope(house_type=house_type,
+                                               annual_heating_demand=10000,
+                                               base_electricity_demand_profile_kwh=base_demand)
+
     assert envelope.house_type == house_type
     assert len(envelope.base_demand.index) == 8760
-    assert envelope.base_demand.sum() > 0
-    assert envelope.annual_heating_demand > 0
+    assert envelope.base_demand.sum() == 1000
+    assert (envelope.base_demand >= 0).all()
+    assert envelope.annual_heating_demand == 10000
 
 
 def test_heating_system():
@@ -88,9 +91,7 @@ def test_tariff_calculate_annual_cost():
 
 
 def test_set_up_house_from_heating_name():
-    house_floor_area_m2 = 100
-    house_type = "terrace"
-    envelope = building_model.BuildingEnvelope(house_type=house_type, floor_area_m2=house_floor_area_m2)
+    envelope = building_model.BuildingEnvelope.from_building_type_constants(constants.BUILDING_TYPE_OPTIONS['Terrace'])
 
     # heat pump
     hp_house = building_model.House.set_up_from_heating_name(envelope=envelope, heating_name='Heat pump')
@@ -101,8 +102,8 @@ def test_set_up_house_from_heating_name():
     assert hp_house_elec_consumption.fuel.units == 'kwh'
     assert (hp_house_elec_consumption.overall.hourly_profile_kwh > 0).all()
     assert hp_house_elec_consumption.overall.annual_sum_kwh > 0
-    assert (
-            hp_house_elec_consumption.imported.hourly_profile_kwh + hp_house_elec_consumption.exported.hourly_profile_kwh
+    assert (hp_house_elec_consumption.imported.hourly_profile_kwh
+            + hp_house_elec_consumption.exported.hourly_profile_kwh
             == hp_house_elec_consumption.overall.hourly_profile_kwh).all()
 
     assert not hp_house.has_multiple_fuels
@@ -132,7 +133,7 @@ def test_set_up_house_from_heating_name():
 def test_upgrade_buildings():
     house_floor_area_m2 = 100
     house_type = "terrace"
-    envelope = building_model.BuildingEnvelope(house_type=house_type, floor_area_m2=house_floor_area_m2)
+    envelope = building_model.BuildingEnvelope.from_building_type_constants(constants.BUILDING_TYPE_OPTIONS['Flat'])
     oil_house = building_model.House.set_up_from_heating_name(envelope=envelope, heating_name='Oil boiler')
 
     upgrade_heating = building_model.HeatingSystem.from_constants(name='Heat pump',
