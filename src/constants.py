@@ -8,9 +8,6 @@ from fuels import Fuel
 BASE_YEAR_HOURLY_INDEX = pd.date_range(start="2013-01-01", end="2014-01-01", freq="1H", inclusive="left")
 EMPTY_TIMESERIES = pd.Series(index=BASE_YEAR_HOURLY_INDEX, data=0)
 
-# class here on house type?
-BASE_ELECTRICITY_DEMAND_BY_HOUSE_TYPE = {}
-
 KWH_PER_LITRE_OF_OIL = 10.35  # https://www.thegreenage.co.uk/is-heating-oil-a-cheap-way-to-heat-my-home/
 ELEC_TCO2_PER_KWH = 186 / 10 ** 6
 ELECTRICITY = Fuel("electricity", tco2_per_kwh=ELEC_TCO2_PER_KWH)
@@ -114,10 +111,10 @@ STANDARD_TARIFF = TariffConstants(
 
 @dataclass()
 class Orientation:
-    """ Azimuth is degrees clockwise from South, max absolute value of 180"""
+    """ Azimuth is degrees clockwise from South, max absolute value of 180
+    Defined like this to be consistent with  https://re.jrc.ec.europa.eu/pvg_tools/en/"""
     azimuth_degrees: float
-
-    # https://re.jrc.ec.europa.eu/pvg_tools/en/
+    name: str
 
     def __post_init__(self):
         if self.azimuth_degrees > 180:
@@ -127,14 +124,14 @@ class Orientation:
 
 
 ORIENTATION_OPTIONS = {
-    'South': Orientation(0),
-    'Southwest': Orientation(45),
-    'West': Orientation(90),
-    'Northwest': Orientation(135),
-    'North': Orientation(180),
-    'Northeast': Orientation(-45),
-    'East': Orientation(-90),
-    'Southeast': Orientation(-135)}
+    'South': Orientation(azimuth_degrees=0, name='South'),
+    'Southwest': Orientation(azimuth_degrees=45, name='Southwest'),
+    'West': Orientation(azimuth_degrees=90, name='West'),
+    'Northwest': Orientation(azimuth_degrees=135, name='Northwest'),
+    'North': Orientation(azimuth_degrees=180, name='North'),
+    'Northeast': Orientation(azimuth_degrees=-135, name='Northeast'),
+    'East': Orientation(azimuth_degrees=-90, name='East'),
+    'Southeast': Orientation(azimuth_degrees=-45, name='Southeast')}
 
 
 class SolarConstants:

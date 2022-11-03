@@ -77,12 +77,24 @@ def roof_mapper(width: int, height: int) -> Optional[List[Polygon]]:
     """
     selected_location = place_search()
 
+    map_styling = ".leaflet-draw-draw-polyline {" \
+                  "display: none;" \
+                  "}"
+    st.markdown(f"<style><{map_styling}/style>", unsafe_allow_html=True)
+
     centre = [selected_location["lat"], selected_location["lng"]] if selected_location else [55, 0]
-    m = leafmap.Map(google_map="SATELLITE", location=centre, zoom_start=21 if selected_location else 4)
+
+    m = leafmap.Map(google_map="SATELLITE", location=centre, zoom_start=21 if selected_location else 4,
+                    measure_control=False,
+                    search_control=False,
+                    layers_control=False,
+                    fullscreen_control=False)
+
     if selected_location:
         _ = folium.Marker(
             [selected_location["lat"], selected_location["lng"]], popup=selected_location["address"]
         ).add_to(m)
+
     map = st_folium(m, width=width, height=height)
 
     if map["all_drawings"]:  # map["all_drawings"] is none until somebody clicks

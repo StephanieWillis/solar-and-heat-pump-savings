@@ -1,10 +1,8 @@
 import numpy as np
 import pandas as pd
 
-from src import constants
+from src import building_model, solar, constants
 from src.constants import SolarConstants
-from src import building_model
-from src import solar
 
 
 def test_envelope():
@@ -124,7 +122,7 @@ def test_set_up_house_from_heating_name():
                                    * constants.KWH_PER_LITRE_OF_OIL,
                                    oil_house.consumption_per_fuel['oil'].overall.annual_sum_kwh)
 
-    assert oil_house.solar.generation.overall.annual_sum_kwh == 0
+    assert oil_house.solar_install.generation.overall.annual_sum_kwh == 0
 
     return hp_house, gas_house, oil_house
 
@@ -159,13 +157,13 @@ def test_upgrade_buildings():
     hp_house, solar_house, both_house = building_model.upgrade_buildings(baseline_house=oil_house,
                                                                          upgrade_heating=upgrade_heating,
                                                                          upgrade_solar=solar_install)
-    assert hp_house.solar.generation.overall.annual_sum_kwh == 0
-    assert both_house.solar.generation.overall.annual_sum_kwh < 0  # export defined as negative
+    assert hp_house.solar_install.generation.overall.annual_sum_kwh == 0
+    assert both_house.solar_install.generation.overall.annual_sum_kwh < 0  # export defined as negative
     np.testing.assert_almost_equal(both_house.consumption_per_fuel['electricity'].imported.annual_sum_kwh
                                    - both_house.consumption_per_fuel['electricity'].exported.annual_sum_kwh,
                                    both_house.consumption_per_fuel['electricity'].overall.annual_sum_kwh)
     assert hp_house.total_annual_bill > both_house.total_annual_bill
 
-    assert both_house.solar.generation.overall.annual_sum_kwh == solar_house.solar.generation.overall.annual_sum_kwh
+    assert both_house.solar_install.generation.overall.annual_sum_kwh == solar_house.solar_install.generation.overall.annual_sum_kwh
 
     return hp_house, solar_house, both_house
