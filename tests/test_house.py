@@ -6,32 +6,32 @@ from src.constants import SolarConstants
 
 
 def test_envelope():
-    house_floor_area_m2 = 100
     house_type = "terrace"
-    envelope = building_model.BuildingEnvelope(floor_area_m2=house_floor_area_m2, house_type=house_type)
+    base_demand = constants.NORMALIZED_HOURLY_BASE_DEMAND * 1000.0
+    envelope = building_model.BuildingEnvelope(house_type=house_type,
+                                               annual_heating_demand=10000,
+                                               base_electricity_demand_profile_kwh=base_demand)
 
-    assert envelope.floor_area_m2 == house_floor_area_m2
     assert envelope.house_type == house_type
-    assert len(envelope.base_demand.index) == 8760 + 24  # leap year
-    assert envelope.base_demand.sum() > 0
-    assert (envelope.space_heating_demand > 0).all()
-    assert (envelope.water_heating_demand > 0).all()
+    assert len(envelope.base_demand.index) == 8760
+    assert envelope.base_demand.sum() == 1000
+    assert (envelope.base_demand >= 0).all()
+    assert envelope.annual_heating_demand == 10000
 
 
 def test_heating_system():
+    profile = pd.Series(index=constants.BASE_YEAR_HOURLY_INDEX, data=1 / 8760)
     elec_res = building_model.HeatingSystem(name='Electric storage heater',
-                                            space_heating_efficiency=1.0,
-                                            water_heating_efficiency=1.0,
-                                            fuel=constants.ELECTRICITY)
+                                            efficiency=1.0,
+                                            fuel=constants.ELECTRICITY,
+                                            hourly_normalized_demand_profile=profile)
 
-    demand = pd.Series(index=constants.BASE_YEAR_HOURLY_INDEX, data=5)
-    space_heating_consumption = elec_res.calculate_space_heating_consumption(demand)
-    water_heating_consumption = elec_res.calculate_water_heating_consumption(demand)
+    annual_demand = 10000
+    heating_consumption = elec_res.calculate_consumption(annual_space_heating_demand_kwh=annual_demand)
 
-    assert (space_heating_consumption.overall.hourly_profile_kwh == demand / elec_res.space_heating_efficiency).all()
-    assert water_heating_consumption.overall.annual_sum_kwh == demand.sum() / elec_res.water_heating_efficiency
-    assert water_heating_consumption.exported.annual_sum_kwh == 0
-    assert space_heating_consumption.imported.annual_sum_kwh == demand.sum() / elec_res.space_heating_efficiency
+    assert (heating_consumption.overall.hourly_profile_kwh == profile * annual_demand / elec_res.efficiency).all()
+    np.testing.assert_almost_equal(heating_consumption.imported.annual_sum_kwh,
+                                   annual_demand / elec_res.efficiency)
 
 
 def test_heating_system_from_constants():
@@ -42,12 +42,13 @@ def test_heating_system_from_constants():
     assert gas_boiler.fuel.units == 'kwh'
     assert gas_boiler.fuel.tco2_per_kwh == constants.GAS_TCO2_PER_KWH
     assert gas_boiler.fuel.converter_consumption_units_to_kwh == 1
+    np.testing.assert_almost_equal(gas_boiler.hourly_normalized_demand_profile.sum(), 1.0)
 
-    demand = pd.Series(index=constants.BASE_YEAR_HOURLY_INDEX, data=20)
-    space_heating_consumption = gas_boiler.calculate_space_heating_consumption(demand)
+    annual_demand = 12001
+    space_heating_consumption = gas_boiler.calculate_consumption(annual_demand)
     assert space_heating_consumption.fuel == constants.GAS
     np.testing.assert_almost_equal(space_heating_consumption.overall.annual_sum_kwh,
-                                   demand.sum() / gas_boiler.space_heating_efficiency)
+                                   annual_demand / gas_boiler.efficiency)
 
 
 def test_tariff_calculate_annual_cost():
@@ -55,12 +56,13 @@ def test_tariff_calculate_annual_cost():
                                    p_per_day=1.1,
                                    p_per_unit_import=2.0,
                                    p_per_unit_export=50)
+    profile = pd.Series(index=constants.BASE_YEAR_HOURLY_INDEX, data=1 / 8760)
     elec_res = building_model.HeatingSystem(name='Electric storage heater',
-                                            space_heating_efficiency=1.0,
-                                            water_heating_efficiency=1.0,
-                                            fuel=constants.ELECTRICITY)
-    demand = pd.Series(index=constants.BASE_YEAR_HOURLY_INDEX, data=10)
-    space_heating_consumption = elec_res.calculate_space_heating_consumption(demand)
+                                            efficiency=1.0,
+                                            fuel=constants.ELECTRICITY,
+                                            hourly_normalized_demand_profile=profile)
+    annual_demand = 10 * 8760
+    space_heating_consumption = elec_res.calculate_consumption(annual_demand)
     # Check cost when no export
     annual_cost = cheapo.calculate_annual_cost(consumption=space_heating_consumption)
     np.testing.assert_almost_equal(annual_cost,
@@ -86,9 +88,7 @@ def test_tariff_calculate_annual_cost():
 
 
 def test_set_up_house_from_heating_name():
-    house_floor_area_m2 = 100
-    house_type = "terrace"
-    envelope = building_model.BuildingEnvelope(house_type=house_type, floor_area_m2=house_floor_area_m2)
+    envelope = building_model.BuildingEnvelope.from_building_type_constants(constants.BUILDING_TYPE_OPTIONS['Terrace'])
 
     # heat pump
     hp_house = building_model.House.set_up_from_heating_name(envelope=envelope, heating_name='Heat pump')
@@ -99,8 +99,8 @@ def test_set_up_house_from_heating_name():
     assert hp_house_elec_consumption.fuel.units == 'kwh'
     assert (hp_house_elec_consumption.overall.hourly_profile_kwh > 0).all()
     assert hp_house_elec_consumption.overall.annual_sum_kwh > 0
-    assert (
-            hp_house_elec_consumption.imported.hourly_profile_kwh + hp_house_elec_consumption.exported.hourly_profile_kwh
+    assert (hp_house_elec_consumption.imported.hourly_profile_kwh
+            + hp_house_elec_consumption.exported.hourly_profile_kwh
             == hp_house_elec_consumption.overall.hourly_profile_kwh).all()
 
     assert not hp_house.has_multiple_fuels
@@ -127,10 +127,26 @@ def test_set_up_house_from_heating_name():
     return hp_house, gas_house, oil_house
 
 
+def test_typical_home_hits_price_cap():
+    # price cap under Energy price guarantee is £2500 for house that uses 12,000kWh of gas and 2,900kWh of elec
+    gas_boiler = building_model.HeatingSystem.from_constants(
+        name='Gas boiler',
+        parameters=constants.DEFAULT_HEATING_CONSTANTS['Gas boiler'])
+    demand = 2900 * constants.NORMALIZED_HOURLY_BASE_DEMAND
+    envelope = building_model.BuildingEnvelope(house_type='typical',
+                                               annual_heating_demand=12000 * gas_boiler.efficiency,
+                                               base_electricity_demand_profile_kwh=demand)
+    gas_house = building_model.House.set_up_from_heating_name(envelope=envelope, heating_name='Gas boiler')
+    assert gas_house.has_multiple_fuels is True
+    np.testing.assert_almost_equal(gas_house.consumption_per_fuel['electricity'].overall.annual_sum_kwh, 2900)
+    np.testing.assert_almost_equal(gas_house.consumption_per_fuel['gas'].overall.annual_sum_kwh, 12000)
+    np.testing.assert_almost_equal(gas_house.total_annual_bill, 2492.1)  # looks like it isn't exactly 2500 after all
+    np.testing.assert_almost_equal(gas_house.total_annual_tco2,
+                                   (12000 * constants.GAS_TCO2_PER_KWH + 2900 * constants.ELEC_TCO2_PER_KWH))
+
+
 def test_upgrade_buildings():
-    house_floor_area_m2 = 100
-    house_type = "terrace"
-    envelope = building_model.BuildingEnvelope(house_type=house_type, floor_area_m2=house_floor_area_m2)
+    envelope = building_model.BuildingEnvelope.from_building_type_constants(constants.BUILDING_TYPE_OPTIONS['Flat'])
     oil_house = building_model.House.set_up_from_heating_name(envelope=envelope, heating_name='Oil boiler')
 
     upgrade_heating = building_model.HeatingSystem.from_constants(name='Heat pump',
@@ -151,10 +167,3 @@ def test_upgrade_buildings():
     assert both_house.solar_install.generation.overall.annual_sum_kwh == solar_house.solar_install.generation.overall.annual_sum_kwh
 
     return hp_house, solar_house, both_house
-
-
-def test_combine_results_dfs_multiple_houses():
-    pass
-
-# TODO: solve issue where heat pump isn't using any electricity
-# TODO: solve issue wher esolar is increasing electricity bills - perhaps related to above
