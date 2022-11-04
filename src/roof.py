@@ -53,6 +53,27 @@ class Polygon:
     def area(self) -> float:
         return shoelace(self.dimensions)
 
+    @property
+    def side_lengths(self):
+        side_lengths = []
+        for i in range(len(self.dimensions)):
+            next_dimension = self.dimensions[i + 1] if i + 1 < len(self.dimensions) else self.dimensions[0]
+            side_length = self.calculate_side_length(self.dimensions[i], next_dimension)
+            side_lengths.append(side_length)
+        side_lengths = [self.calculate_side_length(self.dimensions[i], self.dimensions[i + 1]) for i in
+                        range(-1, (len(self.dimensions) - 1))]
+        return side_lengths
+
+    @property
+    def average_length(self):
+        """ Assume polygon is rectangular. This could be 'width' or 'length' really - depends on order drawn in"""
+        return (self.side_lengths[0] + self.side_lengths[2])/2
+
+    @property
+    def average_width(self):
+        """ Assume polygon is rectangular. This could be 'width' or 'length' really - depends on order drawn in"""
+        return (self.side_lengths[1] + self.side_lengths[3])/2
+
     @staticmethod
     def convert_points_to_be_relative_to_first(points: List[Tuple]):
         first = points.copy()[0]
@@ -69,6 +90,23 @@ class Polygon:
         km_per_degree_lat = 111  # constant
 
         return lat * km_per_degree_lat * KM_TO_M, lng * km_per_degree_lng * KM_TO_M
+
+    def calculate_side_lengths(self, dimensions: List[Tuple[float]]) -> List[float]:
+        side_lengths = []
+        for i in range(len(dimensions)):
+            next_dimension = dimensions[i + 1] if i + 1 < len(dimensions) else dimensions[0]
+            side_length = self.calculate_side_length(dimensions[i], next_dimension)
+            side_lengths.append(side_length)
+        side_lengths = [self.calculate_side_length(dimensions[i], dimensions[i + 1]) for i in
+                        range(-1, (len(dimensions) - 1))]
+        return side_lengths
+
+    @staticmethod
+    def calculate_side_length(point_1: Tuple[float], point_2: Tuple[float]) -> float:
+        (x1, y1) = point_1
+        (x2, y2) = point_2
+        length = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+        return length
 
 
 def roof_mapper(width: int, height: int) -> Optional[List[Polygon]]:
