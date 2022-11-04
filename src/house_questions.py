@@ -129,40 +129,51 @@ def render_and_update_heating_system(heating_system: 'HeatingSystem') -> 'Heatin
                                                 min_value=0.0,
                                                 max_value=8.0,
                                                 value=heating_system.efficiency)
+    if heating_system.fuel.name == 'gas':
+        st.caption(
+            "Many modern boilers have a low efficiency because they run at a high a flow temperature."
+            "Your boiler may be able to run at 90% or better but in most cases the flow temperature will be too high to "
+            "achieve the boiler's stated efficiency. "
+            "You can learn how to turn down your flow temperature "
+            "[here](https://www.nesta.org.uk/project/lowering-boiler-flow-temperature-reduce-emissions).")
     return heating_system
 
 
 def render_and_update_tariffs(tariffs: Tariff, fuel_name: 'str') -> Tariff:
+    st.caption(
+        "Our default tariffs reflect the [Energy Price Guarantee]("
+        "https://www.gov.uk/government/publications/energy-bills-support/energy-bills-support-factsheet-8-september-2022)"
+        " but you can change them if you have fixed at a different rate")
     st.subheader('Electricity')
     tariffs['electricity'].p_per_unit_import = st.number_input(label='Unit rate (p/kwh), electricity import',
-                                                                     min_value=0.0,
-                                                                     max_value=100.0,
-                                                                     value=tariffs[
-                                                                         'electricity'].p_per_unit_import)
+                                                               min_value=0.0,
+                                                               max_value=100.0,
+                                                               value=tariffs[
+                                                                   'electricity'].p_per_unit_import)
     tariffs['electricity'].p_per_unit_export = st.number_input(label='Unit rate (p/kwh), electricity export',
-                                                                     min_value=0.0,
-                                                                     max_value=100.0,
-                                                                     value=tariffs[
-                                                                         'electricity'].p_per_unit_export)
+                                                               min_value=0.0,
+                                                               max_value=100.0,
+                                                               value=tariffs[
+                                                                   'electricity'].p_per_unit_export)
     tariffs['electricity'].p_per_day = st.number_input(label='Standing charge (p/day), electricity',
-                                                             min_value=0.0,
-                                                             max_value=100.0,
-                                                             value=tariffs['electricity'].p_per_day)
+                                                       min_value=0.0,
+                                                       max_value=100.0,
+                                                       value=tariffs['electricity'].p_per_day)
     match fuel_name:
         case 'gas':
             st.subheader('Gas')
             tariffs['gas'].p_per_unit_import = st.number_input(label='Unit rate (p/kwh), gas',
-                                                                     min_value=0.0,
-                                                                     max_value=100.0,
-                                                                     value=tariffs['gas'].p_per_unit_import)
+                                                               min_value=0.0,
+                                                               max_value=100.0,
+                                                               value=tariffs['gas'].p_per_unit_import)
             tariffs['gas'].p_per_day = st.number_input(label='Standing charge (p/day), gas',
-                                                             min_value=0.0,
-                                                             max_value=100.0,
-                                                             value=tariffs['gas'].p_per_day)
+                                                       min_value=0.0,
+                                                       max_value=100.0,
+                                                       value=tariffs['gas'].p_per_day)
         case 'oil':
             st.subheader('Oil')
             tariffs['oil'].p_per_unit_import = st.number_input(label='Oil price, (p/litre)',
-                                                                     min_value=0.0,
-                                                                     max_value=200.0,
-                                                                     value=tariffs['oil'].p_per_unit_import)
+                                                               min_value=0.0,
+                                                               max_value=200.0,
+                                                               value=tariffs['oil'].p_per_unit_import)
     return tariffs

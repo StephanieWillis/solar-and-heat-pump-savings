@@ -66,6 +66,11 @@ def render_and_update_improvement_options(solar_install: Solar) -> Tuple[Heating
             upgrade_heating = st.session_state["page_state"]["upgrade_heating"]["upgrade_heating"]
 
         upgrade_heating = house_questions.render_and_update_heating_system(heating_system=upgrade_heating)
+        st.caption("The efficiency of your heat pump depends on how well the system is designed and how low a flow "
+                   "temperature it can run at. A good, low flow temperature install can have a COP of about 3.8. "
+                   "The historical median COP in the UK is 2.7, but a good installer nowadays will ensure you get a "
+                   "much better COP than that")
+
     with st.expander("Solar PV assumptions "):
         solar_install = render_and_update_solar_inputs(solar=solar_install)
 
