@@ -5,7 +5,7 @@ import plotly.express as px
 import numpy as np
 from math import floor
 
-import solar
+from src import solar
 from constants import ORIENTATION_OPTIONS, SolarConstants, BASE_YEAR_HOURLY_INDEX
 
 
