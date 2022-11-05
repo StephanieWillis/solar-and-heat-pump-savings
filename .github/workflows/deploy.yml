@@ -1,7 +1,26 @@
-- name: Build and publish image to GCR
-  uses: carbonchain/action-container-registry@v1.1
-  with:
-    project_id: [your-project]
-    dockerfile: [path-to-your-dockerfile]
-    image: gcr.io/[your-project]/[image-name]
-    service_account_key: ${{ secrets.GCLOUD_AUTH }}
+name: Deploy
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: 3.10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build and publish image to GCR
+      uses: carbonchain/action-container-registry@v1.1
+      with:
+        project_id: solar-and-heat-pump
+        dockerfile: ./Dockerfile
+        image: gcr.io/solar-and-heat-pump/app
+        service_account_key: ${{ secrets.GCLOUD_AUTH }}
