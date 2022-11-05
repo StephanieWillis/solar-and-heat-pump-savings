@@ -1,4 +1,4 @@
-name: Deploy
+name: Deployy
 
 on: [push]
 
@@ -18,3 +18,4 @@ jobs:
         dockerfile: ./Dockerfile
         image: gcr.io/solar-and-heat-pump/app
         service_account_key: ${{ secrets.GCLOUD_AUTH }}
+
