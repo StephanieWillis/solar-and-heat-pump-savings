@@ -73,7 +73,7 @@ class Solar:
     def get_number_of_panels_from_polygons(self) -> int:
         numbers = []
         for polygon in self.polygons:
-            number_this_polygon = self.max_number_of_panels_in_polygon(polygon)
+            number_this_polygon = self.max_number_of_panels_in_a_polygon(polygon)
             numbers.append(number_this_polygon)
         all_panels = sum(numbers)
         return all_panels
