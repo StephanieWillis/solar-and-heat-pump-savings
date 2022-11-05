@@ -1,0 +1,17 @@
+name: Test
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Build Docker image
+      run: docker build -t test_image .
+
+    - name: Run tests inside the container
+      run: docker run test_image python -m pytest
