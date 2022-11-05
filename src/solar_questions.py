@@ -31,11 +31,11 @@ def render() -> 'Solar':
                           latitude=lat,
                           longitude=lng)
 
-    # Overwrite number of panels only if it has been overwritten by user because otherwise will be stuck at default of 0
+    # Overwrite number of panels if it has previously been overwritten by user
     if solar_install_in.number_of_panels_has_been_overwritten:
         solar_install.number_of_panels = solar_install_in.number_of_panels
 
-    # Overwrite panel capacity because not an issue to use even if it hasn't bene overwritten
+    # Overwrite panel capacity because not an issue to use the existing value even if it hasn't been overwritten
     solar_install.kwp_per_panel = solar_install_in.kwp_per_panel
 
     solar_install = render_results(solar_install)
