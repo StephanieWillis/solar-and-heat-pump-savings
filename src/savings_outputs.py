@@ -10,7 +10,6 @@ from building_model import *
 
 def render(house: 'House', solar: 'Solar'):
 
-
     with st.sidebar:
         st.header("Assumptions")
         st.subheader("Current Performance")
@@ -20,44 +19,28 @@ def render(house: 'House', solar: 'Solar'):
         upgrade_heating, upgrade_solar = render_and_update_improvement_options(solar=solar)
 
 
-
     # Upgraded buildings
     hp_house, solar_house, both_house = building_model.upgrade_buildings(baseline_house=house,
                                                                          upgrade_heating=upgrade_heating,
                                                                          upgrade_solar=upgrade_solar)
 
-    # Combine results
-    results_df = combined_results_dfs_multiple_houses([house, solar_house, hp_house, both_house],
-                                                      ['Current', 'With solar', 'With a heat pump',
-                                                       'With solar and a heat pump'])
+    st.write(house.total_annual_bill)
+    st.metric( label="Your Current Bills", value=f"£{int(house.total_annual_bill):,d}", help="Our estimate of your current bills")
 
+    st.write(solar_house.total_annual_bill)
+    st.metric(label="Bills With Solar", value=f"£{int(solar_house.total_annual_bill)}",
+              delta=f"£{int(house.total_annual_bill-solar_house.total_annual_bill):,d}")
 
-    st.header("Your Heat Pump and Solar Savings")
-    st.subheader("Energy Bills")
-    bills_chart = st.empty()
-    bills_text = st.empty()
-    st.subheader("Carbon Emissions")
-    carbon_chart = st.empty()
-    carbon_text = st.empty()
-    st.subheader("Energy Consumption")
-    energy_chart = st.empty()
-    energy_text = st.empty()
+    st.write(hp_house.total_annual_bill)
+    st.write(both_house.total_annual_bill)
 
-
-    with bills_chart:
-        render_bill_chart(results_df)
-    with bills_text:
-        render_bill_outputs(house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
-
-    with energy_chart:
-        render_consumption_chart(results_df)
-    with energy_text:
-        render_consumption_outputs(house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
-
-    with carbon_chart:
-        render_carbon_chart(results_df)
-    with carbon_text:
-        render_carbon_outputs(house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
+    # render_bill_outputs(house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
+    #
+    #
+    # render_consumption_outputs(house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
+    #
+    #
+    # render_carbon_outputs(house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
 
 
 def render_and_update_current_home(house: House):
@@ -166,7 +149,7 @@ def render_bill_chart(results_df: pd.DataFrame):
 
 def render_bill_outputs(house: 'House', solar_house: 'House', hp_house: 'House', both_house: 'House'):
 
-    st.metric(label="Adding a heatpump", value=solar_house.total_annual_bill)
+
     st.write(f'We calculate that {produce_current_bill_sentence(house)}  \n'
              f'- with solar {produce_hypothetical_bill_sentence(solar_house)}, '
              f' {produce_bill_saving_sentence(house=solar_house, baseline_house=house)}  \n'

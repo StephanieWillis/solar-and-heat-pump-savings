@@ -96,11 +96,14 @@ class Wizard:
 
     def render(self):
 
+        # Not yet functional
         query_params: Dict[str] = st.experimental_get_query_params()
         page = query_params.get("page")
+
         if page:
-            if query_params["page"] != self.current_page.name:
-                self.go_to_named_page(query_params["page"])
+            page = page[0]
+            if page != self.current_page.name:
+                self.go_to_named_page(page)
 
         with st.container():
             self.progress_bar()
@@ -135,6 +138,6 @@ class Wizard:
 
         _, col1, _ = st.columns((2, 4, 2))
         clicked_value = stepper(value=self.page_names[: self.current_page_idx + 1])
-        st.write(self.page_names)
         if clicked_value:
+            st.experimental_set_query_params(page=clicked_value)
             self.go_to_named_page(clicked_value)
