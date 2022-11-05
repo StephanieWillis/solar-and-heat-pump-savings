@@ -138,16 +138,17 @@ class SolarConstants:
     ORIENTATIONS = ORIENTATION_OPTIONS
     DEFAULT_LAT = 51.509865
     DEFAULT_LONG = -0.118092
-    MIN_ROOF_AREA = 0
-    MAX_ROOF_AREA = 20
-    DEFAULT_ROOF_AREA = 20
+
     ROOF_PITCH_DEGREES = 30
     PANEL_HEIGHT_M = 1.67
     PANEL_WIDTH_M = 1.0
+    PANEL_BORDER_M = 0.5  # gap to leave at side of roof
     PANEL_AREA = PANEL_HEIGHT_M * PANEL_WIDTH_M
     KW_PEAK_PER_PANEL = 0.30  # output with incident radiation of 1kW/m2
     # Panel dimensions and kW_peak from https://www.greenmatch.co.uk/blog/how-many-solar-panels-do-i-need
+
     PERCENT_SQUARE_USABLE = 0.8  # complete guess
+
     API_YEAR = 2013
     # Was 202 Based on quick comparison of years for one location in the uk.
     # If you don't pass years to the API it gives you all hours from first to last year they have data for.

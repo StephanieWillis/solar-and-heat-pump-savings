@@ -65,14 +65,18 @@ class Polygon:
         return side_lengths
 
     @property
-    def average_length(self):
-        """ Assume polygon is rectangular. This could be 'width' or 'length' really - depends on order drawn in"""
-        return (self.side_lengths[0] + self.side_lengths[2])/2
+    def average_plan_height(self):
+        """ Assume polygon is rectangular and is wider that it is tall. 'plan' because doesn't account for pitch"""
+        average_length_1 = (self.side_lengths[0] + self.side_lengths[2])/2
+        average_length_2 = (self.side_lengths[1] + self.side_lengths[3])/2
+        return min(average_length_1, average_length_2)
 
     @property
     def average_width(self):
-        """ Assume polygon is rectangular. This could be 'width' or 'length' really - depends on order drawn in"""
-        return (self.side_lengths[1] + self.side_lengths[3])/2
+        """ Assume polygon is rectangular and is wider that it is tall."""
+        average_length_1 = (self.side_lengths[0] + self.side_lengths[2])/2
+        average_length_2 = (self.side_lengths[1] + self.side_lengths[3])/2
+        return max(average_length_1, average_length_2)
 
     @staticmethod
     def convert_points_to_be_relative_to_first(points: List[Tuple]):
