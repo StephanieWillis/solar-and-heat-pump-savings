@@ -7,6 +7,8 @@ import leafmap.foliumap as leafmap
 import streamlit as st
 from streamlit_folium import st_folium
 import numpy as np
+
+from constants import SolarConstants
 from place_search import place_search
 
 KM_TO_M = 1e3
@@ -32,7 +34,13 @@ def shoelace(x_y) -> float:
 
 @dataclass
 class Polygon:
-    _points: List[Tuple[float]]
+    _points: List[List[float]]
+
+    @classmethod
+    def make_zero_area_instance(cls):
+        default_point = [SolarConstants.DEFAULT_LONG, SolarConstants.DEFAULT_LAT]
+        _points = [default_point, default_point, default_point, default_point, default_point]
+        return Polygon(_points)
 
     @property
     def points(self) -> List[Tuple[float]]:

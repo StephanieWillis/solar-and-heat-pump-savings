@@ -32,3 +32,9 @@ def test_polygon_brockwell_lido_average_height_and_width():
     assert lido_polygon.average_plan_height == 27.67757085605215  # code defines 'height' as smaller of the two dims
     assert lido_polygon.average_width == 50.747397116375595
 
+
+def test_make_zero_area_instance():
+    no_area = roof.Polygon.make_zero_area_instance()
+    assert no_area.area == 0
+    assert no_area.average_width == 0
+    assert no_area.average_plan_height == 0
