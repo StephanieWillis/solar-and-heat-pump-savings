@@ -72,21 +72,24 @@ def render_results(solar_install: Solar):
 
         solar_install = render_and_update_solar_inputs(solar=solar_install)
 
-    if solar_install.roof_plan_area > 0:
-        if solar_install.number_of_panels == 0:
-            st.write("Oops! This shape isn't big enough to fit a solar panel in. Make sure you draw the shape right up"
-                     "to the edge of your roof.")
-        else:
-            st.markdown(f"<p class='bill-label' style='text-align: center'>We estimate you can fit </p>", unsafe_allow_html=True)
+    if solar_install.peak_capacity_kw_out_per_kw_in_per_m2 > 0:
+        st.markdown(f"<p class='bill-label' style='text-align: center'>We estimate you can fit </p>",
+                    unsafe_allow_html=True,
+                    )
         st.markdown(
             f"<p class='bill-estimate' style='text-align: center'>  {solar_install.number_of_panels}  </p>"
             "<p class='bill-label' style='text-align: center'> solar panels on your roof</p>",
             unsafe_allow_html=True,
         )
         st.write(
-                     f"<p class='bill-details' style='text-align: center'> That's a {int(solar_install.peak_capacity_kw_out_per_kw_in_per_m2):,d} kW installation which would"
-                     f" generate about {int(solar_install.generation.exported.annual_sum_kwh)} "
-                     f"kWh of electricity a year! </p>",
+            f" <p class='bill-details' style='text-align: center'> That's a "
+            f"{solar_install.peak_capacity_kw_out_per_kw_in_per_m2:.1f} kW installation which would generate "
+            f"about {int(solar_install.generation.exported.annual_sum_kwh)} kWh of electricity a year! </p>",
             unsafe_allow_html=True,
         )
+    elif solar_install.roof_plan_area > 0:  # for case where capacity is zero but shape has been drawn
+        st.markdown("<p class='bill-details' style='text-align: center'> Oops! This shape isn't big enough to fit a"
+                    " solar panel in. Make sure you draw the shape right up to the edge of your roof.</p>",
+                    unsafe_allow_html=True
+                    )
     return solar_install
