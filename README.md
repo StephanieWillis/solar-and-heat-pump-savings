@@ -6,6 +6,9 @@ Calculations account for proportion of solar generation that is used within the 
 
 Calculations are hourly rather than half-hourly because the Solar generation API we are using gives hourly results.
 
+Tests must be run from within src using *python -m pytest ../tests*
+
+
 ## Solar output calculation
 
 Using EU joint research centre calculations.

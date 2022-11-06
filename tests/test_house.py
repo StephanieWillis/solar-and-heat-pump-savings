@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 
-from .context import src
 from src import building_model, solar, constants
 from src.constants import SolarConstants
 

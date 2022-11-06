@@ -1,10 +1,9 @@
 import pandas as pd
 import numpy as np
 
-from .context import src
-from src import consumption
-from src import constants
-from src.constants import BASE_YEAR_HOURLY_INDEX
+import consumption
+import constants
+from constants import BASE_YEAR_HOURLY_INDEX
 
 
 def test_consumption_stream_annual_sum():
