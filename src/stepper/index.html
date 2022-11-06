@@ -8,7 +8,7 @@
 
     }
 
-    .stepper-icons{
+    .stepper-icons {
         cursor: pointer;
     }
 
@@ -18,7 +18,7 @@
 
     }
 
-    .stepper-label{
+    .stepper-label {
         font-family: "Source Sans Pro", sans-serif;
         font-size: 16px;
         text-align: center;
@@ -50,19 +50,26 @@
     <!-- Fathom - beautiful, simple website analytics -->
     <script src='https://cdn.usefathom.com/script.js' data-site='FKPOJCMM' defer></script>
     <!-- / Fathom -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:creator" content="@stephwillis808">
+    <meta name="twitter:title" content="Quickly calculate your bill savings from solar & heat pump">
+    <meta name="twitter:description"
+          content="How much cash and CO2 could you save by adding solar panels and a heat pump to your home?">
+    <meta name="twitter:image"
+          content="https://live.staticflickr.com/4412/36968356435_5600a746ba_b.jpg">
 </head>
 <body>
 <script src="https://kit.fontawesome.com/2c74303849.js" crossorigin="anonymous"></script>
 <!-- Set up your HTML here -->
 <div class="stepper" id="myinput">
     <div id="house">
-    <div class="line" id="house-line" style="display: none"></div>
-    <span onclick="sendDataToPython({value:'house', dataType: 'json'})" class="stepper-icons fa-stack fa-1x">
+        <div class="line" id="house-line" style="display: none"></div>
+        <span onclick="sendDataToPython({value:'house', dataType: 'json'})" class="stepper-icons fa-stack fa-1x">
         <i class="fa-solid fa-circle fa-stack-2x"></i>
         <i class="fa-solid fa-house-fire fa-stack-1x fa-inverse"></i>
     </span>
 
-        </div>
+    </div>
     <div class="line" id="solar-line"></div>
     <div onclick="sendDataToPython({value:'solar', dataType: 'json'})" class="stepper-icons fa-stack fa-1x" id="solar">
         <i class="fa-solid fa-circle fa-stack-2x"></i>
@@ -113,7 +120,7 @@
     function formatSelectedIcons(selector) {
         var selected = document.getElementById(selector);
         selected.classList.add("selected")
-        var selectedLine = document.getElementById(selector+'-line');
+        var selectedLine = document.getElementById(selector + '-line');
         selectedLine.classList.add("selected-line")
     }
 
