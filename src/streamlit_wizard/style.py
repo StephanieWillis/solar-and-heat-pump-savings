@@ -158,6 +158,15 @@ button.css-sc7x0u.edgvbvh9 {
   padding: 5px;
   box-shadow: None;
   }
+  
+   .title {
+        font-size: 2em;
+        text-decoration: underline;
+        text-decoration-color: hsl(220, 90%, 30%);
+   }
+  .description{
+     display: none;
+  }
 }
 """
 
