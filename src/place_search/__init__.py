@@ -5,5 +5,5 @@ THIS_FILE = Path(__file__)
 
 place_search = components.declare_component(
     "place_search",
-    path=Path(THIS_FILE.parent /"place_search")
+    path=Path(THIS_FILE.parent)
 )
