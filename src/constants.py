@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 import pandas as pd
+from pathlib import Path
 
 from fuels import Fuel
 
@@ -26,9 +27,8 @@ class BuildingTypeConstants:
     normalized_base_electricity_demand_profile_kWh: pd.Series
     annual_heat_demand_kWh: float
 
-
-NORMALIZED_HOURLY_BASE_DEMAND: pd.Series = pd.read_pickle(
-    '../src/normalized_hourly_base_electricity_demand_profile_2013.pkl')
+elec_path = Path('src/normalized_hourly_base_electricity_demand_profile_2013.pkl')
+NORMALIZED_HOURLY_BASE_DEMAND: pd.Series = pd.read_pickle(elec_path)
 # Based on elexon profiling data https://www.elexon.co.uk/operations-settlement/profiling/
 # Data processing done in data_exploration_and_prep folder
 
@@ -68,8 +68,8 @@ class HeatingConstants:
     normalized_hourly_heat_demand_profile: pd.Series
     #  Not splitting space and water heating because hourly demand profiles are combined
 
-
-NORMALIZED_HOURLY_HEAT_DEMAND_DF: pd.DataFrame = pd.read_pickle('../src/hourly_heating_demand_profiles_2013.pkl')
+heat_path = Path('src/hourly_heating_demand_profiles_2013.pkl')
+NORMALIZED_HOURLY_HEAT_DEMAND_DF: pd.DataFrame = pd.read_pickle(heat_path)
 # based on data from https://ukerc.rl.ac.uk/DC/cgi-bin/edc_search.pl?WantComp=165
 # processed in data_exploration_and_prep
 

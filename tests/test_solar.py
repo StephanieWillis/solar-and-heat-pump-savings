@@ -5,8 +5,10 @@ import plotly.express as px
 import numpy as np
 from math import floor
 
-from src import solar
-from constants import ORIENTATION_OPTIONS, SolarConstants, BASE_YEAR_HOURLY_INDEX
+from .context import src
+# pythonpath = src
+import src.solar as solar
+from src.constants import ORIENTATION_OPTIONS, SolarConstants, BASE_YEAR_HOURLY_INDEX
 
 
 def test_roof_area_returns_expected_type_and_value():
