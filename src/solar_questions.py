@@ -22,14 +22,10 @@ def render() -> 'Solar':
     orientation_name: str = st.selectbox("Solar Orientation", orientation_options, index=idx)
     orientation = SolarConstants.ORIENTATIONS[orientation_name]
 
-    roof_plan_area = sum([polygon.area for polygon in polygons]) if polygons else solar_install_in.roof_plan_area
-    #  just take first polygon - lat long don't need to be super precise
-    (lat, lng) = polygons[0].points[0] if polygons else (solar_install_in.latitude, solar_install_in.longitude)
+    polygons = polygons if polygons else solar_install_in.polygons
 
     solar_install = Solar(orientation=orientation,
-                          roof_plan_area=roof_plan_area,
-                          latitude=lat,
-                          longitude=lng)
+                          polygons=polygons)
 
     # Overwrite number of panels if it has previously been overwritten by user
     if solar_install_in.number_of_panels_has_been_overwritten:
@@ -44,19 +40,10 @@ def render() -> 'Solar':
 
 def get_solar_install_from_session_state_if_exists_or_create_default():
     if st.session_state["page_state"]["solar"] == {}:
-        solar_install = set_up_default_solar_install()
+        solar_install = Solar.create_zero_area_instance()
         st.session_state["page_state"]["solar"] = dict(solar=solar_install)
     else:
         solar_install = st.session_state["page_state"]["solar"]["solar"]
-    return solar_install
-
-
-def set_up_default_solar_install() -> 'Solar':
-    orientation_options = [name for name, _ in SolarConstants.ORIENTATIONS.items()]
-    solar_install = Solar(orientation=SolarConstants.ORIENTATIONS[orientation_options[0]],
-                          roof_plan_area=0,
-                          latitude=SolarConstants.DEFAULT_LAT,
-                          longitude=SolarConstants.DEFAULT_LONG)
     return solar_install
 
 

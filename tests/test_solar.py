@@ -40,6 +40,7 @@ def test_get_number_of_panels_returns_expected_type_and_value():
                                 pitch=pitch)
     assert isinstance(solar_install.number_of_panels, int)
     assert solar_install.number_of_panels == 2
+    assert solar_install.number_of_panels != solar_install.get_number_of_panels_from_polygon_area(TEST_POLYGONS[0])
 
 
 def test_peak_capacity_kw_out_per_kw_in_per_m2_returns_expected_type_and_value():
@@ -102,6 +103,18 @@ def test_solar_install_when_roof_area_is_zero():
     return solar_install
 
 
+def test_default_solar_install():
+    solar_install = solar.Solar.create_zero_area_instance()
+    np.testing.assert_almost_equal(solar_install.generation.exported.annual_sum_kwh, 0)
+    np.testing.assert_almost_equal(solar_install.generation.overall.annual_sum_kwh, 0)
+    np.testing.assert_almost_equal(solar_install.generation.imported.annual_sum_kwh, 0)
+    assert (solar_install.generation.overall.hourly_profile_kwh == 0).all()
+    assert (solar_install.generation.overall.hourly_profile_kwh.index == BASE_YEAR_HOURLY_INDEX).all()
+    assert solar_install.orientation == SolarConstants.ORIENTATIONS['South']
+    assert solar_install.pitch == SolarConstants.ROOF_PITCH_DEGREES
+    return solar_install
+
+
 def test_solar_install_polygon_does_not_have_4_vertices():
     test_polygon = Polygon(_points=[[0.132377, 52.19524],
                                     [0.13242, 52.195234],
@@ -112,7 +125,7 @@ def test_solar_install_polygon_does_not_have_4_vertices():
     solar_install = solar.Solar(orientation=ORIENTATION_OPTIONS['Southwest'],
                                 polygons=[test_polygon],
                                 pitch=30)
-    assert solar_install.number_of_panels == solar_install.get_number_of_panels_from_roof_area()
+    assert solar_install.number_of_panels == solar_install.get_number_of_panels_from_polygon_area(test_polygon)
 
 
 def test_cache_on_get_hourly_radiation_from_eu_api():

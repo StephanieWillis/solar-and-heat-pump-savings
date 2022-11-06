@@ -142,7 +142,7 @@ class SolarConstants:
     ROOF_PITCH_DEGREES = 30
     PANEL_HEIGHT_M = 1.67
     PANEL_WIDTH_M = 1.0
-    PANEL_BORDER_M = 0.5  # gap to leave at side of roof
+    PANEL_BORDER_M = 0.25  # gap to leave at side of roof
     PANEL_AREA = PANEL_HEIGHT_M * PANEL_WIDTH_M
     KW_PEAK_PER_PANEL = 0.30  # output with incident radiation of 1kW/m2
     # Panel dimensions and kW_peak from https://www.greenmatch.co.uk/blog/how-many-solar-panels-do-i-need

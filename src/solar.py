@@ -34,13 +34,6 @@ class Solar:
         self.number_of_panels = self.get_number_of_panels_from_polygons()
         self.kwp_per_panel = SolarConstants.KW_PEAK_PER_PANEL
 
-    @classmethod
-    def from_defaults(cls):
-        # SolarConstants.DEFAULT_LONG
-        # SolarConstants.ROOF_PITCH_DEGREES
-        # TODO make method in roof to produce default?
-        pass
-
     def __hash__(self):
         return hash((self.latitude,
                      self.longitude,
@@ -58,28 +51,42 @@ class Solar:
                   )
         return result
 
+    @classmethod
+    def create_zero_area_instance(cls):
+        # select orientation to match first dropdown option
+        orientation = [orientation for orientation in SolarConstants.ORIENTATIONS.values()][0]
+        default_install = cls(orientation=orientation,
+                              polygons=[Polygon.make_zero_area_instance()],
+                              pitch=SolarConstants.ROOF_PITCH_DEGREES)
+        return default_install
+
     @property
     def roof_area(self):
-        return self.roof_plan_area / np.cos(np.radians(self.pitch))
+        area = self.convert_plan_value_to_value_along_pitch(self.roof_plan_area)
+        return area
 
-    def get_number_of_panels_from_roof_area(self) -> int:
-        """ Very simplified assumptions to fall back on when shape not roughly rectangular"""
-        usable_area = self.roof_area * SolarConstants.PERCENT_SQUARE_USABLE
-        number_of_panels = floor(usable_area / SolarConstants.PANEL_AREA)
-        return number_of_panels
+    def convert_plan_value_to_value_along_pitch(self, value: float):
+        return value / np.cos(np.radians(self.pitch))
 
     def get_number_of_panels_from_polygons(self) -> int:
         numbers = []
         for polygon in self.polygons:
             if len(polygon.dimensions) != 4:  # if not roughly rectangular
-                number_this_polygon = self.get_number_of_panels_from_roof_area()
+                number_this_polygon = self.get_number_of_panels_from_polygon_area(polygon)
             else:
-                number_this_polygon = self.max_number_of_panels_in_a_polygon(polygon)
+                number_this_polygon = self.max_number_of_panels_in_a_rectangle(polygon)
             numbers.append(number_this_polygon)
         all_panels = sum(numbers)
         return all_panels
 
-    def max_number_of_panels_in_a_polygon(self, polygon) -> int:
+    def get_number_of_panels_from_polygon_area(self, polygon: Polygon) -> int:
+        """ Very simplified assumptions to fall back on when shape not roughly rectangular"""
+        area = self.convert_plan_value_to_value_along_pitch(polygon.area)
+        usable_area = area * SolarConstants.PERCENT_SQUARE_USABLE
+        number_of_panels = floor(usable_area / SolarConstants.PANEL_AREA)
+        return number_of_panels
+
+    def max_number_of_panels_in_a_rectangle(self, polygon) -> int:
         """ Assume shape is rectangular. Try panels in either orientation"""
         roof_height = polygon.average_plan_height / np.cos(np.radians(self.pitch))
         option_1 = self.number_of_panels_in_rectangle(side_1=polygon.average_width, side_2=roof_height)
