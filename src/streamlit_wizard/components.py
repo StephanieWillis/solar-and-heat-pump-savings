@@ -68,7 +68,7 @@ class Wizard:
 
     @property
     def on_first_page(self) -> bool:
-        return self.current_page_idx ==0
+        return self.current_page_idx == 0
 
     @property
     def on_final_page(self) -> bool:
@@ -84,13 +84,14 @@ class Wizard:
         st.session_state["page_state"][self.current_page.name] = state
 
     def render(self):
+
         with st.container():
+            inject_style()
             self.progress_bar()
             state = self.current_page.render()
             self.store_current_page_state(state)
 
             self.buttons()
-            inject_style()
 
     def buttons(self):
         _, col1, col2 = st.columns((7, 1, 1), gap="medium")
@@ -114,9 +115,6 @@ class Wizard:
     def progress_bar(self):
 
         _, col1, _ = st.columns((2, 4, 2))
-        clicked_value = stepper(value=self.page_names[:self.current_page_idx+1])
+        clicked_value = stepper(value=self.page_names[: self.current_page_idx + 1])
         if clicked_value:
             self.go_to_named_page(clicked_value)
-
-
-
