@@ -68,8 +68,13 @@ def render_results(solar_install: Solar):
         st.caption("If you have a better estimate of how much solar could fit on your roof, enter it below:")
         solar_install = render_and_update_solar_inputs(solar=solar_install)
 
-    if solar_install.peak_capacity_kw_out_per_kw_in_per_m2 > 0:
-        st.write(f"We estimate you can fit {solar_install.number_of_panels} solar panels on your roof. "
-                 f"That's a {solar_install.peak_capacity_kw_out_per_kw_in_per_m2} kW installation which would generate "
-                 f"about {int(solar_install.generation.exported.annual_sum_kwh)} kWh of electricity a year!")
+    if solar_install.roof_plan_area > 0:
+        if solar_install.number_of_panels == 0:
+            st.write("Oops! This shape isn't big enough to fit a solar panel in. Make sure you draw the shape right up"
+                     "to the edge of your roof.")
+        else:
+            st.write(f"We estimate you can fit {solar_install.number_of_panels} solar panels on your roof. "
+                     f"That's a {solar_install.peak_capacity_kw_out_per_kw_in_per_m2} kW installation which would"
+                     f" generate about {int(solar_install.generation.exported.annual_sum_kwh)} "
+                     f"kWh of electricity a year!")
     return solar_install
