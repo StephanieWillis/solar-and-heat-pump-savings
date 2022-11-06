@@ -11,20 +11,23 @@ def render() -> "Solar":
 
     st.header("How much solar power could you generate?")
 
-    st.write(
-        "Search for your home below and draw a square where you think solar panels might go. If you have"
-        " multiple options, choose your most South facing roof. Use the hexagonal tool to draw the square.  "
+    st.write("""
+        - Search for your home below
+        - Using the tool with the ⭓ icon, draw the biggest rectangle that fits on your most south facing roof
+        - You can draw multiple rectangles if needed
+        - Enter the orientation of the side of the roof you have drawn on"""
     )
+
     polygons = roof.roof_mapper(800, 400)  # figure out how to save state here
+    polygons = polygons if polygons else solar_install_in.polygons
 
     orientation_options = [name for name, _ in SolarConstants.ORIENTATIONS.items()]
     idx = orientation_options.index(solar_install_in.orientation.name)
     orientation_name: str = st.selectbox("Solar Orientation", orientation_options, index=idx)
     orientation = SolarConstants.ORIENTATIONS[orientation_name]
 
-    polygons = polygons if polygons else solar_install_in.polygons
-
-    solar_install = Solar(orientation=orientation, polygons=polygons)
+    solar_install = Solar(orientation=orientation,
+                          polygons=polygons)
 
     # Overwrite number of panels if it has previously been overwritten by user
     if solar_install_in.number_of_panels_has_been_overwritten:
@@ -48,22 +51,25 @@ def get_solar_install_from_session_state_if_exists_or_create_default():
 
 def render_and_update_solar_inputs(solar: "Solar"):
     # Note: once this has been overwritten it is decoupled from roof area for the rest of the session
-    solar.number_of_panels = st.number_input(
-        label="Number of panels", min_value=0, max_value=40, value=int(solar.number_of_panels)
-    )
-    solar.kwp_per_panel = st.number_input(
-        label="capacity_per_panel", min_value=0.0, max_value=0.8, value=solar.kwp_per_panel
-    )
+
+    solar.number_of_panels = st.number_input(label='Number of panels',
+                                             min_value=0,
+                                             max_value=None,
+                                             value=int(solar.number_of_panels))
+    solar.kwp_per_panel = st.number_input(label='Capacity per panel (kWp)',
+                                          min_value=0.0,
+                                          max_value=0.8,
+                                          value=solar.kwp_per_panel)
+
     return solar
 
 
 def render_results(solar_install: Solar):
     with st.sidebar:
         st.header("Solar inputs")
-        st.markdown(
-            "<p>If you have a better estimate of how much solar could fit on your roof, enter it below</p>",
-            unsafe_allow_html=True,
-        )
+
+        st.caption("If you have a better estimate of how much solar could fit on your roof, enter it below:")
+
         solar_install = render_and_update_solar_inputs(solar=solar_install)
 
     if solar_install.peak_capacity_kw_out_per_kw_in_per_m2 > 0:

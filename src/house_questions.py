@@ -104,11 +104,18 @@ def render_and_update_current_home(house: House):
 
 
 def render_and_update_envelope_outputs(envelope: BuildingEnvelope) -> BuildingEnvelope:
-    st.write(f"We assume that a {envelope.house_type.lower()} needs: ")
+
     envelope.annual_heating_demand = render_and_update_annual_demand(label='Space and water heating (kwh): ',
                                                                      demand=envelope.annual_heating_demand)
     envelope.base_demand = render_and_update_annual_demand(label='Lighting, appliances, plug loads etc. (kwh): ',
                                                            demand=envelope.base_demand)
+
+    st.caption(f"A typical {envelope.house_type.lower()} home needs "
+               f"{constants.BUILDING_TYPE_OPTIONS[envelope.house_type].annual_heat_demand_kWh:,} kWh for heating, "
+               f"and {constants.BUILDING_TYPE_OPTIONS[envelope.house_type].annual_base_electricity_demand_kWh:,} "
+               f"kWh for lighting, appliances, etc. "
+               f"The better your home is insulated, the less energy it will need for heating. "
+               )
     return envelope
 
 
@@ -125,13 +132,13 @@ def render_and_update_annual_demand(label: str, demand: pd.Series | float) -> pd
 
 
 def render_and_update_heating_system(heating_system: 'HeatingSystem') -> 'HeatingSystem':
-    heating_system.efficiency = st.number_input(label='Heating efficiency: ',
+    heating_system.efficiency = st.number_input(label='Efficiency: ',
                                                 min_value=0.0,
                                                 max_value=8.0,
                                                 value=heating_system.efficiency)
     if heating_system.fuel.name == 'gas':
         st.caption(
-            "Many modern boilers have a low efficiency because they run at a high a flow temperature."
+            "Many modern boilers have a low efficiency because they run at a high a flow temperature. "
             "Your boiler may be able to run at 90% or better but in most cases the flow temperature will be too high to "
             "achieve the boiler's stated efficiency. "
             "You can learn how to turn down your flow temperature "
@@ -140,10 +147,6 @@ def render_and_update_heating_system(heating_system: 'HeatingSystem') -> 'Heatin
 
 
 def render_and_update_tariffs(tariffs: Tariff, fuel_name: 'str') -> Tariff:
-    st.caption(
-        "Our default tariffs reflect the [Energy Price Guarantee]("
-        "https://www.gov.uk/government/publications/energy-bills-support/energy-bills-support-factsheet-8-september-2022)"
-        " but you can change them if you have fixed at a different rate")
     st.subheader('Electricity')
     tariffs['electricity'].p_per_unit_import = st.number_input(label='Unit rate (p/kwh), electricity import',
                                                                min_value=0.0,
@@ -176,4 +179,8 @@ def render_and_update_tariffs(tariffs: Tariff, fuel_name: 'str') -> Tariff:
                                                                min_value=0.0,
                                                                max_value=200.0,
                                                                value=tariffs['oil'].p_per_unit_import)
+    st.caption(
+        "Our default tariffs reflect the [Energy Price Guarantee]("
+        "https://www.gov.uk/government/publications/energy-bills-support/energy-bills-support-factsheet-8-september-2022)"
+        ", but you can change them if you have fixed at a different rate.")
     return tariffs
