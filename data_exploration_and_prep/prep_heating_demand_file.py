@@ -14,4 +14,4 @@ assert len(df_hourly) == 8760
 df_hourly = df_hourly/df_hourly.sum()  # normalize so demand profile sums to 1
 assert (df_hourly.sum().sum() == 3.0)
 
-pd.to_pickle(df_hourly, "../src/hourly_heating_demand_profiles_2013.pkl")
+pd.to_pickle(df_hourly, "../data/hourly_heating_demand_profiles_2013.pkl")

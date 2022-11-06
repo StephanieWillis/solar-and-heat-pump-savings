@@ -65,4 +65,4 @@ assert (hourly_kwh_series_normalized.sum() == 1.0)
 fig = px.line(hourly_kwh_series_normalized)
 fig.show()
 
-pd.to_pickle(hourly_kwh_series_normalized, "../src/normalized_hourly_base_electricity_demand_profile_2013.pkl")
+pd.to_pickle(hourly_kwh_series_normalized, "../data/normalized_hourly_base_electricity_demand_profile_2013.pkl")
