@@ -5,6 +5,8 @@ from pathlib import Path
 
 from fuels import Fuel
 
+THIS_FILE = Path(__file__)
+
 # Use same year as solar year
 BASE_YEAR_HOURLY_INDEX = pd.date_range(start="2013-01-01", end="2014-01-01", freq="1H", inclusive="left")
 EMPTY_TIMESERIES = pd.Series(index=BASE_YEAR_HOURLY_INDEX, data=0)
@@ -27,7 +29,8 @@ class BuildingTypeConstants:
     normalized_base_electricity_demand_profile_kWh: pd.Series
     annual_heat_demand_kWh: float
 
-elec_path = Path('normalized_hourly_base_electricity_demand_profile_2013.pkl')
+
+elec_path = Path(THIS_FILE.parent / 'normalized_hourly_base_electricity_demand_profile_2013.pkl')
 NORMALIZED_HOURLY_BASE_DEMAND: pd.Series = pd.read_pickle(elec_path)
 # Based on elexon profiling data https://www.elexon.co.uk/operations-settlement/profiling/
 # Data processing done in data_exploration_and_prep folder
@@ -55,6 +58,8 @@ BUILDING_TYPE_OPTIONS = {
         normalized_base_electricity_demand_profile_kWh=NORMALIZED_HOURLY_BASE_DEMAND,
         annual_heat_demand_kWh=14000)
 }
+
+
 # Annual base electricity demand numbers based on data from
 # https://www.energysavingtrust.org.uk/sites/default/files/reports/PoweringthenationreportCO332.pdf
 # Annual heat demand numbers based on data from https://ukerc.rl.ac.uk/DC/cgi-bin/edc_search.pl?WantComp=165
@@ -68,7 +73,8 @@ class HeatingConstants:
     normalized_hourly_heat_demand_profile: pd.Series
     #  Not splitting space and water heating because hourly demand profiles are combined
 
-heat_path = Path('hourly_heating_demand_profiles_2013.pkl')
+
+heat_path = Path(THIS_FILE.parent / 'hourly_heating_demand_profiles_2013.pkl')
 NORMALIZED_HOURLY_HEAT_DEMAND_DF: pd.DataFrame = pd.read_pickle(heat_path)
 # based on data from https://ukerc.rl.ac.uk/DC/cgi-bin/edc_search.pl?WantComp=165
 # processed in data_exploration_and_prep
