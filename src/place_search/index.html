@@ -6,14 +6,14 @@
     padding: 8px;
     border-radius: 5px;
     border: None;
-    color: rgb(49, 51, 63);
     background-color: rgb(240, 242, 246);
+    color: hsl(200,10%,60%);
     width: 100%;
     height: 40px;
     font-size: 16px;
 }
 </style>
-<input id="postcode" class='postcode-input' value=""  class="stTextInput"/>
+<input id="postcode"  placeholder="Enter your postcode to find your roof"  class="stTextInput postcode-input"/>
 <div id="output" value="" style="z-index: 99999"/>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDE1h8LmQYFqt5_aHPd_7KKF-wpv14sJBA&libraries=places&callback=autoComplete&locationbias=ipBias"
         async defer></script>
@@ -130,7 +130,7 @@
 
     // Optionally, if the automatic height computation fails you, give this component a height manually
     // by commenting out below:
-    setFrameHeight(100);
+    setFrameHeight(120);
 </script>
 </body>
 </html>

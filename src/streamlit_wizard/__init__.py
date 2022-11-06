@@ -1,1 +1,1 @@
-from .components import Wizard, Page
+from .wizard import Wizard, Page
