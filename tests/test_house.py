@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 from .context import src
-from src import building_model, solar, constants
+from src import building_model, solar, constants, roof
 from src.constants import SolarConstants
 
 
@@ -153,8 +153,13 @@ def test_upgrade_buildings():
     upgrade_heating = building_model.HeatingSystem.from_constants(name='Heat pump',
                                                                   parameters=constants.DEFAULT_HEATING_CONSTANTS[
                                                                       'Heat pump'])
+    test_polygon = roof.Polygon(_points=[[0.132377, 52.19524],
+                                  [0.13242, 52.195234],
+                                  [0.132428, 52.195252],
+                                  [0.132384, 52.19526],
+                                  [0.132377, 52.19524]])
     solar_install = solar.Solar(orientation=SolarConstants.ORIENTATIONS['South'],
-                                roof_plan_area=48)
+                                polygons=[test_polygon])
     hp_house, solar_house, both_house = building_model.upgrade_buildings(baseline_house=oil_house,
                                                                          upgrade_heating=upgrade_heating,
                                                                          upgrade_solar=solar_install)
@@ -165,6 +170,7 @@ def test_upgrade_buildings():
                                    both_house.consumption_per_fuel['electricity'].overall.annual_sum_kwh)
     assert hp_house.total_annual_bill > both_house.total_annual_bill
 
-    assert both_house.solar_install.generation.overall.annual_sum_kwh == solar_house.solar_install.generation.overall.annual_sum_kwh
+    assert (both_house.solar_install.generation.overall.annual_sum_kwh
+            == solar_house.solar_install.generation.overall.annual_sum_kwh)
 
     return hp_house, solar_house, both_house

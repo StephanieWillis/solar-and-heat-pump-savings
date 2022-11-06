@@ -5,7 +5,6 @@ from typing import Dict, List, Tuple
 import pandas as pd
 
 import constants
-from constants import SolarConstants
 from consumption import Consumption
 from solar import Solar
 
@@ -40,7 +39,7 @@ class House:
         self.tariffs = self.set_up_standard_tariffs()
 
         if solar_install is None:
-            solar_install = Solar(orientation=SolarConstants.ORIENTATIONS['South'], roof_plan_area=0)
+            solar_install = Solar.create_zero_area_instance()
         self.solar_install = solar_install
 
     @classmethod
