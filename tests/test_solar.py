@@ -2,7 +2,6 @@ import pandas as pd
 import plotly.express as px
 import numpy as np
 
-import roof
 import solar
 from constants import ORIENTATION_OPTIONS, SolarConstants, BASE_YEAR_HOURLY_INDEX
 from roof import Polygon
@@ -52,7 +51,7 @@ def test_peak_capacity_kw_out_per_kw_in_per_m2_returns_expected_type_and_value()
 
 
 def test_get_hourly_radiation_from_eu_api_returns_expected_annual_sum():
-    solar_install = solar.Solar(orientation=ORIENTATION_OPTIONS['South'],
+    solar_install = solar.Solar(orientation=ORIENTATION_OPTIONS['East'],
                                 polygons=[TEST_POLYGONS[0]],
                                 pitch=30)
     assert solar_install.number_of_panels_has_been_overwritten is False
@@ -61,7 +60,7 @@ def test_get_hourly_radiation_from_eu_api_returns_expected_annual_sum():
 
     assert solar_install.peak_capacity_kw_out_per_kw_in_per_m2 == 3.0
     pv_power_kw = solar_install.get_hourly_radiation_from_eu_api()
-    ANNUAL_KWH = 2239.1492100000005
+    ANNUAL_KWH = 2326.95354
     np.testing.assert_almost_equal(pv_power_kw.sum(), ANNUAL_KWH)
     np.testing.assert_almost_equal(solar_install.generation.exported.annual_sum_kwh, ANNUAL_KWH)
     np.testing.assert_almost_equal(solar_install.generation.overall.annual_sum_kwh, - ANNUAL_KWH)
@@ -93,7 +92,7 @@ def test_generation_attributed_to_correct_fuel_and_consumption_stream():
 
 def test_solar_install_when_roof_area_is_zero():
     solar_install = solar.Solar(orientation=ORIENTATION_OPTIONS['Southwest'],
-                                polygons=[roof.Polygon.make_zero_area_instance()],
+                                polygons=[Polygon.make_zero_area_instance()],
                                 pitch=30)
     np.testing.assert_almost_equal(solar_install.generation.exported.annual_sum_kwh, 0)
     np.testing.assert_almost_equal(solar_install.generation.overall.annual_sum_kwh, 0)
@@ -101,6 +100,19 @@ def test_solar_install_when_roof_area_is_zero():
     assert (solar_install.generation.overall.hourly_profile_kwh == 0).all()
     assert (solar_install.generation.overall.hourly_profile_kwh.index == BASE_YEAR_HOURLY_INDEX).all()
     return solar_install
+
+
+def test_solar_install_polygon_does_not_have_4_vertices():
+    test_polygon = Polygon(_points=[[0.132377, 52.19524],
+                                    [0.13242, 52.195234],
+                                    [0.132428, 52.195252],
+                                    [0.132384, 52.19526],
+                                    [0.132382, 52.19525],
+                                    [0.132377, 52.19524]])
+    solar_install = solar.Solar(orientation=ORIENTATION_OPTIONS['Southwest'],
+                                polygons=[test_polygon],
+                                pitch=30)
+    assert solar_install.number_of_panels == solar_install.get_number_of_panels_from_roof_area()
 
 
 def test_cache_on_get_hourly_radiation_from_eu_api():

@@ -1,5 +1,6 @@
 import math
 
+from .context import src
 from src import roof
 
 
@@ -15,9 +16,6 @@ def test_polygon_calculate_side_lengths():
                    [-6.526265, 58.072384]]
     polygon = roof.Polygon(test_points)
     assert math.sqrt(polygon.dimensions[1][0] ** 2 + polygon.dimensions[1][1] ** 2) == polygon.side_lengths[1]
-
-    # assert polygon.average_height == 1
-    # assert polygon.average_width == 1
 
 
 def test_polygon_brockwell_lido_average_height_and_width():

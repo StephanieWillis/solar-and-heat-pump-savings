@@ -32,7 +32,6 @@ class Solar:
         # The below two can be overwritten by user, so they are not set up as properties.
         # This means changes in roof area after initial set up won't change the number of panels
         self.number_of_panels = self.get_number_of_panels_from_polygons()
-        self.number_of_panels_based_on_roof_area = self.get_number_of_panels_from_roof_area()
         self.kwp_per_panel = SolarConstants.KW_PEAK_PER_PANEL
 
     @classmethod
@@ -64,8 +63,7 @@ class Solar:
         return self.roof_plan_area / np.cos(np.radians(self.pitch))
 
     def get_number_of_panels_from_roof_area(self) -> int:
-        """ Very simplified assumption here that you can use fixed proportion of area because hard to do properly"""
-        # TODO: loose this once tested the other
+        """ Very simplified assumptions to fall back on when shape not roughly rectangular"""
         usable_area = self.roof_area * SolarConstants.PERCENT_SQUARE_USABLE
         number_of_panels = floor(usable_area / SolarConstants.PANEL_AREA)
         return number_of_panels
@@ -73,13 +71,16 @@ class Solar:
     def get_number_of_panels_from_polygons(self) -> int:
         numbers = []
         for polygon in self.polygons:
-            number_this_polygon = self.max_number_of_panels_in_a_polygon(polygon)
+            if len(polygon.dimensions) != 4:  # if not roughly rectangular
+                number_this_polygon = self.get_number_of_panels_from_roof_area()
+            else:
+                number_this_polygon = self.max_number_of_panels_in_a_polygon(polygon)
             numbers.append(number_this_polygon)
         all_panels = sum(numbers)
         return all_panels
 
     def max_number_of_panels_in_a_polygon(self, polygon) -> int:
-        """ Assume shape is rectangular - it's too complex otherwise. Try panels in either orientation"""
+        """ Assume shape is rectangular. Try panels in either orientation"""
         roof_height = polygon.average_plan_height / np.cos(np.radians(self.pitch))
         option_1 = self.number_of_panels_in_rectangle(side_1=polygon.average_width, side_2=roof_height)
         option_2 = self.number_of_panels_in_rectangle(side_1=roof_height, side_2=polygon.average_width)
@@ -89,9 +90,12 @@ class Solar:
 
     @staticmethod
     def number_of_panels_in_rectangle(side_1: float, side_2: float) -> int:
-        rows_axis_1 = floor((side_1 - SolarConstants.PANEL_BORDER_M) / SolarConstants.PANEL_WIDTH_M)
-        rows_axis_2 = floor((side_2 - SolarConstants.PANEL_BORDER_M)/SolarConstants.PANEL_HEIGHT_M)
-        number = rows_axis_1 * rows_axis_2
+        if side_1 < SolarConstants.PANEL_BORDER_M or side_2 < SolarConstants.PANEL_BORDER_M:
+            number = 0
+        else:
+            rows_axis_1 = floor((side_1 - SolarConstants.PANEL_BORDER_M) / SolarConstants.PANEL_WIDTH_M)
+            rows_axis_2 = floor((side_2 - SolarConstants.PANEL_BORDER_M)/SolarConstants.PANEL_HEIGHT_M)
+            number = rows_axis_1 * rows_axis_2
         return number
 
     @property
