@@ -65,7 +65,7 @@ def render_and_update_solar_inputs(solar: 'Solar'):
 def render_results(solar_install: Solar):
     with st.sidebar:
         st.header("Solar inputs")
-        st.caption("If you have a better estimate of how much solar could fit on your roof, enter it below")
+        st.caption("If you have a better estimate of how much solar could fit on your roof, enter it below:")
         solar_install = render_and_update_solar_inputs(solar=solar_install)
 
     if solar_install.peak_capacity_kw_out_per_kw_in_per_m2 > 0:
