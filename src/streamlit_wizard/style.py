@@ -38,6 +38,8 @@ p.bill-estimate {
     color: hsl(220, 60%, 30%);   
 }
 
+
+
 p.bill-label{
     font-size: 1.5em;
     color: hsl(220, 60%, 30%);
@@ -49,6 +51,14 @@ p.bill-details{
     color: hsl(220, 30%, 70%);   
 }
 
+p.green {
+    color: hsl(140, 60%, 25%);
+}
+
+p.snug {
+    margin-top: 0;
+    line-height: .2em;
+}
 .bill-consumption-kwh {
     text-decoration-line: underline;
     text-decoration-style: dotted;
