@@ -7,6 +7,8 @@ import leafmap.foliumap as leafmap
 import streamlit as st
 from streamlit_folium import st_folium
 import numpy as np
+
+from constants import SolarConstants
 from place_search import place_search
 
 KM_TO_M = 1e3
@@ -32,7 +34,13 @@ def shoelace(x_y) -> float:
 
 @dataclass
 class Polygon:
-    _points: List[Tuple[float]]
+    _points: List[List[float]]
+
+    @classmethod
+    def make_zero_area_instance(cls):
+        default_point = [SolarConstants.DEFAULT_LONG, SolarConstants.DEFAULT_LAT]
+        _points = [default_point, default_point, default_point, default_point, default_point]
+        return Polygon(_points)
 
     @property
     def points(self) -> List[Tuple[float]]:
@@ -53,6 +61,31 @@ class Polygon:
     def area(self) -> float:
         return shoelace(self.dimensions)
 
+    @property
+    def side_lengths(self):
+        side_lengths = []
+        for i in range(len(self.dimensions)):
+            next_dimension = self.dimensions[i + 1] if i + 1 < len(self.dimensions) else self.dimensions[0]
+            side_length = self.calculate_side_length(self.dimensions[i], next_dimension)
+            side_lengths.append(side_length)
+        side_lengths = [self.calculate_side_length(self.dimensions[i], self.dimensions[i + 1]) for i in
+                        range(-1, (len(self.dimensions) - 1))]
+        return side_lengths
+
+    @property
+    def average_plan_height(self):
+        """ Assume polygon is rectangular and is wider that it is tall. 'plan' because doesn't account for pitch"""
+        average_length_1 = (self.side_lengths[0] + self.side_lengths[2])/2
+        average_length_2 = (self.side_lengths[1] + self.side_lengths[3])/2
+        return min(average_length_1, average_length_2)
+
+    @property
+    def average_width(self):
+        """ Assume polygon is rectangular and is wider that it is tall."""
+        average_length_1 = (self.side_lengths[0] + self.side_lengths[2])/2
+        average_length_2 = (self.side_lengths[1] + self.side_lengths[3])/2
+        return max(average_length_1, average_length_2)
+
     @staticmethod
     def convert_points_to_be_relative_to_first(points: List[Tuple]):
         first = points.copy()[0]
@@ -69,6 +102,23 @@ class Polygon:
         km_per_degree_lat = 111  # constant
 
         return lat * km_per_degree_lat * KM_TO_M, lng * km_per_degree_lng * KM_TO_M
+
+    def calculate_side_lengths(self, dimensions: List[Tuple[float]]) -> List[float]:
+        side_lengths = []
+        for i in range(len(dimensions)):
+            next_dimension = dimensions[i + 1] if i + 1 < len(dimensions) else dimensions[0]
+            side_length = self.calculate_side_length(dimensions[i], next_dimension)
+            side_lengths.append(side_length)
+        side_lengths = [self.calculate_side_length(dimensions[i], dimensions[i + 1]) for i in
+                        range(-1, (len(dimensions) - 1))]
+        return side_lengths
+
+    @staticmethod
+    def calculate_side_length(point_1: Tuple[float], point_2: Tuple[float]) -> float:
+        (x1, y1) = point_1
+        (x2, y2) = point_2
+        length = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+        return length
 
 
 def roof_mapper(width: int, height: int) -> Optional[List[Polygon]]:

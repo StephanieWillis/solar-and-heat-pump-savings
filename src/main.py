@@ -1,28 +1,19 @@
 import streamlit as st
 
-import usage_questions
+import house_questions
 import solar_questions
 import savings_outputs
 
 from streamlit_wizard import Wizard, Page
 
-st.set_page_config(initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Solar or a heat pump?",
+                   page_icon=" 🔥 ",
+                   initial_sidebar_state="collapsed")
 
 
-class WelcomePage(Page):
+class YourHousePage(Page):
     def render(self) -> dict:
-        st.write(
-            "This tool helps you get a rough idea of how much money and carbon you might save by installing a "
-            "heat pump and/or solar panels. The real costs and performance will depend on the specifics of your home."
-            "  \n  \n"
-            " Throughout the tool we will make estimates of various values based on your inputs."
-            " You can overwrite those assumptions in the sidebar of the results page if you have better info."
-        )
-
-
-class UsagePage(Page):
-    def render(self) -> dict:
-        return dict(house=usage_questions.render())
+        return dict(house=house_questions.render())
 
 
 class SolarPage(Page):
@@ -32,12 +23,14 @@ class SolarPage(Page):
 
 class ResultsPage(Page):
     def render(self):
-        house = st.session_state["page_state"]["house"]["house"]
-        solar = st.session_state["page_state"]["solar"]["solar"]
-        savings_outputs.render(house=house, solar=solar)
+        # produce default version of house and solar for cases where user doesn't click through all the pages
+        house = house_questions.get_house_from_session_state_if_exists_or_create_default()
+        solar_install = solar_questions.get_solar_install_from_session_state_if_exists_or_create_default()
+
+        savings_outputs.render(house=house, solar_install=solar_install)
 
 
-wizard = Wizard(pages=[UsagePage("house"), SolarPage("solar"), ResultsPage("results")])
+wizard = Wizard(pages=[YourHousePage("house"), SolarPage("solar"), ResultsPage("results")])
 
 st.markdown(
     "<p class='title'>Cut your bills with solar + heat pump </p>"

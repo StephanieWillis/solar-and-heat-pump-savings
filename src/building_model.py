@@ -5,7 +5,6 @@ from typing import Dict, List, Tuple
 import pandas as pd
 
 import constants
-from constants import SolarConstants
 from consumption import Consumption
 from solar import Solar
 
@@ -15,9 +14,9 @@ def upgrade_buildings(baseline_house: 'House', upgrade_heating: 'HeatingSystem',
     hp_house = copy.deepcopy(baseline_house)  # do after modifications so modifications flow through
     solar_house = copy.deepcopy(baseline_house)
     hp_house.heating_system = upgrade_heating
-    solar_house.solar = upgrade_solar
+    solar_house.solar_install = upgrade_solar
     both_house = copy.deepcopy(hp_house)
-    both_house.solar = upgrade_solar
+    both_house.solar_install = upgrade_solar
     return hp_house, solar_house, both_house
 
 
@@ -32,16 +31,16 @@ def combine_results_dfs_multiple_houses(houses: List['House'], keys: List['str']
 class House:
     """ Stores info on consumption and bills """
 
-    def __init__(self, envelope: 'BuildingEnvelope', heating_system: 'HeatingSystem', solar: 'Solar' = None):
+    def __init__(self, envelope: 'BuildingEnvelope', heating_system: 'HeatingSystem', solar_install: 'Solar' = None):
 
         self.envelope = envelope
         # Set up initial values for heating system and tariffs but allow to be modified by the user later
         self.heating_system = heating_system
         self.tariffs = self.set_up_standard_tariffs()
 
-        if solar is None:
-            solar = Solar(orientation=SolarConstants.ORIENTATIONS['South'], roof_plan_area=0)
-        self.solar = solar
+        if solar_install is None:
+            solar_install = Solar.create_zero_area_instance()
+        self.solar_install = solar_install
 
     @classmethod
     def set_up_from_heating_name(cls, envelope: 'BuildingEnvelope', heating_name: str) -> 'House':
@@ -83,14 +82,11 @@ class House:
         base_consumption = Consumption(hourly_profile_kwh=self.envelope.base_demand,
                                        fuel=constants.ELECTRICITY)
         # Solar
-        electricity_consumption = base_consumption.add(self.solar.generation)
+        electricity_consumption = base_consumption.add(self.solar_install.generation)
 
         # Heating
-        space_heating_consumption = self.heating_system.calculate_space_heating_consumption(
-            self.envelope.space_heating_demand)
-        water_heating_consumption = self.heating_system.calculate_water_heating_consumption(
-            self.envelope.water_heating_demand)
-        heating_consumption = water_heating_consumption.add(space_heating_consumption)
+        heating_consumption = self.heating_system.calculate_consumption(
+            self.envelope.annual_heating_demand)
 
         match self.heating_system.fuel:
             case base_consumption.fuel:  # only one fuel (electricity)
@@ -165,29 +161,23 @@ class Tariff:
 @dataclass
 class HeatingSystem:
     name: str
-    space_heating_efficiency: float
-    water_heating_efficiency: float
+    efficiency: float
     fuel: constants.Fuel
+    hourly_normalized_demand_profile: pd.Series
 
     @classmethod
     def from_constants(cls, name, parameters: constants.HeatingConstants):
         return cls(name=name,
-                   space_heating_efficiency=parameters.space_heating_efficiency,
-                   water_heating_efficiency=parameters.water_heating_efficiency,
-                   fuel=parameters.fuel)
+                   efficiency=parameters.efficiency,
+                   fuel=parameters.fuel,
+                   hourly_normalized_demand_profile=parameters.normalized_hourly_heat_demand_profile)
 
     def __post_init__(self):
         if self.fuel not in constants.FUELS:
             raise ValueError(f"fuel must be one of {constants.FUELS}")
 
-    def calculate_space_heating_consumption(self, space_heating_demand_kwh: pd.Series) -> Consumption:
-        return self.calculate_consumption(demand_kwh=space_heating_demand_kwh, efficiency=self.space_heating_efficiency)
-
-    def calculate_water_heating_consumption(self, water_heating_demand_kwh: pd.Series) -> Consumption:
-        return self.calculate_consumption(demand_kwh=water_heating_demand_kwh, efficiency=self.water_heating_efficiency)
-
-    def calculate_consumption(self, demand_kwh: pd.Series, efficiency: float) -> Consumption:
-        profile_kwh = demand_kwh / efficiency
+    def calculate_consumption(self, annual_space_heating_demand_kwh: float) -> Consumption:
+        profile_kwh = self.hourly_normalized_demand_profile / self.efficiency * annual_space_heating_demand_kwh
         consumption = Consumption(hourly_profile_kwh=profile_kwh, fuel=self.fuel)
         return consumption
 
@@ -196,22 +186,17 @@ class HeatingSystem:
 class BuildingEnvelope:
     """ Stores info on the building and its energy demand"""
 
-    def __init__(self, floor_area_m2: float, house_type: str):
-        self.floor_area_m2 = floor_area_m2
+    def __init__(self, house_type: str, annual_heating_demand: float, base_electricity_demand_profile_kwh: pd.Series):
         self.house_type = house_type
-        self.time_series_idx: pd.Index = constants.BASE_YEAR_HOURLY_INDEX
+        self.annual_heating_demand = annual_heating_demand
+        self.base_demand = base_electricity_demand_profile_kwh
         self.units: str = 'kwh'
 
-        # Set initial demand values - user can overwrite later
-        # Dummy data for now TODO get profiles from elsewhere
-        self.base_demand = pd.Series(index=self.time_series_idx, data=0.001 * self.floor_area_m2)
-        self.water_heating_demand = pd.Series(index=self.time_series_idx, data=0.004 * self.floor_area_m2)
-        self.space_heating_demand = pd.Series(index=self.time_series_idx, data=0.005 * self.floor_area_m2)
-
-
-
-
-
-
-
-
+    @classmethod
+    def from_building_type_constants(cls, building_type_constants: constants.BuildingTypeConstants
+                                     ) -> "BuildingEnvelope":
+        base_electricity_demand_profile = (building_type_constants.annual_base_electricity_demand_kWh
+                                           * building_type_constants.normalized_base_electricity_demand_profile_kWh)
+        return cls(house_type=building_type_constants.name,
+                   annual_heating_demand=building_type_constants.annual_heat_demand_kWh,
+                   base_electricity_demand_profile_kwh=base_electricity_demand_profile)

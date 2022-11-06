@@ -1,146 +1,80 @@
 import plotly.express as px
 import streamlit as st
 
-import building_model
 from building_model import *
+import house_questions
 from solar import Solar
+from solar_questions import render_and_update_solar_inputs
 
 
-def render(house: 'House', solar: 'Solar'):
+def render(house: 'House', solar_install: 'Solar'):
+    st.header("Your Heat Pump and Solar Savings")
+    st.subheader("Energy Bills")
+    bills_chart = st.empty()
+    bills_text = st.empty()
+    st.subheader("Carbon Emissions")
+    carbon_chart = st.empty()
+    carbon_text = st.empty()
+    st.subheader("Energy Consumption")
+    energy_chart = st.empty()
+    energy_text = st.empty()
 
     with st.sidebar:
         st.header("Assumptions")
         st.subheader("Current Performance")
-        house = render_and_update_current_home(house)
+        house = house_questions.render_and_update_current_home(house)
+        st.session_state["page_state"]["house"] = dict(house=house)  # so any overwrites saved if move tabs
+        # saving state may work without above but above makes clearer
 
         st.subheader("Improvement Options")
-        upgrade_heating, upgrade_solar = render_and_update_improvement_options(solar=solar)
-
-
+        upgrade_heating, upgrade_solar = render_and_update_improvement_options(solar_install=solar_install)
+        st.session_state["page_state"]["solar"] = dict(solar=upgrade_solar)  # so any overwrites saved if move tabs
+        # saving state may work without above but above makes clearer
     # Upgraded buildings
-    hp_house, solar_house, both_house = building_model.upgrade_buildings(baseline_house=house,
-                                                                         upgrade_heating=upgrade_heating,
-                                                                         upgrade_solar=upgrade_solar)
+    hp_house, solar_house, both_house = upgrade_buildings(baseline_house=house,
+                                                          upgrade_heating=upgrade_heating,
+                                                          upgrade_solar=upgrade_solar)
+
+    # Combine results
+    results_df = combine_results_dfs_multiple_houses([house, solar_house, hp_house, both_house],
+                                                     ['Current', 'With solar', 'With a heat pump',
+                                                      'With solar and a heat pump'])
+
+    with bills_chart:
+        render_bill_chart(results_df)
+    with bills_text:
+        render_bill_outputs(house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
+
+    with energy_chart:
+        render_consumption_chart(results_df)
+    with energy_text:
+        render_consumption_outputs(house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
+
+    with carbon_chart:
+        render_carbon_chart(results_df)
+    with carbon_text:
+        render_carbon_outputs(house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
 
 
-    st.write(house.total_annual_bill)
-    st.metric( label="Your Current Bills", value=f"£{int(house.total_annual_bill):,d}", help="Our estimate of your current bills")
-
-
-    st.write(solar_house.total_annual_bill)
-    st.metric(label="Bills With Solar", value=f"£{int(solar_house.total_annual_bill)}",
-              delta=f"£{int(house.total_annual_bill-solar_house.total_annual_bill):,d}")
-
-    st.write(hp_house.total_annual_bill)
-    st.write(both_house.total_annual_bill)
-
-    # render_bill_outputs(house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
-    #
-    #
-    # render_consumption_outputs(house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
-    #
-    #
-    # render_carbon_outputs(house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
-
-
-def render_and_update_current_home(house: House):
-    with st.expander("Demand"):
-        house.envelope = render_and_update_envelope_outputs(envelope=house.envelope)
-    with st.expander("Baseline heating system"):
-        house.heating_system = render_and_update_heating_system(heating_system=house.heating_system)
-    with st.expander("Tariff"):
-        house = render_and_update_tariffs(house=house)
-    return house
-
-
-def render_and_update_envelope_outputs(envelope: 'BuildingEnvelope') -> 'BuildingEnvelope':
-    st.write(f"We assume that an {envelope.floor_area_m2}m\u00b2 {envelope.house_type.lower()} needs: ")
-    envelope.space_heating_demand = render_and_update_annual_demand(label='Heating (kwh): ',
-                                                                    demand=envelope.space_heating_demand)
-    envelope.water_heating_demand = render_and_update_annual_demand(label='Hot water (kwh): ',
-                                                                    demand=envelope.water_heating_demand)
-    envelope.base_demand = render_and_update_annual_demand(label='Other (lighting/appliances etc.) (kwh): ',
-                                                           demand=envelope.base_demand)
-    return envelope
-
-
-def render_and_update_annual_demand(label: str, demand: pd.Series) -> pd.Series:
-    """ If user overwrites annual total then scale whole profile by multiplier"""
-    demand_overwrite = st.number_input(label=label, min_value=0, max_value=100000, value=int(demand.sum()))
-    if demand_overwrite != int(demand.sum()):  # scale profile  by correction factor
-        demand = demand_overwrite / int(demand.sum()) * demand
-    return demand
-
-
-def render_and_update_heating_system(heating_system: 'HeatingSystem') -> 'HeatingSystem':
-    heating_system.space_heating_efficiency = st.number_input(label='Efficiency for space heating: ',
-                                                              min_value=0.0,
-                                                              max_value=8.0,
-                                                              value=heating_system.space_heating_efficiency)
-    heating_system.water_heating_efficiency = st.number_input(label='Efficiency for water heating: ',
-                                                              min_value=0.0,
-                                                              max_value=8.0,
-                                                              value=heating_system.water_heating_efficiency)
-    return heating_system
-
-
-def render_and_update_tariffs(house: 'House') -> 'House':
-    st.subheader('Electricity')
-    house.tariffs['electricity'].p_per_unit_import = st.number_input(label='Unit rate (p/kwh), electricity import',
-                                                                     min_value=0.0,
-                                                                     max_value=100.0,
-                                                                     value=house.tariffs[
-                                                                         'electricity'].p_per_unit_import)
-    house.tariffs['electricity'].p_per_unit_export = st.number_input(label='Unit rate (p/kwh), electricity export',
-                                                                     min_value=0.0,
-                                                                     max_value=100.0,
-                                                                     value=house.tariffs[
-                                                                         'electricity'].p_per_unit_export)
-    house.tariffs['electricity'].p_per_day = st.number_input(label='Standing charge (p/day), electricity',
-                                                             min_value=0.0,
-                                                             max_value=100.0,
-                                                             value=house.tariffs['electricity'].p_per_day)
-    match house.heating_system.fuel.name:
-        case 'gas':
-            st.subheader('Gas')
-            house.tariffs['gas'].p_per_unit_import = st.number_input(label='Unit rate (p/kwh), gas',
-                                                                     min_value=0.0,
-                                                                     max_value=100.0,
-                                                                     value=house.tariffs['gas'].p_per_unit_import)
-            house.tariffs['gas'].p_per_day = st.number_input(label='Standing charge (p/day), gas',
-                                                             min_value=0.0,
-                                                             max_value=100.0,
-                                                             value=house.tariffs['gas'].p_per_day)
-        case 'oil':
-            st.subheader('Oil')
-            house.tariffs['oil'].p_per_unit_import = st.number_input(label='Oil price, (p/litre)',
-                                                                     min_value=0.0,
-                                                                     max_value=200.0,
-                                                                     value=house.tariffs['oil'].p_per_unit_import)
-    return house
-
-
-def render_and_update_improvement_options(solar: Solar) -> Tuple[HeatingSystem, Solar]:
+def render_and_update_improvement_options(solar_install: Solar) -> Tuple[HeatingSystem, Solar]:
     with st.expander("Heat pump assumptions"):
-        upgrade_heating = HeatingSystem.from_constants(name='Heat pump',
-                                                       parameters=constants.DEFAULT_HEATING_CONSTANTS['Heat pump'])
-        upgrade_heating = render_and_update_heating_system(heating_system=upgrade_heating)
+        if "upgrade_heating" not in st.session_state["page_state"]:
+            upgrade_heating = HeatingSystem.from_constants(name='Heat pump',
+                                                           parameters=constants.DEFAULT_HEATING_CONSTANTS['Heat pump'])
+            st.session_state["page_state"]["upgrade_heating"] = dict(upgrade_heating=upgrade_heating)  # in case this page isn't always rendered
+        else:
+            upgrade_heating = st.session_state["page_state"]["upgrade_heating"]["upgrade_heating"]
+
+        upgrade_heating = house_questions.render_and_update_heating_system(heating_system=upgrade_heating)
+        st.caption("The efficiency of your heat pump depends on how well the system is designed and how low a flow "
+                   "temperature it can run at. A good, low flow temperature install can have a COP of about 3.8. "
+                   "The historical median COP in the UK is 2.7, but a good installer nowadays will ensure you get a "
+                   "much better COP than that")
+
     with st.expander("Solar PV assumptions "):
-        solar = render_and_update_solar(solar=solar)
+        solar_install = render_and_update_solar_inputs(solar=solar_install)
 
-    return upgrade_heating, solar
-
-
-def render_and_update_solar(solar: 'Solar'):
-    solar.number_of_panels = st.number_input(label='Number of panels',
-                                             min_value=0,
-                                             max_value=40,
-                                             value=int(solar.number_of_panels))
-    solar.kwp_per_panel = st.number_input(label='capacity_per_panel',
-                                          min_value=0.0,
-                                          max_value=0.8,
-                                          value=solar.kwp_per_panel)
-    return solar
+    return upgrade_heating, solar_install
 
 
 def render_bill_chart(results_df: pd.DataFrame):
@@ -148,8 +82,6 @@ def render_bill_chart(results_df: pd.DataFrame):
 
 
 def render_bill_outputs(house: 'House', solar_house: 'House', hp_house: 'House', both_house: 'House'):
-
-
     st.write(f'We calculate that {produce_current_bill_sentence(house)}  \n'
              f'- with solar {produce_hypothetical_bill_sentence(solar_house)}, '
              f' {produce_bill_saving_sentence(house=solar_house, baseline_house=house)}  \n'

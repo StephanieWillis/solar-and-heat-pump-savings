@@ -1,6 +1,6 @@
 import abc
 from collections import defaultdict
-from typing import List, Dict
+from typing import List
 
 import streamlit as st
 from stepper import stepper
@@ -40,11 +40,8 @@ class Wizard:
             st.session_state["page_state"] = defaultdict(lambda: dict())
 
     def go_to_named_page(self, page_name: str):
-        try:
-            idx = self.page_names.index(page_name)
-            self.current_page_idx = idx
-        except ValueError:
-            print(f"Cannot find {page_name} in {self.page_names}")
+        idx = self.page_names.index(page_name)
+        self.current_page_idx = idx
 
     @property
     def page_names(self):
@@ -70,14 +67,6 @@ class Wizard:
         return self.pages[self.current_page_idx]
 
     @property
-    def previous_page(self):
-        return self.pages[self.current_page_idx - 1]
-
-    @property
-    def next_page(self):
-        return self.pages[self.current_page_idx + 1]
-
-    @property
     def on_first_page(self) -> bool:
         return self.current_page_idx == 0
 
@@ -96,22 +85,13 @@ class Wizard:
 
     def render(self):
 
-        # Not yet functional
-        query_params: Dict[str] = st.experimental_get_query_params()
-        page = query_params.get("page")
-
-        if page:
-            page = page[0]
-            if page != self.current_page.name:
-                self.go_to_named_page(page)
-
         with st.container():
+            inject_style()
             self.progress_bar()
             state = self.current_page.render()
             self.store_current_page_state(state)
 
             self.buttons()
-            inject_style()
 
     def buttons(self):
         _, col1, col2 = st.columns((7, 1, 1), gap="medium")
@@ -127,11 +107,9 @@ class Wizard:
             next_ = col2.button("Next")
 
         if previous:
-            st.experimental_set_query_params(page=self.previous_page.name)
             self.go_to_previous_page()
 
         if next_:
-            st.experimental_set_query_params(page=self.next_page.name)
             self.go_to_next_page()
 
     def progress_bar(self):
@@ -139,5 +117,4 @@ class Wizard:
         _, col1, _ = st.columns((2, 4, 2))
         clicked_value = stepper(value=self.page_names[: self.current_page_idx + 1])
         if clicked_value:
-            st.experimental_set_query_params(page=clicked_value)
             self.go_to_named_page(clicked_value)

@@ -1,30 +1,37 @@
 from functools import cache
 from math import floor
+from typing import List
 
 import numpy as np
 import pandas as pd
 import requests
 
 import constants
-from consumption import Consumption
 from constants import SolarConstants, Orientation
+from consumption import Consumption
+from roof import Polygon
 
 
 class Solar:
 
-    def __init__(self, orientation: Orientation, roof_plan_area: float,
-                 latitude: float = SolarConstants.DEFAULT_LAT, longitude: float = SolarConstants.DEFAULT_LONG,
+    def __init__(self, orientation: Orientation, polygons: List[Polygon],
                  pitch: float = SolarConstants.ROOF_PITCH_DEGREES):
-        """ Roof plan area because based on lat long therefore doesn't account for roof pitch"""
 
         self.orientation = orientation
-        self.latitude = latitude  # Latitude, in decimal degrees, south is negative
-        self.longitude = longitude  # Longitude, in decimal degrees, west is negative
+        self.polygons = polygons
         self.pitch = pitch
-        self.roof_area = roof_plan_area / np.cos(np.radians(self.pitch))
 
-        self.number_of_panels = self.get_number_of_panels()  # not a property because want to be able to overwrite
-        # Does mean that future changes in roof area won't chagne number of panels however
+        #  just take first polygon - lat long don't need to be super precise
+        (lat, lng) = polygons[0].points[0]
+        self.latitude = lat  # Latitude, in decimal degrees, south is negative
+        self.longitude = lng  # Longitude, in decimal degrees, west is negative
+
+        roof_plan_area = sum([polygon.area for polygon in polygons])
+        self.roof_plan_area = roof_plan_area  # Plan area because based on lat long therefore doesn't account for pitch
+
+        # The below two can be overwritten by user, so they are not set up as properties.
+        # This means changes in roof area after initial set up won't change the number of panels
+        self.number_of_panels = self.get_number_of_panels_from_polygons()
         self.kwp_per_panel = SolarConstants.KW_PEAK_PER_PANEL
 
     def __hash__(self):
@@ -36,8 +43,7 @@ class Solar:
                      ))
 
     def __eq__(self, other: 'Solar'):
-        result = (isinstance(other, 'Solar')
-                  and self.latitude == other.latitude
+        result = (self.latitude == other.latitude
                   and self.longitude == other.longitude
                   and self.pitch == other.pitch
                   and self.peak_capacity_kw_out_per_kw_in_per_m2 == other.peak_capacity_kw_out_per_kw_in_per_m2
@@ -45,11 +51,62 @@ class Solar:
                   )
         return result
 
-    def get_number_of_panels(self) -> int:
-        """ Very simplified assumption here that you can use fixed proportion of area because hard to do properly"""
-        usable_area = self.roof_area * SolarConstants.PERCENT_SQUARE_USABLE
+    @classmethod
+    def create_zero_area_instance(cls):
+        # select orientation to match first dropdown option
+        orientation = [orientation for orientation in SolarConstants.ORIENTATIONS.values()][0]
+        default_install = cls(orientation=orientation,
+                              polygons=[Polygon.make_zero_area_instance()],
+                              pitch=SolarConstants.ROOF_PITCH_DEGREES)
+        return default_install
+
+    @property
+    def roof_area(self):
+        area = self.convert_plan_value_to_value_along_pitch(self.roof_plan_area)
+        return area
+
+    def convert_plan_value_to_value_along_pitch(self, value: float):
+        return value / np.cos(np.radians(self.pitch))
+
+    def get_number_of_panels_from_polygons(self) -> int:
+        numbers = []
+        for polygon in self.polygons:
+            if len(polygon.dimensions) != 4:  # if not roughly rectangular
+                number_this_polygon = self.get_number_of_panels_from_polygon_area(polygon)
+            else:
+                number_this_polygon = self.max_number_of_panels_in_a_rectangle(polygon)
+            numbers.append(number_this_polygon)
+        all_panels = sum(numbers)
+        return all_panels
+
+    def get_number_of_panels_from_polygon_area(self, polygon: Polygon) -> int:
+        """ Very simplified assumptions to fall back on when shape not roughly rectangular"""
+        area = self.convert_plan_value_to_value_along_pitch(polygon.area)
+        usable_area = area * SolarConstants.PERCENT_SQUARE_USABLE
         number_of_panels = floor(usable_area / SolarConstants.PANEL_AREA)
         return number_of_panels
+
+    def max_number_of_panels_in_a_rectangle(self, polygon) -> int:
+        """ Assume shape is rectangular. Try panels in either orientation"""
+        roof_height = polygon.average_plan_height / np.cos(np.radians(self.pitch))
+        option_1 = self.number_of_panels_in_rectangle(side_1=polygon.average_width, side_2=roof_height)
+        option_2 = self.number_of_panels_in_rectangle(side_1=roof_height, side_2=polygon.average_width)
+        number = max(option_1, option_2)
+        return number
+
+    @staticmethod
+    def number_of_panels_in_rectangle(side_1: float, side_2: float) -> int:
+        if side_1 < SolarConstants.PANEL_BORDER_M or side_2 < SolarConstants.PANEL_BORDER_M:
+            number = 0
+        else:
+            rows_axis_1 = floor((side_1 - SolarConstants.PANEL_BORDER_M) / SolarConstants.PANEL_WIDTH_M)
+            rows_axis_2 = floor((side_2 - SolarConstants.PANEL_BORDER_M)/SolarConstants.PANEL_HEIGHT_M)
+            number = rows_axis_1 * rows_axis_2
+        return number
+
+    @property
+    def number_of_panels_has_been_overwritten(self):
+        return self.number_of_panels != self.get_number_of_panels_from_polygons()
 
     @property
     def peak_capacity_kw_out_per_kw_in_per_m2(self):
