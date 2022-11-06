@@ -40,3 +40,7 @@ st.markdown(
 )
 
 wizard.render()
+
+st.write("Made by [Stephanie Willis](https://twitter.com/stephwillis808)"
+         " and [Archy de Berker](https://twitter.com/ArchydeB). Please get in touch with any feedback!")
+
