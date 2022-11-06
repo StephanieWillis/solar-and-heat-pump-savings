@@ -111,7 +111,8 @@ def test_default_solar_install():
     np.testing.assert_almost_equal(solar_install.generation.imported.annual_sum_kwh, 0)
     assert (solar_install.generation.overall.hourly_profile_kwh == 0).all()
     assert (solar_install.generation.overall.hourly_profile_kwh.index == BASE_YEAR_HOURLY_INDEX).all()
-    assert solar_install.orientation == SolarConstants.ORIENTATIONS['South']
+    assert solar_install.orientation.name == 'South'
+    assert solar_install.orientation.azimuth_degrees == 0
     assert solar_install.pitch == SolarConstants.ROOF_PITCH_DEGREES
     return solar_install
 
