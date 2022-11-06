@@ -51,7 +51,7 @@ def render_and_update_solar_inputs(solar: 'Solar'):
     # Note: once this has been overwritten it is decoupled from roof area for the rest of the session
     solar.number_of_panels = st.number_input(label='Number of panels',
                                              min_value=0,
-                                             max_value=40,
+                                             max_value=None,
                                              value=int(solar.number_of_panels))
     solar.kwp_per_panel = st.number_input(label='capacity_per_panel',
                                           min_value=0.0,
