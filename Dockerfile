@@ -9,6 +9,8 @@ RUN apt-get update && apt-get install && \
 COPY ./requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
+COPY ./static/index.html /usr/local/lib/python3.10/site-packages/streamlit/static/index.html
+
 COPY ./src /src
 COPY ./data /data
 
