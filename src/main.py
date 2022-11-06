@@ -6,7 +6,9 @@ import savings_outputs
 
 from streamlit_wizard import Wizard, Page
 
-st.set_page_config(initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Solar or a heat pump?",
+                   page_icon=" 🔥 ",
+                   initial_sidebar_state="collapsed")
 
 
 class YourHousePage(Page):
