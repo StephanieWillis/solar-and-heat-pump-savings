@@ -92,7 +92,6 @@ class Solar:
         option_1 = self.number_of_panels_in_rectangle(side_1=polygon.average_width, side_2=roof_height)
         option_2 = self.number_of_panels_in_rectangle(side_1=roof_height, side_2=polygon.average_width)
         number = max(option_1, option_2)
-        print("long side vertical") if number == option_1 else print("long side horizontal")
         return number
 
     @staticmethod
