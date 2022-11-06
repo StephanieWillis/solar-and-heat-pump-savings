@@ -2,8 +2,9 @@ import pandas as pd
 import plotly.express as px
 import numpy as np
 
-import solar
-from constants import ORIENTATION_OPTIONS, SolarConstants, BASE_YEAR_HOURLY_INDEX
+from .context import src
+import src.solar as solar
+from src.constants import ORIENTATION_OPTIONS, SolarConstants, BASE_YEAR_HOURLY_INDEX
 from roof import Polygon
 
 TEST_POLYGONS = [Polygon(_points=[[0.132377, 52.19524],
