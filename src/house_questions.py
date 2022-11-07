@@ -97,7 +97,7 @@ def overwrite_house_assumptions(house: House):
     with st.expander("Demand"):
         house.envelope = overwrite_envelope_assumptions(envelope=house.envelope)
     with st.expander("Baseline heating system"):
-        house.heating_system = overwrite_heating_system_assumptions(heating_system=house.heating_system)
+        house.heating_system = overwrite_baseline_heating_system_assumptions(heating_system=house.heating_system)
     with st.expander("Tariff"):
         house.tariffs = overwrite_tariffs(tariffs=house.tariffs, fuel_name=house.heating_system.fuel.name)
     return house
@@ -134,7 +134,8 @@ def overwrite_envelope_assumptions(envelope: BuildingEnvelope) -> BuildingEnvelo
     return envelope
 
 
-def overwrite_heating_system_assumptions(heating_system: 'HeatingSystem') -> 'HeatingSystem':
+def overwrite_baseline_heating_system_assumptions(heating_system: 'HeatingSystem') -> 'HeatingSystem':
+
     heating_system.efficiency = st.number_input(label='Efficiency: ',
                                                 min_value=0.0,
                                                 max_value=8.0,

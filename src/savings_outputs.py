@@ -112,13 +112,12 @@ def render_and_update_improvement_options(solar_install: Solar) -> Tuple[Heating
             upgrade_heating = HeatingSystem.from_constants(
                 name="Heat pump", parameters=constants.DEFAULT_HEATING_CONSTANTS["Heat pump"]
             )
-            st.session_state["page_state"]["upgrade_heating"] = dict(
-                upgrade_heating=upgrade_heating
-            )  # in case this page isn't always rendered
+            st.session_state["page_state"]["upgrade_heating"] = dict(upgrade_heating=upgrade_heating)
+            # in case this page isn't always rendered
         else:
             upgrade_heating = st.session_state["page_state"]["upgrade_heating"]["upgrade_heating"]
 
-        upgrade_heating = house_questions.overwrite_heating_system_assumptions(heating_system=upgrade_heating)
+        upgrade_heating = overwrite_upgrade_heating_system_assumptions(heating_system=upgrade_heating)
 
         st.caption("The efficiency of your heat pump depends on how well the system is designed and how low a flow "
                    "temperature it can run at. A COP of 3.6 or more is possible with a high quality, low flow temperature "
@@ -130,6 +129,17 @@ def render_and_update_improvement_options(solar_install: Solar) -> Tuple[Heating
         solar_install = render_and_update_solar_inputs(solar=solar_install)
 
     return upgrade_heating, solar_install
+
+
+def overwrite_upgrade_heating_system_assumptions(heating_system: 'HeatingSystem') -> 'HeatingSystem':
+
+    if "upgrade_heating_efficiency" not in st.session_state:
+        st.session_state.upgrade_heating_efficiency = heating_system.efficiency
+    heating_system.efficiency = st.number_input(label='Efficiency: ',
+                                                min_value=0.0,
+                                                max_value=8.0,
+                                                key="upgrade_heating_efficiency")
+    return heating_system
 
 
 def render_bill_chart(results_df: pd.DataFrame):
