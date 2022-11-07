@@ -48,7 +48,7 @@ BUILDING_TYPE_OPTIONS = {
         normalized_base_electricity_demand_profile_kWh=NORMALIZED_HOURLY_BASE_DEMAND,
         annual_heat_demand_kWh=10600),
     "Flat": BuildingTypeConstants(
-        name="Semi-detached",
+        name="Flat",
         annual_base_electricity_demand_kWh=2830,
         normalized_base_electricity_demand_profile_kWh=NORMALIZED_HOURLY_BASE_DEMAND,
         annual_heat_demand_kWh=6600),
