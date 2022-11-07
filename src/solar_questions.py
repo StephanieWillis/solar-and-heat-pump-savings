@@ -52,8 +52,8 @@ def get_solar_install_from_session_state_if_exists_or_create_default():
 def render_and_update_solar_inputs(solar: "Solar"):
     # Note: once this has been overwritten it is decoupled from roof area for the rest of the session
 
-    if "number_of_panels" not in st.session_state:
-        st.session_state.number_of_panels = int(solar.number_of_panels)
+    if "number_of_panels" not in st.session_state or st.session_state.number_of_panels != solar.number_of_panels:
+        st.session_state.number_of_panels = solar.number_of_panels
         st.session_state.kwp_per_panel = solar.kwp_per_panel
 
     solar.number_of_panels = st.number_input(label='Number of panels',
