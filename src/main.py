@@ -41,5 +41,8 @@ st.markdown(
 
 wizard.render()
 
-st.write("Made by [Stephanie Willis](https://twitter.com/stephwillis808)"
-         " and [Archy de Berker](https://twitter.com/ArchydeB). Please get in touch with any feedback!")
+st.markdown("<p style='text-align: center; margin-top: 20px; font-size:14px'>🛠 Made by <a href='https://twitter.com/stephwillis808'>Stephanie Willis </a>"
+         " and <a href='https://twitter.com/ArchydeB'> Archy de Berker </a><br/>"
+            "Code is on <a href='https://github.com/StephanieWillis/solar-and-heat-pump-savings'>Github</a>"
+            "<br> <br>Please get in touch with any feedback!</p>",
+            unsafe_allow_html=True)
