@@ -40,8 +40,10 @@ def render_building_envelope_questions(envelope: BuildingEnvelope) -> BuildingEn
         with col1:
             st.write("I live in a")
         with col2:
-            idx = list(constants.BUILDING_TYPE_OPTIONS.keys()).index(envelope.house_type)
-            house_type = st.selectbox("", options=constants.BUILDING_TYPE_OPTIONS.keys(), index=idx)
+            # Issue is something about the envelope.house_type setting the index maybe?
+            # But without below the type refreshes if you go back to this page
+            # idx = list(constants.BUILDING_TYPE_OPTIONS.keys()).index(envelope.house_type)
+            house_type = st.selectbox("", options=constants.BUILDING_TYPE_OPTIONS.keys())
             if house_type != envelope.house_type:  # only overwrite if house type changed by user
                 envelope = BuildingEnvelope.from_building_type_constants(constants.BUILDING_TYPE_OPTIONS[house_type])
     return envelope
