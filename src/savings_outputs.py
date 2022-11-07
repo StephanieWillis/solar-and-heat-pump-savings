@@ -61,7 +61,6 @@ def render(house: "House", solar_install: "Solar"):
         )
 
     with st.expander("Show me the maths!"):
-        render_bill_chart(results_df)
         render_consumption_outputs(house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
         render_consumption_chart(results_df)
 
@@ -207,5 +206,10 @@ def produce_consumption_sentence(house):
 
 
 def render_savings_chart(results_df: pd.DataFrame, y_variable: str):
-    bills_fig = px.bar(results_df, x="Upgrade option", y=y_variable, color="fuel")
+    bills_fig = px.bar(results_df, y="Upgrade option", x=y_variable,
+                       color="fuel", template='plotly_white')
+    bills_fig.update_layout(legend=dict(orientation='h', y=1.01, x=0.6),
+                            plot_bgcolor='rgba(0,0,0,0)',
+                            paper_bgcolor='rgba(0,0,0,0)',
+                            yaxis=dict(title=None))
     st.plotly_chart(bills_fig, use_container_width=True, sharing="streamlit")
