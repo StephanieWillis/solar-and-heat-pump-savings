@@ -105,14 +105,9 @@ def overwrite_house_assumptions(house: House):
 
 def overwrite_envelope_assumptions(envelope: BuildingEnvelope) -> BuildingEnvelope:
 
-    if "annual_heating_demand" not in st.session_state:
-        # set initial values
-        st.session_state.annual_heating_demand = int(envelope.annual_heating_demand)
-        st.session_state.annual_base_demand = int(envelope.base_demand.sum())
-        st.session_state.house_type_that_annual_heating_demand_is_for = envelope.house_type
-
-    if st.session_state.house_type_that_annual_heating_demand_is_for != envelope.house_type:
-        #     Where house type has been changed, reset values
+    if ("annual_heating_demand" not in st.session_state or
+            st.session_state.house_type_that_annual_heating_demand_is_for != envelope.house_type) :
+        # Set initial values or, where house type has been changed, reset values
         st.session_state.annual_heating_demand = int(envelope.annual_heating_demand)
         st.session_state.annual_base_demand = int(envelope.base_demand.sum())
         st.session_state.house_type_that_annual_heating_demand_is_for = envelope.house_type
@@ -137,18 +132,6 @@ def overwrite_envelope_assumptions(envelope: BuildingEnvelope) -> BuildingEnvelo
                f"The better your home is insulated, the less energy it will need for heating. "
                )
     return envelope
-
-
-def overwrite_demand_assumptions(label: str, demand: pd.Series | float) -> pd.Series:
-    """ If user overwrites annual total then scale whole profile by multiplier"""
-    if type(demand) is pd.Series:
-        demand_overwrite = st.number_input(label=label, min_value=0, max_value=100000, value=int(demand.sum()))
-        if demand_overwrite != int(demand.sum()):  # scale profile  by correction factor
-            demand = demand_overwrite / int(demand.sum()) * demand
-    else:
-        demand_overwrite = st.number_input(label=label, min_value=0, max_value=100000, value=int(demand))
-        demand = demand_overwrite
-    return demand
 
 
 def overwrite_heating_system_assumptions(heating_system: 'HeatingSystem') -> 'HeatingSystem':
