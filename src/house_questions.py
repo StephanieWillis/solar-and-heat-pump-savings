@@ -150,38 +150,56 @@ def overwrite_heating_system_assumptions(heating_system: 'HeatingSystem') -> 'He
 
 
 def overwrite_tariffs(tariffs: Tariff, fuel_name: 'str') -> Tariff:
+
+    if "p_per_unit_elec_import" not in st.session_state:
+        # Set initial values or, where fuel has been changed, reset values
+        st.session_state.p_per_unit_elec_import = tariffs['electricity'].p_per_unit_import
+        st.session_state.p_per_unit_elec_export = tariffs['electricity'].p_per_unit_export
+        st.session_state.p_per_day_elec = tariffs['electricity'].p_per_day
+
     st.subheader('Electricity')
     tariffs['electricity'].p_per_unit_import = st.number_input(label='Unit rate (p/kwh), electricity import',
                                                                min_value=0.0,
                                                                max_value=100.0,
-                                                               value=tariffs[
-                                                                   'electricity'].p_per_unit_import)
+                                                               key="p_per_unit_elec_import")
     tariffs['electricity'].p_per_unit_export = st.number_input(label='Unit rate (p/kwh), electricity export',
                                                                min_value=0.0,
                                                                max_value=100.0,
-                                                               value=tariffs[
-                                                                   'electricity'].p_per_unit_export)
+                                                               key="p_per_unit_elec_export")
     tariffs['electricity'].p_per_day = st.number_input(label='Standing charge (p/day), electricity',
                                                        min_value=0.0,
                                                        max_value=100.0,
-                                                       value=tariffs['electricity'].p_per_day)
+                                                       key="p_per_day_elec")
     match fuel_name:
         case 'gas':
+            if ("p_per_unit_gas_import" not in st.session_state
+                    or st.session_state.fuel_name_tariffs_is_for != fuel_name):
+                # Set initial values or, where fuel has been changed, reset values
+                st.session_state.fuel_name_tariffs_is_for = fuel_name
+                st.session_state.p_per_unit_gas_import = tariffs['gas'].p_per_unit_import
+                st.session_state.p_per_day_gas = tariffs['gas'].p_per_day
+
             st.subheader('Gas')
             tariffs['gas'].p_per_unit_import = st.number_input(label='Unit rate (p/kwh), gas',
                                                                min_value=0.0,
                                                                max_value=100.0,
-                                                               value=tariffs['gas'].p_per_unit_import)
+                                                               key="p_per_unit_gas_import")
             tariffs['gas'].p_per_day = st.number_input(label='Standing charge (p/day), gas',
                                                        min_value=0.0,
                                                        max_value=100.0,
-                                                       value=tariffs['gas'].p_per_day)
+                                                       key="p_per_day_gas")
         case 'oil':
+            if ("p_per_unit_oil_import" not in st.session_state
+                    or st.session_state.fuel_name_tariffs_is_for != fuel_name):
+                # Set initial values or, where fuel has been changed, reset values
+                st.session_state.fuel_name_tariffs_is_for = fuel_name
+                st.session_state.p_per_unit_oil_import = tariffs['oil'].p_per_unit_import
+
             st.subheader('Oil')
             tariffs['oil'].p_per_unit_import = st.number_input(label='Oil price, (p/litre)',
                                                                min_value=0.0,
                                                                max_value=200.0,
-                                                               value=tariffs['oil'].p_per_unit_import)
+                                                               key="p_per_unit_oil_import")
     st.caption(
         "Our default tariffs reflect the [Energy Price Guarantee]("
         "https://www.gov.uk/government/publications/energy-bills-support/energy-bills-support-factsheet-8-september-2022)"

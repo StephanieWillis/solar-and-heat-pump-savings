@@ -144,7 +144,7 @@ class Tariff:
     fuel: constants.Fuel
     p_per_day: float
     p_per_unit_import: float  # unit defined by the fuel
-    p_per_unit_export: float = 0
+    p_per_unit_export: float = 0.0
 
     def calculate_annual_cost(self, consumption: 'Consumption') -> float:
         """ Calculate the annual cost of the consumption of a certain fuel with this tariff"""
