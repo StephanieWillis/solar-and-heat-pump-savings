@@ -125,7 +125,7 @@ def render_and_update_improvement_options(solar_install: Solar) -> Tuple[Heating
                    "](https://www.heatgeek.com/find-a-heat-geek/) is a great place to start your search.")
 
     with st.expander("Solar PV assumptions "):
-        solar_install = render_and_update_solar_inputs(solar=solar_install)
+        solar_install = render_and_update_solar_inputs(solar_install=solar_install)
 
     return upgrade_heating, solar_install
 
