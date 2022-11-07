@@ -49,23 +49,25 @@ def get_solar_install_from_session_state_if_exists_or_create_default():
     return solar_install
 
 
-def render_and_update_solar_inputs(solar: "Solar"):
+def render_and_update_solar_inputs(solar_install: "Solar"):
     # Note: once this has been overwritten it is decoupled from roof area for the rest of the session
 
-    if "number_of_panels" not in st.session_state or st.session_state.number_of_panels != solar.number_of_panels:
-        st.session_state.number_of_panels = solar.number_of_panels
-        st.session_state.kwp_per_panel = solar.kwp_per_panel
+    if "number_of_panels" not in st.session_state or st.session_state.number_of_panels == 0:
+        st.session_state.number_of_panels = solar_install.number_of_panels
+        st.session_state.kwp_per_panel = solar_install.kwp_per_panel
 
-    solar.number_of_panels = st.number_input(label='Number of panels',
-                                             min_value=0,
-                                             max_value=None,
-                                             key="number_of_panels")
-    solar.kwp_per_panel = st.number_input(label='Capacity per panel (kWp)',
-                                          min_value=0.0,
-                                          max_value=0.8,
-                                          key="kwp_per_panel")
+    solar_install.number_of_panels = st.number_input(label='Number of panels',
+                                                     min_value=0,
+                                                     max_value=None,
+                                                     key="number_of_panels")
+    solar_install.kwp_per_panel = st.number_input(label='Capacity per panel (kWp)',
+                                                  min_value=0.0,
+                                                  max_value=0.8,
+                                                  key="kwp_per_panel")
 
-    return solar
+    st.session_state["page_state"]["solar"] = dict(solar=solar_install)
+
+    return solar_install
 
 
 def render_results(solar_install: Solar):
@@ -74,7 +76,7 @@ def render_results(solar_install: Solar):
 
         st.caption("If you have a better estimate of how much solar could fit on your roof, enter it below:")
 
-        solar_install = render_and_update_solar_inputs(solar=solar_install)
+        solar_install = render_and_update_solar_inputs(solar_install=solar_install)
 
     if solar_install.peak_capacity_kw_out_per_kw_in_per_m2 > 0:
         st.markdown(f"<p class='bill-label' style='text-align: center'>We estimate you can fit </p>",
