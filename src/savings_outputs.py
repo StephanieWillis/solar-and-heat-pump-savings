@@ -12,7 +12,7 @@ def render(house: "House", solar_install: "Solar"):
     with st.sidebar:
         st.header("Assumptions")
         st.subheader("Current Performance")
-        house = house_questions.render_and_update_current_home(house)
+        house = house_questions.overwrite_house_assumptions(house)
         st.session_state["page_state"]["house"] = dict(house=house)  # so any overwrites saved if move tabs
         # saving state may work without above but above makes clearer
 
@@ -118,7 +118,7 @@ def render_and_update_improvement_options(solar_install: Solar) -> Tuple[Heating
         else:
             upgrade_heating = st.session_state["page_state"]["upgrade_heating"]["upgrade_heating"]
 
-        upgrade_heating = house_questions.render_and_update_heating_system(heating_system=upgrade_heating)
+        upgrade_heating = house_questions.overwrite_heating_system_assumptions(heating_system=upgrade_heating)
 
         st.caption("The efficiency of your heat pump depends on how well the system is designed and how low a flow "
                    "temperature it can run at. A COP of 3.6 or more is possible with a high quality, low flow temperature "
