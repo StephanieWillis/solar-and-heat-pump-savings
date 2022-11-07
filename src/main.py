@@ -6,8 +6,8 @@ import savings_outputs
 
 from streamlit_wizard import Wizard, Page
 
-st.set_page_config(page_title="Solar or a heat pump?",
-                   page_icon=" 🔥 ",
+st.set_page_config(page_title="Heat pump or Solar?",
+                   page_icon="https://storage.googleapis.com/static_heatpump_and_solar/heat_pump_icon.png",
                    initial_sidebar_state="collapsed")
 
 

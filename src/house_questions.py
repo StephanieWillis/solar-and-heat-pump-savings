@@ -10,9 +10,7 @@ def render() -> "House":
 
     st.header("Start by telling us about your home")
     house.envelope = render_building_envelope_questions(house.envelope)
-    house.heating_system, heating_fuel_changed = render_heating_system_questions(heating_system=house.heating_system)
-    if heating_fuel_changed:  # need tariffs to match heating fuel
-        house.tariffs = house.set_up_standard_tariffs()  # only if heating fuel changed, keep any overwrites otherwise
+    house = render_heating_system_questions(house=house)
     house = render_results(house)
 
     return house
@@ -40,33 +38,35 @@ def render_building_envelope_questions(envelope: BuildingEnvelope) -> BuildingEn
         with col1:
             st.write("I live in a")
         with col2:
-            idx = list(constants.BUILDING_TYPE_OPTIONS.keys()).index(envelope.house_type)
-            house_type = st.selectbox("", options=constants.BUILDING_TYPE_OPTIONS.keys(), index=idx)
+            if "house_type" not in st.session_state:  # set initial value
+                st.session_state.house_type = envelope.house_type
+            house_type = st.selectbox("", options=constants.BUILDING_TYPE_OPTIONS.keys(), key="house_type")
             if house_type != envelope.house_type:  # only overwrite if house type changed by user
                 envelope = BuildingEnvelope.from_building_type_constants(constants.BUILDING_TYPE_OPTIONS[house_type])
     return envelope
 
 
-def render_heating_system_questions(heating_system: HeatingSystem) -> (HeatingSystem, bool):
+def render_heating_system_questions(house: House) -> House:
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
             st.write("My home is heated with a")
         with col2:
-            idx = list(constants.DEFAULT_HEATING_CONSTANTS.keys()).index(heating_system.name)
+            if "heating_system_name" not in st.session_state:  # set initial value
+                st.session_state.heating_system_name = house.heating_system.name
+
             heating_name = st.selectbox("Heating System", options=list(constants.DEFAULT_HEATING_CONSTANTS.keys()),
-                                        index=idx)
-            if heating_name != heating_system.name:  # only overwrite heating system if changed by user
-                original_fuel_name = heating_system.fuel.name
-                heating_system = HeatingSystem.from_constants(
+                                        key="heating_system_name")
+            if heating_name != house.heating_system.name:  # only overwrite heating system if changed by user
+                original_fuel_name = house.heating_system.fuel.name
+                house.heating_system = HeatingSystem.from_constants(
                     name=heating_name,
                     parameters=constants.DEFAULT_HEATING_CONSTANTS[heating_name])
-                heating_fuel_changed = heating_system.fuel.name != original_fuel_name
-            # when not overwritten by user keep old system so don't loose changes to efficiencies made at other steps
-            else:
-                heating_fuel_changed = False
+                if house.heating_system.fuel.name != original_fuel_name:
+                    # only overwrite tariffs if heating fuel changed, keep any overwrites otherwise
+                    house.tariffs = house.set_up_standard_tariffs()
 
-    return heating_system, heating_fuel_changed
+    return house
 
 
 def render_results(house) -> House:
@@ -75,7 +75,7 @@ def render_results(house) -> House:
         st.markdown("<p>If you know details of your current usage or tariff, enter below for greater accuracy</p>",
                     unsafe_allow_html=True)
         st.subheader("Current Performance")
-        house = render_and_update_current_home(house)
+        house = overwrite_house_assumptions(house)
 
     class_name_of_sidebar_div = "\"css-1f8pn94 edgvbvh3\""
     st.markdown(
@@ -93,22 +93,37 @@ def render_results(house) -> House:
     return house
 
 
-def render_and_update_current_home(house: House):
+def overwrite_house_assumptions(house: House):
     with st.expander("Demand"):
-        house.envelope = render_and_update_envelope_outputs(envelope=house.envelope)
+        house.envelope = overwrite_envelope_assumptions(envelope=house.envelope)
     with st.expander("Baseline heating system"):
-        house.heating_system = render_and_update_heating_system(heating_system=house.heating_system)
+        house.heating_system = overwrite_baseline_heating_system_assumptions(heating_system=house.heating_system)
     with st.expander("Tariff"):
-        house.tariffs = render_and_update_tariffs(tariffs=house.tariffs, fuel_name=house.heating_system.fuel.name)
+        house.tariffs = overwrite_tariffs(tariffs=house.tariffs, fuel_name=house.heating_system.fuel.name)
     return house
 
 
-def render_and_update_envelope_outputs(envelope: BuildingEnvelope) -> BuildingEnvelope:
+def overwrite_envelope_assumptions(envelope: BuildingEnvelope) -> BuildingEnvelope:
 
-    envelope.annual_heating_demand = render_and_update_annual_demand(label='Space and water heating (kwh): ',
-                                                                     demand=envelope.annual_heating_demand)
-    envelope.base_demand = render_and_update_annual_demand(label='Lighting, appliances, plug loads etc. (kwh): ',
-                                                           demand=envelope.base_demand)
+    if ("annual_heating_demand" not in st.session_state or
+            st.session_state.house_type_that_annual_heating_demand_is_for != envelope.house_type) :
+        # Set initial values or, where house type has been changed, reset values
+        st.session_state.annual_heating_demand = int(envelope.annual_heating_demand)
+        st.session_state.annual_base_demand = int(envelope.base_demand.sum())
+        st.session_state.house_type_that_annual_heating_demand_is_for = envelope.house_type
+
+    envelope.annual_heating_demand = st.number_input(label='Space and water heating (kwh): ',
+                                                     min_value=0,
+                                                     max_value=100000,
+                                                     key="annual_heating_demand")
+
+    annual_base_demand_overwrite = st.number_input(label='Lighting, appliances, plug loads etc. (kwh): ',
+                                                   min_value=0,
+                                                   max_value=100000,
+                                                   key="annual_base_demand")
+    if annual_base_demand_overwrite != int(envelope.base_demand.sum()):  # scale profile  by correction factor
+        envelope.base_demand = (annual_base_demand_overwrite / int(envelope.base_demand.sum())
+                                * envelope.base_demand)
 
     st.caption(f"A typical {envelope.house_type.lower()} home needs "
                f"{constants.BUILDING_TYPE_OPTIONS[envelope.house_type].annual_heat_demand_kWh:,} kWh for heating, "
@@ -119,23 +134,17 @@ def render_and_update_envelope_outputs(envelope: BuildingEnvelope) -> BuildingEn
     return envelope
 
 
-def render_and_update_annual_demand(label: str, demand: pd.Series | float) -> pd.Series:
-    """ If user overwrites annual total then scale whole profile by multiplier"""
-    if type(demand) is pd.Series:
-        demand_overwrite = st.number_input(label=label, min_value=0, max_value=100000, value=int(demand.sum()))
-        if demand_overwrite != int(demand.sum()):  # scale profile  by correction factor
-            demand = demand_overwrite / int(demand.sum()) * demand
-    else:
-        demand_overwrite = st.number_input(label=label, min_value=0, max_value=100000, value=int(demand))
-        demand = demand_overwrite
-    return demand
+def overwrite_baseline_heating_system_assumptions(heating_system: 'HeatingSystem') -> 'HeatingSystem':
 
+    if ("baseline_heating_efficiency" not in st.session_state
+            or heating_system.fuel.name != st.session_state.baseline_heating_fuel_name):
+        st.session_state.baseline_heating_efficiency = heating_system.efficiency
+        st.session_state.baseline_heating_fuel_name = heating_system.fuel.name
 
-def render_and_update_heating_system(heating_system: 'HeatingSystem') -> 'HeatingSystem':
     heating_system.efficiency = st.number_input(label='Efficiency: ',
                                                 min_value=0.0,
                                                 max_value=8.0,
-                                                value=heating_system.efficiency)
+                                                key="baseline_heating_efficiency")
     if heating_system.fuel.name == 'gas':
         st.caption(
             "Many modern boilers have a low efficiency because they run at a high a flow temperature. "
@@ -146,39 +155,57 @@ def render_and_update_heating_system(heating_system: 'HeatingSystem') -> 'Heatin
     return heating_system
 
 
-def render_and_update_tariffs(tariffs: Tariff, fuel_name: 'str') -> Tariff:
+def overwrite_tariffs(tariffs: Tariff, fuel_name: 'str') -> Tariff:
+
+    if "p_per_unit_elec_import" not in st.session_state:
+        # Set initial values or, where fuel has been changed, reset values
+        st.session_state.p_per_unit_elec_import = tariffs['electricity'].p_per_unit_import
+        st.session_state.p_per_unit_elec_export = tariffs['electricity'].p_per_unit_export
+        st.session_state.p_per_day_elec = tariffs['electricity'].p_per_day
+
     st.subheader('Electricity')
     tariffs['electricity'].p_per_unit_import = st.number_input(label='Unit rate (p/kwh), electricity import',
                                                                min_value=0.0,
                                                                max_value=100.0,
-                                                               value=tariffs[
-                                                                   'electricity'].p_per_unit_import)
+                                                               key="p_per_unit_elec_import")
     tariffs['electricity'].p_per_unit_export = st.number_input(label='Unit rate (p/kwh), electricity export',
                                                                min_value=0.0,
                                                                max_value=100.0,
-                                                               value=tariffs[
-                                                                   'electricity'].p_per_unit_export)
+                                                               key="p_per_unit_elec_export")
     tariffs['electricity'].p_per_day = st.number_input(label='Standing charge (p/day), electricity',
                                                        min_value=0.0,
                                                        max_value=100.0,
-                                                       value=tariffs['electricity'].p_per_day)
+                                                       key="p_per_day_elec")
     match fuel_name:
         case 'gas':
+            if ("p_per_unit_gas_import" not in st.session_state
+                    or st.session_state.fuel_name_tariffs_is_for != fuel_name):
+                # Set initial values or, where fuel has been changed, reset values
+                st.session_state.fuel_name_tariffs_is_for = fuel_name
+                st.session_state.p_per_unit_gas_import = tariffs['gas'].p_per_unit_import
+                st.session_state.p_per_day_gas = tariffs['gas'].p_per_day
+
             st.subheader('Gas')
             tariffs['gas'].p_per_unit_import = st.number_input(label='Unit rate (p/kwh), gas',
                                                                min_value=0.0,
                                                                max_value=100.0,
-                                                               value=tariffs['gas'].p_per_unit_import)
+                                                               key="p_per_unit_gas_import")
             tariffs['gas'].p_per_day = st.number_input(label='Standing charge (p/day), gas',
                                                        min_value=0.0,
                                                        max_value=100.0,
-                                                       value=tariffs['gas'].p_per_day)
+                                                       key="p_per_day_gas")
         case 'oil':
+            if ("p_per_unit_oil_import" not in st.session_state
+                    or st.session_state.fuel_name_tariffs_is_for != fuel_name):
+                # Set initial values or, where fuel has been changed, reset values
+                st.session_state.fuel_name_tariffs_is_for = fuel_name
+                st.session_state.p_per_unit_oil_import = tariffs['oil'].p_per_unit_import
+
             st.subheader('Oil')
             tariffs['oil'].p_per_unit_import = st.number_input(label='Oil price, (p/litre)',
                                                                min_value=0.0,
                                                                max_value=200.0,
-                                                               value=tariffs['oil'].p_per_unit_import)
+                                                               key="p_per_unit_oil_import")
     st.caption(
         "Our default tariffs reflect the [Energy Price Guarantee]("
         "https://www.gov.uk/government/publications/energy-bills-support/energy-bills-support-factsheet-8-september-2022)"
