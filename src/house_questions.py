@@ -104,21 +104,22 @@ def overwrite_house_assumptions(house: House):
 
 
 def overwrite_envelope_assumptions(envelope: BuildingEnvelope) -> BuildingEnvelope:
-
-    if ("annual_heating_demand" not in st.session_state or
-            st.session_state.house_type_that_annual_heating_demand_is_for != envelope.house_type) :
+    if ("annual_heating_demand" not in st.session_state
+            or st.session_state.house_type_that_annual_heating_demand_is_for != envelope.house_type
+            or st.session_state.annual_heating_demand == 0
+            or st.session_state.annual_base_demand == 0):
         # Set initial values or, where house type has been changed, reset values
         st.session_state.annual_heating_demand = int(envelope.annual_heating_demand)
         st.session_state.annual_base_demand = int(envelope.base_demand.sum())
         st.session_state.house_type_that_annual_heating_demand_is_for = envelope.house_type
 
     envelope.annual_heating_demand = st.number_input(label='Space and water heating (kwh): ',
-                                                     min_value=0,
+                                                     min_value=1,
                                                      max_value=100000,
                                                      key="annual_heating_demand")
 
     annual_base_demand_overwrite = st.number_input(label='Lighting, appliances, plug loads etc. (kwh): ',
-                                                   min_value=0,
+                                                   min_value=1,
                                                    max_value=100000,
                                                    key="annual_base_demand")
     if annual_base_demand_overwrite != int(envelope.base_demand.sum()):  # scale profile  by correction factor
@@ -135,9 +136,9 @@ def overwrite_envelope_assumptions(envelope: BuildingEnvelope) -> BuildingEnvelo
 
 
 def overwrite_baseline_heating_system_assumptions(heating_system: 'HeatingSystem') -> 'HeatingSystem':
-
     if ("baseline_heating_efficiency" not in st.session_state
-            or heating_system.name != st.session_state.baseline_heating_system_name):
+            or heating_system.name != st.session_state.baseline_heating_system_name
+            or st.session_state.baseline_heating_efficiency == 0):
         st.session_state.baseline_heating_efficiency = heating_system.efficiency
         st.session_state.baseline_heating_system_name = heating_system.name
 
@@ -156,8 +157,7 @@ def overwrite_baseline_heating_system_assumptions(heating_system: 'HeatingSystem
 
 
 def overwrite_tariffs(tariffs: Tariff, fuel_name: 'str') -> Tariff:
-
-    if "p_per_unit_elec_import" not in st.session_state:
+    if "p_per_unit_elec_import" not in st.session_state or st.session_state.p_per_unit_elec_import == 0:
         # Set initial values or, where fuel has been changed, reset values
         st.session_state.p_per_unit_elec_import = tariffs['electricity'].p_per_unit_import
         st.session_state.p_per_unit_elec_export = tariffs['electricity'].p_per_unit_export
@@ -178,7 +178,7 @@ def overwrite_tariffs(tariffs: Tariff, fuel_name: 'str') -> Tariff:
                                                        key="p_per_day_elec")
     match fuel_name:
         case 'gas':
-            if ("p_per_unit_gas_import" not in st.session_state
+            if ("p_per_unit_gas_import" not in st.session_state or st.session_state.p_per_unit_gas_import == 0
                     or st.session_state.fuel_name_tariffs_is_for != fuel_name):
                 # Set initial values or, where fuel has been changed, reset values
                 st.session_state.fuel_name_tariffs_is_for = fuel_name
@@ -195,7 +195,7 @@ def overwrite_tariffs(tariffs: Tariff, fuel_name: 'str') -> Tariff:
                                                        max_value=100.0,
                                                        key="p_per_day_gas")
         case 'oil':
-            if ("p_per_unit_oil_import" not in st.session_state
+            if ("p_per_unit_oil_import" not in st.session_state or st.session_state.p_per_unit_oil_import == 0
                     or st.session_state.fuel_name_tariffs_is_for != fuel_name):
                 # Set initial values or, where fuel has been changed, reset values
                 st.session_state.fuel_name_tariffs_is_for = fuel_name
