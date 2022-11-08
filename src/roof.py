@@ -152,7 +152,7 @@ def roof_mapper(width: int, height: int) -> Optional[List[Polygon]]:
         polygons = []
         for drawing in map["all_drawings"]:
             drawing_type = drawing["geometry"]["type"]
-            if not (drawing_type == "Polygon"):
+            if not (drawing_type == "Polygon" or drawing_type == "Square"):
                 raise KeyError(f"User selected the {drawing_type} tool")
             # coordinates is list of list of lists: e.g. [[[lng, lat], [lng, lat], [lng, lat], [lng, lat]]]
             polygon = Polygon(_points=drawing["geometry"]["coordinates"][0])
