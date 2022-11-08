@@ -4,14 +4,24 @@ import streamlit as st
 from building_model import House, BuildingEnvelope, HeatingSystem, Tariff
 import constants
 
+CLASS_NAME_OF_SIDEBAR_DIV = "\"css-1f8pn94 edgvbvh3\""
+
 
 def render() -> "House":
     house = get_house_from_session_state_if_exists_or_create_default()
 
     st.header("Start by telling us about your home")
+    st.markdown(
+        f"<p class='more-info'> If you know lots more about your home and tariff, you can  <a  href='javascript:document.getElementsByClassName({CLASS_NAME_OF_SIDEBAR_DIV})[1].click();' target='_self'>"
+        "enter more details here!</a></p>",
+        unsafe_allow_html=True)
+
     house.envelope = render_building_envelope_questions(house.envelope)
     house = render_heating_system_questions(house=house)
+
+
     house = render_results(house)
+
 
     return house
 
@@ -77,14 +87,14 @@ def render_results(house) -> House:
         st.subheader("Current Performance")
         house = overwrite_house_assumptions(house)
 
-    class_name_of_sidebar_div = "\"css-1f8pn94 edgvbvh3\""
+
     st.markdown(
         f"<div class='results-container'>"
         f"<p class='bill-label'>Your bill next year will be around <p>"
         f"<p class='bill-estimate'>£{int(house.total_annual_bill):,d}"
         f"</p>"
         f"<p class='bill-details'>Based on estimated usage of "
-        f"<a class='bill-consumption-kwh' href='javascript:document.getElementsByClassName({class_name_of_sidebar_div})[1].click();' target='_self'>"
+        f"<a class='bill-consumption-kwh' href='javascript:document.getElementsByClassName({CLASS_NAME_OF_SIDEBAR_DIV})[1].click();' target='_self'>"
         f"{int(house.total_annual_consumption_kwh):,d} kwh</a> </p>"
 
         f"</div>",
