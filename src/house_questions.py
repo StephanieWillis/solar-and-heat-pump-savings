@@ -124,7 +124,7 @@ def overwrite_envelope_assumptions(envelope: BuildingEnvelope) -> BuildingEnvelo
 
     envelope.annual_heating_demand = st.number_input(
         label="Space and water heating (kwh): ", min_value=0, max_value=100000, key="annual_heating_demand",
-        value=constants.BUILDING_TYPE_OPTIONS[envelope.house_type].annual_base_electricity_demand_kWh
+        value=constants.BUILDING_TYPE_OPTIONS[envelope.house_type].annual_heat_demand_kWh
     )
 
     annual_base_demand_overwrite = st.number_input(
