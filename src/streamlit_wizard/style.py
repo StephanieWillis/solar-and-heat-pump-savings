@@ -14,7 +14,8 @@ style = """
 
 /* Remove the labels on selectboxes on the first page*/
 #root > div:nth-child(1) > div.withScreencast > div > div > div > section.main.css-1v3fvcr.egzxvld3 > div > div:nth-child(1) > div > div:nth-child(2) > div > div:nth-child(6) > div > div > div:nth-child(2) > div:nth-child(1) > div > div > div > label,
-#root > div:nth-child(1) > div.withScreencast > div > div > div > section.main.css-1v3fvcr.egzxvld3 > div > div:nth-child(1) > div > div:nth-child(2) > div > div:nth-child(8) > div > div > div:nth-child(2) > div:nth-child(1) > div > div > div > label
+#root > div:nth-child(1) > div.withScreencast > div > div > div > section.main.css-1v3fvcr.egzxvld3 > div > div:nth-child(1) > div > div:nth-child(2) > div > div:nth-child(8) > div > div > div:nth-child(2) > div:nth-child(1) > div > div > div > label,
+#root > div:nth-child(1) > div.withScreencast > div > div > div > section.main.css-1v3fvcr.egzxvld3 > div > div:nth-child(1) > div > div:nth-child(2) > div > div:nth-child(7) > div > div > div:nth-child(2) > div:nth-child(1) > div > div > div > label
  {
     display: none;
 }
