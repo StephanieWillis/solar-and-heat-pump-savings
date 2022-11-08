@@ -159,3 +159,6 @@ class SolarConstants:
     # Was 202 Based on quick comparison of years for one location in the uk.
     # If you don't pass years to the API it gives you all hours from first to last year they have data for.
     SYSTEM_LOSS = 14  # percentage loss in the system - the PVGIS documentation suggests 14 %
+
+
+CLASS_NAME_OF_SIDEBAR_DIV = "\"css-1f8pn94 edgvbvh3\""
