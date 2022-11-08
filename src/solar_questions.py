@@ -29,8 +29,9 @@ def render() -> "Solar":
     polygons = polygons if polygons else solar_install_in.polygons
 
     orientation_options = [name for name, _ in SolarConstants.ORIENTATIONS.items()]
-    idx = orientation_options.index(solar_install_in.orientation.name)
-    orientation_name: str = st.selectbox("Solar Orientation", orientation_options, index=idx)
+    if "orientation_name" not in st.session_state:
+        st.session_state.orientation_name = solar_install_in.orientation.name
+    orientation_name: str = st.selectbox("Solar Orientation", orientation_options, key="orientation_name")
     orientation = SolarConstants.ORIENTATIONS[orientation_name]
 
     solar_install = Solar(orientation=orientation, polygons=polygons)
