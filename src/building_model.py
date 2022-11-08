@@ -173,7 +173,7 @@ class HeatingSystem:
                    hourly_normalized_demand_profile=parameters.normalized_hourly_heat_demand_profile)
 
     def __post_init__(self):
-        if self.fuel.name not in constants.FUELS:
+        if self.fuel not in constants.FUELS:
             raise ValueError(f"fuel must be one of {constants.FUELS}")
 
     def calculate_consumption(self, annual_space_heating_demand_kwh: float) -> Consumption:
