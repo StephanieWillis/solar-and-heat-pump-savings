@@ -102,7 +102,7 @@ class Wizard:
             previous = None
 
         if self.on_final_page:
-            next_ = col2.button("Finish")
+            next_ = None
         else:
             next_ = col2.button("Next")
 
