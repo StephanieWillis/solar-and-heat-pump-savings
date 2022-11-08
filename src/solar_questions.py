@@ -14,6 +14,7 @@ def render() -> "Solar":
     st.write("""
         - Search for your home below
         - Using the tool with the ⭓ icon, draw the biggest rectangle that fits on your most south facing roof
+        - Make sure you 'close' the rectangle by clicking back on the first point at the end
         - You can draw multiple rectangles if needed
         - Enter the orientation of the side of the roof you have drawn on"""
     )
