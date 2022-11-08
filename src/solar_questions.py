@@ -1,8 +1,9 @@
 import streamlit as st
 
-from constants import SolarConstants
+from constants import SolarConstants, CLASS_NAME_OF_SIDEBAR_DIV
 import roof
 from solar import Solar
+
 
 
 def render() -> "Solar":
@@ -10,7 +11,11 @@ def render() -> "Solar":
     solar_install_in = get_solar_install_from_session_state_if_exists_or_create_default()
 
     st.header("How much solar power could you generate?")
-
+    st.markdown(
+        f"<p class='more-info'> If you already have a solar array <a  href='javascript:document.getElementsByClassName({CLASS_NAME_OF_SIDEBAR_DIV})[1].click();' target='_self'>"
+        "you can enter the details here</a></p>",
+        unsafe_allow_html=True,
+    )
     st.write(
         """
         - Search for your home below

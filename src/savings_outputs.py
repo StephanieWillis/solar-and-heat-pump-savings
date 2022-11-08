@@ -5,6 +5,7 @@ from building_model import *
 import house_questions
 from solar import Solar
 from solar_questions import render_and_update_solar_inputs
+from constants import CLASS_NAME_OF_SIDEBAR_DIV
 
 
 def render(house: "House", solar_install: "Solar"):
@@ -41,14 +42,16 @@ def render(house: "House", solar_install: "Solar"):
         st.markdown(
             "<div style='text-align:center'>"
             f"<p class='bill-estimate'>☀️ £{int(house.total_annual_bill - solar_house.total_annual_bill):,d} </p>"
-            "<p> with solar panels</p>" "</div>",
+            "<p> with solar panels</p>"
+            "</div>",
             unsafe_allow_html=True,
         )
     with col2:
         st.markdown(
             "<div style='text-align:center'>"
             f"<p class='bill-estimate'> 💨 £{int(house.total_annual_bill - hp_house.total_annual_bill):,d}</p>"
-            f"<p> with a heat pump</p>" "</div>",
+            f"<p> with a heat pump</p>"
+            "</div>",
             unsafe_allow_html=True,
         )
 
@@ -56,7 +59,8 @@ def render(house: "House", solar_install: "Solar"):
         st.markdown(
             "<div style='text-align:center'>"
             f"<p class='bill-estimate'> 😍 £{int(house.total_annual_bill - both_house.total_annual_bill):,d} </p>"
-            "<p> with both</p>" "</div>",
+            "<p> with both</p>"
+            "</div>",
             unsafe_allow_html=True,
         )
 
@@ -104,6 +108,13 @@ def render(house: "House", solar_install: "Solar"):
         render_carbon_chart(results_df)
         render_carbon_outputs(house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
 
+    st.markdown(
+            f"<p style='margin:20px; text-align: center'> You can <a  href='javascript:document.getElementsByClassName({CLASS_NAME_OF_SIDEBAR_DIV})[1].click();' target='_self'>"
+            "view and edit </a> all of the numbers we've used in this calculation if you know the "
+            "details of your tariff, heating demand, heat pump or solar install!</p>",
+            unsafe_allow_html=True,
+        )
+
 
 def render_and_update_improvement_options(solar_install: Solar) -> Tuple[HeatingSystem, Solar]:
     with st.expander("Heat pump assumptions"):
@@ -118,11 +129,13 @@ def render_and_update_improvement_options(solar_install: Solar) -> Tuple[Heating
 
         upgrade_heating = overwrite_upgrade_heating_system_assumptions(heating_system=upgrade_heating)
 
-        st.caption("The efficiency of your heat pump depends on how well the system is designed and how low a flow "
-                   "temperature it can run at. A COP of 3.6 or more is possible with a high quality, low flow temperature "
-                   "install.  \n  \n"
-                   "A good installer is key to ensuring your heat pump runs efficiently. The [heat geek map"
-                   "](https://www.heatgeek.com/find-a-heat-geek/) is a great place to start your search.")
+        st.caption(
+            "The efficiency of your heat pump depends on how well the system is designed and how low a flow "
+            "temperature it can run at. A COP of 3.6 or more is possible with a high quality, low flow temperature "
+            "install.  \n  \n"
+            "A good installer is key to ensuring your heat pump runs efficiently. The [heat geek map"
+            "](https://www.heatgeek.com/find-a-heat-geek/) is a great place to start your search."
+        )
 
     with st.expander("Solar PV assumptions "):
         solar_install = render_and_update_solar_inputs(solar_install=solar_install)
@@ -130,14 +143,13 @@ def render_and_update_improvement_options(solar_install: Solar) -> Tuple[Heating
     return upgrade_heating, solar_install
 
 
-def overwrite_upgrade_heating_system_assumptions(heating_system: 'HeatingSystem') -> 'HeatingSystem':
+def overwrite_upgrade_heating_system_assumptions(heating_system: "HeatingSystem") -> "HeatingSystem":
 
     if "upgrade_heating_efficiency" not in st.session_state:
         st.session_state.upgrade_heating_efficiency = heating_system.efficiency
-    heating_system.efficiency = st.number_input(label='Efficiency: ',
-                                                min_value=0.3,
-                                                max_value=8.0,
-                                                key="upgrade_heating_efficiency")
+    heating_system.efficiency = st.number_input(
+        label="Efficiency: ", min_value=0.3, max_value=8.0, key="upgrade_heating_efficiency"
+    )
     return heating_system
 
 
@@ -216,10 +228,11 @@ def produce_consumption_sentence(house):
 
 
 def render_savings_chart(results_df: pd.DataFrame, y_variable: str):
-    bills_fig = px.bar(results_df, y="Upgrade option", x=y_variable,
-                       color="fuel", template='plotly_white')
-    bills_fig.update_layout(legend=dict(orientation='h', y=1.01, x=0.6),
-                            plot_bgcolor='rgba(0,0,0,0)',
-                            paper_bgcolor='rgba(0,0,0,0)',
-                            yaxis=dict(title=None))
+    bills_fig = px.bar(results_df, y="Upgrade option", x=y_variable, color="fuel", template="plotly_white")
+    bills_fig.update_layout(
+        legend=dict(orientation="h", y=1.01, x=0.6),
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        yaxis=dict(title=None),
+    )
     st.plotly_chart(bills_fig, use_container_width=True, sharing="streamlit")
