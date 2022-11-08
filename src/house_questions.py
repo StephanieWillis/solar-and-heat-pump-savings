@@ -153,7 +153,7 @@ def overwrite_baseline_heating_system_assumptions(heating_system: "HeatingSystem
         st.session_state.baseline_heating_system_name = heating_system.name
 
     heating_system.efficiency = st.number_input(
-        label="Efficiency: ", min_value=0.3, max_value=8.0, key="baseline_heating_efficiency"
+        label="Efficiency: ", min_value=0.0, max_value=8.0, key="baseline_heating_efficiency"
     )
     if heating_system.fuel.name == "gas":
         st.caption(

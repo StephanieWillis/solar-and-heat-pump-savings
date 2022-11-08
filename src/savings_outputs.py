@@ -148,7 +148,7 @@ def overwrite_upgrade_heating_system_assumptions(heating_system: "HeatingSystem"
     if "upgrade_heating_efficiency" not in st.session_state or st.session_state.upgrade_heating_efficiency == 0:
         st.session_state.upgrade_heating_efficiency = heating_system.efficiency
     heating_system.efficiency = st.number_input(
-        label="Efficiency: ", min_value=0.3, max_value=8.0, key="upgrade_heating_efficiency"
+        label="Efficiency: ", min_value=0.0, max_value=8.0, key="upgrade_heating_efficiency"
     )
     return heating_system
 
