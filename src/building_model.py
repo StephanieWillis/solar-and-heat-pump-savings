@@ -148,7 +148,7 @@ class Tariff:
 
     def calculate_annual_cost(self, consumption: 'Consumption') -> float:
         """ Calculate the annual cost of the consumption of a certain fuel with this tariff"""
-        if self.fuel != consumption.fuel:
+        if self.fuel.name != consumption.fuel.name:
             raise ValueError("To calculate annual costs the tariff fuel must match the consumption fuel, they are"
                              f"{self.fuel} and {consumption.fuel}")
         cost_p_per_day = consumption.overall.days_in_year * self.p_per_day
@@ -173,7 +173,7 @@ class HeatingSystem:
                    hourly_normalized_demand_profile=parameters.normalized_hourly_heat_demand_profile)
 
     def __post_init__(self):
-        if self.fuel not in constants.FUELS:
+        if self.fuel.name not in constants.FUELS:
             raise ValueError(f"fuel must be one of {constants.FUELS}")
 
     def calculate_consumption(self, annual_space_heating_demand_kwh: float) -> Consumption:

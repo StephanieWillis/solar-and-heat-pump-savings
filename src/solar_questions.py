@@ -70,10 +70,11 @@ def render_and_update_solar_inputs(solar_install: "Solar"):
         st.session_state.kwp_per_panel = solar_install.kwp_per_panel
 
     solar_install.number_of_panels = st.number_input(
-        label="Number of panels", min_value=0, max_value=None, key="number_of_panels"
+        label="Number of panels", min_value=0, max_value=None, key="number_of_panels", value=0
     )
     solar_install.kwp_per_panel = st.number_input(
-        label="Capacity per panel (kWp)", min_value=0.0, max_value=0.8, key="kwp_per_panel"
+        label="Capacity per panel (kWp)", min_value=0.0, max_value=0.8, key="kwp_per_panel",
+        value=SolarConstants.KW_PEAK_PER_PANEL
     )
 
     st.session_state["page_state"]["solar"] = dict(solar=solar_install)
