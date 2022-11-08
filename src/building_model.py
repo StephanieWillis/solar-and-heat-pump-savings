@@ -177,7 +177,10 @@ class HeatingSystem:
             raise ValueError(f"fuel must be one of {constants.FUELS}")
 
     def calculate_consumption(self, annual_space_heating_demand_kwh: float) -> Consumption:
-        profile_kwh = self.hourly_normalized_demand_profile / self.efficiency * annual_space_heating_demand_kwh
+        try:
+            profile_kwh = self.hourly_normalized_demand_profile / self.efficiency * annual_space_heating_demand_kwh
+        except ZeroDivisionError:  # should only happen fleetingly when heating system state hasn't caught up
+            profile_kwh = self.hourly_normalized_demand_profile * 0
         consumption = Consumption(hourly_profile_kwh=profile_kwh, fuel=self.fuel)
         return consumption
 
