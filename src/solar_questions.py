@@ -11,7 +11,8 @@ def render() -> "Solar":
 
     st.header("How much solar power could you generate?")
 
-    st.write("""
+    st.write(
+        """
         - Search for your home below
         - Using the tool with the ⭓ icon, draw the biggest rectangle that fits on your most south facing roof
         - Make sure you 'close' the rectangle by clicking back on the first point at the end
@@ -19,7 +20,12 @@ def render() -> "Solar":
         - Enter the orientation of the side of the roof you have drawn on"""
     )
 
-    polygons = roof.roof_mapper(800, 400)  # figure out how to save state here
+    try:
+        polygons = roof.roof_mapper(800, 400)  # figure out how to save state here
+    except KeyError:
+        st.error("You've used a drawing tool we don't support, sorry! Please try with the ⭓ or ◼️ tools")
+        polygons = None
+
     polygons = polygons if polygons else solar_install_in.polygons
 
     orientation_options = [name for name, _ in SolarConstants.ORIENTATIONS.items()]
@@ -27,8 +33,7 @@ def render() -> "Solar":
     orientation_name: str = st.selectbox("Solar Orientation", orientation_options, index=idx)
     orientation = SolarConstants.ORIENTATIONS[orientation_name]
 
-    solar_install = Solar(orientation=orientation,
-                          polygons=polygons)
+    solar_install = Solar(orientation=orientation, polygons=polygons)
 
     # Overwrite number of panels if it has previously been overwritten by user
     if solar_install_in.number_of_panels_has_been_overwritten:
@@ -57,14 +62,12 @@ def render_and_update_solar_inputs(solar_install: "Solar"):
         st.session_state.number_of_panels = solar_install.number_of_panels
         st.session_state.kwp_per_panel = solar_install.kwp_per_panel
 
-    solar_install.number_of_panels = st.number_input(label='Number of panels',
-                                                     min_value=0,
-                                                     max_value=None,
-                                                     key="number_of_panels")
-    solar_install.kwp_per_panel = st.number_input(label='Capacity per panel (kWp)',
-                                                  min_value=0.0,
-                                                  max_value=0.8,
-                                                  key="kwp_per_panel")
+    solar_install.number_of_panels = st.number_input(
+        label="Number of panels", min_value=0, max_value=None, key="number_of_panels"
+    )
+    solar_install.kwp_per_panel = st.number_input(
+        label="Capacity per panel (kWp)", min_value=0.0, max_value=0.8, key="kwp_per_panel"
+    )
 
     st.session_state["page_state"]["solar"] = dict(solar=solar_install)
 
@@ -80,9 +83,10 @@ def render_results(solar_install: Solar):
         solar_install = render_and_update_solar_inputs(solar_install=solar_install)
 
     if solar_install.peak_capacity_kw_out_per_kw_in_per_m2 > 0:
-        st.markdown(f"<p class='bill-label' style='text-align: center'>We estimate you can fit </p>",
-                    unsafe_allow_html=True,
-                    )
+        st.markdown(
+            f"<p class='bill-label' style='text-align: center'>We estimate you can fit </p>",
+            unsafe_allow_html=True,
+        )
         st.markdown(
             f"<p class='bill-estimate' style='text-align: center'>  {solar_install.number_of_panels}  </p>"
             "<p class='bill-label' style='text-align: center'> solar panels on your roof</p>",
@@ -95,8 +99,8 @@ def render_results(solar_install: Solar):
             unsafe_allow_html=True,
         )
     elif solar_install.roof_plan_area > 0:  # for case where capacity is zero but shape has been drawn
-        st.markdown("<p class='bill-details' style='text-align: center'> Oops! This shape isn't big enough to fit a"
-                    " solar panel in. Make sure you draw the shape right up to the edge of your roof.</p>",
-                    unsafe_allow_html=True
-                    )
+        st.warning(
+            "Oops! This shape isn't big enough to fit a"
+            " solar panel in. Make sure you draw the shape right up to the edge of your roof.",
+        )
     return solar_install
