@@ -5,7 +5,6 @@ import roof
 from solar import Solar
 
 
-
 def render() -> "Solar":
     """Render inputs to calculate solar outputs. If a solar install has already been set up, modify that"""
     solar_install_in = get_solar_install_from_session_state_if_exists_or_create_default()
