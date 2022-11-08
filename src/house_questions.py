@@ -137,12 +137,12 @@ def overwrite_envelope_assumptions(envelope: BuildingEnvelope) -> BuildingEnvelo
 def overwrite_baseline_heating_system_assumptions(heating_system: 'HeatingSystem') -> 'HeatingSystem':
 
     if ("baseline_heating_efficiency" not in st.session_state
-            or heating_system.fuel.name != st.session_state.baseline_heating_fuel_name):
+            or heating_system.name != st.session_state.baseline_heating_system_name):
         st.session_state.baseline_heating_efficiency = heating_system.efficiency
-        st.session_state.baseline_heating_fuel_name = heating_system.fuel.name
+        st.session_state.baseline_heating_system_name = heating_system.name
 
     heating_system.efficiency = st.number_input(label='Efficiency: ',
-                                                min_value=0.0,
+                                                min_value=0.3,
                                                 max_value=8.0,
                                                 key="baseline_heating_efficiency")
     if heating_system.fuel.name == 'gas':
