@@ -5,7 +5,6 @@ import roof
 from solar import Solar
 
 
-
 def render() -> "Solar":
     """Render inputs to calculate solar outputs. If a solar install has already been set up, modify that"""
     solar_install_in = get_solar_install_from_session_state_if_exists_or_create_default()
@@ -64,7 +63,9 @@ def get_solar_install_from_session_state_if_exists_or_create_default():
 def render_and_update_solar_inputs(solar_install: "Solar"):
     # Note: once this has been overwritten it is decoupled from roof area for the rest of the session
 
-    if "number_of_panels" not in st.session_state or st.session_state.number_of_panels == 0:
+    if ("number_of_panels" not in st.session_state
+            or st.session_state.number_of_panels == 0
+            or st.session_state.kwp_per_panel == 0):
         st.session_state.number_of_panels = solar_install.number_of_panels
         st.session_state.kwp_per_panel = solar_install.kwp_per_panel
 

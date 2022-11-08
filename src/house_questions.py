@@ -168,7 +168,7 @@ def overwrite_baseline_heating_system_assumptions(heating_system: "HeatingSystem
 
 def overwrite_tariffs(tariffs: Tariff, fuel_name: "str") -> Tariff:
 
-    if "p_per_unit_elec_import" not in st.session_state  or st.session_state.p_per_unit_elec_import == 0:
+    if "p_per_unit_elec_import" not in st.session_state or st.session_state.p_per_unit_elec_import == 0:
         # Set initial values or, where fuel has been changed, reset values
         st.session_state.p_per_unit_elec_import = tariffs["electricity"].p_per_unit_import
         st.session_state.p_per_unit_elec_export = tariffs["electricity"].p_per_unit_export
