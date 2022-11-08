@@ -123,11 +123,13 @@ def overwrite_envelope_assumptions(envelope: BuildingEnvelope) -> BuildingEnvelo
         st.session_state.house_type_that_annual_heating_demand_is_for = envelope.house_type
 
     envelope.annual_heating_demand = st.number_input(
-        label="Space and water heating (kwh): ", min_value=0, max_value=100000, key="annual_heating_demand"
+        label="Space and water heating (kwh): ", min_value=0, max_value=100000, key="annual_heating_demand",
+        value=constants.BUILDING_TYPE_OPTIONS[envelope.house_type].annual_base_electricity_demand_kWh
     )
 
     annual_base_demand_overwrite = st.number_input(
-        label="Lighting, appliances, plug loads etc. (kwh): ", min_value=0, max_value=100000, key="annual_base_demand"
+        label="Lighting, appliances, plug loads etc. (kwh): ", min_value=0, max_value=100000, key="annual_base_demand",
+        value=constants.BUILDING_TYPE_OPTIONS[envelope.house_type].annual_base_electricity_demand_kWh
     )
     if annual_base_demand_overwrite != int(envelope.base_demand.sum()):  # scale profile  by correction factor
         envelope.base_demand = annual_base_demand_overwrite / int(envelope.base_demand.sum()) * envelope.base_demand
@@ -153,7 +155,8 @@ def overwrite_baseline_heating_system_assumptions(heating_system: "HeatingSystem
         st.session_state.baseline_heating_system_name = heating_system.name
 
     heating_system.efficiency = st.number_input(
-        label="Efficiency: ", min_value=0.0, max_value=8.0, key="baseline_heating_efficiency"
+        label="Efficiency: ", min_value=0.0, max_value=8.0, key="baseline_heating_efficiency",
+        value=constants.DEFAULT_HEATING_CONSTANTS[heating_system.name].efficiency
     )
     if heating_system.fuel.name == "gas":
         st.caption(
@@ -176,13 +179,16 @@ def overwrite_tariffs(tariffs: Tariff, fuel_name: "str") -> Tariff:
 
     st.subheader("Electricity")
     tariffs["electricity"].p_per_unit_import = st.number_input(
-        label="Unit rate (p/kwh), electricity import", min_value=0.0, max_value=100.0, key="p_per_unit_elec_import"
+        label="Unit rate (p/kwh), electricity import", min_value=0.0, max_value=100.0, key="p_per_unit_elec_import",
+        value=constants.STANDARD_TARIFF.p_per_kwh_elec_import
     )
     tariffs["electricity"].p_per_unit_export = st.number_input(
-        label="Unit rate (p/kwh), electricity export", min_value=0.0, max_value=100.0, key="p_per_unit_elec_export"
+        label="Unit rate (p/kwh), electricity export", min_value=0.0, max_value=100.0, key="p_per_unit_elec_export",
+        value=constants.STANDARD_TARIFF.p_per_kwh_elec_export
     )
     tariffs["electricity"].p_per_day = st.number_input(
-        label="Standing charge (p/day), electricity", min_value=0.0, max_value=100.0, key="p_per_day_elec"
+        label="Standing charge (p/day), electricity", min_value=0.0, max_value=100.0, key="p_per_day_elec",
+        value=constants.STANDARD_TARIFF.p_per_day_elec
     )
     match fuel_name:
         case "gas":
@@ -198,10 +204,12 @@ def overwrite_tariffs(tariffs: Tariff, fuel_name: "str") -> Tariff:
 
             st.subheader("Gas")
             tariffs["gas"].p_per_unit_import = st.number_input(
-                label="Unit rate (p/kwh), gas", min_value=0.0, max_value=100.0, key="p_per_unit_gas_import"
+                label="Unit rate (p/kwh), gas", min_value=0.0, max_value=100.0, key="p_per_unit_gas_import",
+                value=constants.STANDARD_TARIFF.p_per_kwh_gas
             )
             tariffs["gas"].p_per_day = st.number_input(
-                label="Standing charge (p/day), gas", min_value=0.0, max_value=100.0, key="p_per_day_gas"
+                label="Standing charge (p/day), gas", min_value=0.0, max_value=100.0, key="p_per_day_gas",
+                value=constants.STANDARD_TARIFF.p_per_day_gas
             )
         case "oil":
             if (
@@ -215,7 +223,8 @@ def overwrite_tariffs(tariffs: Tariff, fuel_name: "str") -> Tariff:
 
             st.subheader("Oil")
             tariffs["oil"].p_per_unit_import = st.number_input(
-                label="Oil price, (p/litre)", min_value=0.0, max_value=200.0, key="p_per_unit_oil_import"
+                label="Oil price, (p/litre)", min_value=0.0, max_value=200.0, key="p_per_unit_oil_import",
+                value=constants.STANDARD_TARIFF.p_per_L_oil
             )
     st.caption(
         "Our default tariffs reflect the [Energy Price Guarantee]("
