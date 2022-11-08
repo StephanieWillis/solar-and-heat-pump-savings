@@ -55,7 +55,7 @@ def render_heating_system_questions(house: House) -> House:
             if "heating_system_name" not in st.session_state:  # set initial value
                 st.session_state.heating_system_name = house.heating_system.name
 
-            heating_name = st.selectbox("Heating System", options=list(constants.DEFAULT_HEATING_CONSTANTS.keys()),
+            heating_name = st.selectbox("", options=list(constants.DEFAULT_HEATING_CONSTANTS.keys()),
                                         key="heating_system_name")
             if heating_name != house.heating_system.name:  # only overwrite heating system if changed by user
                 original_fuel_name = house.heating_system.fuel.name
