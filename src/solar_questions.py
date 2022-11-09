@@ -68,7 +68,7 @@ def render_and_update_solar_inputs(solar_install: "Solar"):
 
     if "number_of_panels" not in st.session_state or st.session_state.number_of_panels_defined_by_dropdown is False:
         st.session_state.number_of_panels = solar_install.number_of_panels
-        st.kwp_per_panel = solar_install.kwp_per_panel
+        st.session_state.kwp_per_panel = solar_install.kwp_per_panel
 
     solar_install.number_of_panels = st.number_input(
         label="Number of panels", min_value=0, max_value=None, key="number_of_panels", value=0,
