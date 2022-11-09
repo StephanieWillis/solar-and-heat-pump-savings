@@ -17,7 +17,7 @@ def render() -> "Solar":
     )
     st.write(
         """
-        - Search for your home below
+        - Search for your home below (you have to click on the address rather than pressing enter)
         - Using the tool with the ⭓ icon, draw the biggest rectangle that fits on your most south facing roof
         - Make sure you 'close' the rectangle by clicking back on the first point at the end
         - You can draw multiple rectangles if needed
@@ -40,7 +40,7 @@ def render() -> "Solar":
     orientation_options = [name for name, _ in SolarConstants.ORIENTATIONS.items()]
     if "orientation_name" not in st.session_state:
         st.session_state.orientation_name = solar_install_in.orientation.name
-    orientation_name: str = st.selectbox("Orientation of the roof you have drawn on", orientation_options,
+    orientation_name: str = st.selectbox("Orientation of the side of the roof you have drawn on", orientation_options,
                                          key="orientation_name")
     orientation = SolarConstants.ORIENTATIONS[orientation_name]
 
