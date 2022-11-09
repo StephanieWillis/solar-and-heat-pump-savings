@@ -148,7 +148,6 @@ def roof_mapper(width: int, height: int) -> Optional[List[Polygon]]:
     map = st_folium(m, width=width, height=height)
 
     if map["all_drawings"]:  # map["all_drawings"] is none until somebody clicks
-        # Figure out if actually possible to produce more than one drawing
         polygons = []
         for drawing in map["all_drawings"]:
             drawing_type = drawing["geometry"]["type"]

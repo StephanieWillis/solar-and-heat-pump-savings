@@ -30,22 +30,21 @@ def render() -> "Solar":
         st.error("You've used a drawing tool we don't support, sorry! Please try with the ⭓ or ◼️ tools")
         polygons = None
 
-    polygons = polygons if polygons else solar_install_in.polygons
+    polygons = polygons if polygons else Solar.create_zero_area_instance().polygons
+
+    if "number_of_panels_defined_by_dropdown" not in st.session_state:  # initialise value
+        st.session_state.number_of_panels_defined_by_dropdown = False
+    if polygons != solar_install_in.polygons:  # if polygons have changed:
+        st.session_state.number_of_panels_defined_by_dropdown = False
 
     orientation_options = [name for name, _ in SolarConstants.ORIENTATIONS.items()]
     if "orientation_name" not in st.session_state:
         st.session_state.orientation_name = solar_install_in.orientation.name
-    orientation_name: str = st.selectbox("Solar Orientation", orientation_options, key="orientation_name")
+    orientation_name: str = st.selectbox("Orientation of the roof you have drawn on", orientation_options,
+                                         key="orientation_name")
     orientation = SolarConstants.ORIENTATIONS[orientation_name]
 
     solar_install = Solar(orientation=orientation, polygons=polygons)
-
-    # Overwrite number of panels if it has previously been overwritten by user
-    if solar_install_in.number_of_panels_has_been_overwritten:
-        solar_install.number_of_panels = solar_install_in.number_of_panels
-
-    # Overwrite panel capacity because not an issue to use the existing value even if it hasn't been overwritten
-    solar_install.kwp_per_panel = solar_install_in.kwp_per_panel
 
     solar_install = render_results(solar_install)
     return solar_install
@@ -60,18 +59,22 @@ def get_solar_install_from_session_state_if_exists_or_create_default():
     return solar_install
 
 
+def overwrite_number_of_panels():
+    st.session_state.number_of_panels_defined_by_dropdown = True
+
+
 def render_and_update_solar_inputs(solar_install: "Solar"):
     # Note: once this has been overwritten it is decoupled from roof area for the rest of the session
 
-    if ("number_of_panels" not in st.session_state
-            or st.session_state.number_of_panels == 0
-            or st.session_state.kwp_per_panel == 0):
+    if "number_of_panels" not in st.session_state or st.session_state.number_of_panels_defined_by_dropdown is False:
         st.session_state.number_of_panels = solar_install.number_of_panels
-        st.session_state.kwp_per_panel = solar_install.kwp_per_panel
+        st.kwp_per_panel = solar_install.kwp_per_panel
 
     solar_install.number_of_panels = st.number_input(
-        label="Number of panels", min_value=0, max_value=None, key="number_of_panels", value=0
+        label="Number of panels", min_value=0, max_value=None, key="number_of_panels", value=0,
+        on_change=overwrite_number_of_panels
     )
+
     solar_install.kwp_per_panel = st.number_input(
         label="Capacity per panel (kWp)", min_value=0.0, max_value=0.8, key="kwp_per_panel",
         value=SolarConstants.KW_PEAK_PER_PANEL
