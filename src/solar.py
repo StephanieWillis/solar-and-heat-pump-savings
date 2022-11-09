@@ -69,14 +69,20 @@ class Solar:
         return value / np.cos(np.radians(self.pitch))
 
     def get_number_of_panels_from_polygons(self) -> int:
+        print(self.roof_area)
         numbers = []
         for polygon in self.polygons:
             if len(polygon.dimensions) != 4:  # if not roughly rectangular
+                print("Calculated based on area")
                 number_this_polygon = self.get_number_of_panels_from_polygon_area(polygon)
             else:
+                print("Calculated based on side lengths")
                 number_this_polygon = self.max_number_of_panels_in_a_rectangle(polygon)
             numbers.append(number_this_polygon)
+        print(f"number this polygon: {number_this_polygon}")
         all_panels = sum(numbers)
+        print(f"number all polygons: {all_panels}")
+        print(f"number based on area: {self.get_number_of_panels_from_polygon_area(polygon)}")
         return all_panels
 
     def get_number_of_panels_from_polygon_area(self, polygon: Polygon) -> int:
@@ -89,7 +95,10 @@ class Solar:
     def max_number_of_panels_in_a_rectangle(self, polygon) -> int:
         """ Assume shape is rectangular. Try panels in either orientation"""
         roof_height = polygon.average_plan_height / np.cos(np.radians(self.pitch))
+        print(f"roof height = {roof_height}, roof_width = {polygon.average_width}")
+        print("long side up roof")
         option_1 = self.number_of_panels_in_rectangle(side_1=polygon.average_width, side_2=roof_height)
+        print("short side up roof")
         option_2 = self.number_of_panels_in_rectangle(side_1=roof_height, side_2=polygon.average_width)
         number = max(option_1, option_2)
         return number
@@ -102,6 +111,7 @@ class Solar:
             rows_axis_1 = floor((side_1 - SolarConstants.PANEL_BORDER_M) / SolarConstants.PANEL_WIDTH_M)
             rows_axis_2 = floor((side_2 - SolarConstants.PANEL_BORDER_M)/SolarConstants.PANEL_HEIGHT_M)
             number = rows_axis_1 * rows_axis_2
+            print(f"{rows_axis_1} by {rows_axis_2}")
         return number
 
     @property
