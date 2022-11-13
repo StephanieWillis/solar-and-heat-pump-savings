@@ -55,6 +55,7 @@ def get_solar_install_from_session_state_if_exists_or_create_default():
     if st.session_state["page_state"]["solar"] == {}:
         solar_install = Solar.create_zero_area_instance()
         st.session_state["page_state"]["solar"] = dict(solar=solar_install)
+        st.session_state.number_of_panels_defined_by_dropdown = False
     else:
         solar_install = st.session_state["page_state"]["solar"]["solar"]
     return solar_install
