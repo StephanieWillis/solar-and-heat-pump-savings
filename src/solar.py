@@ -94,7 +94,7 @@ class Solar:
 
     def max_number_of_panels_in_a_rectangle(self, polygon) -> int:
         """ Assume shape is rectangular. Try panels in either orientation"""
-        roof_height = polygon.average_plan_height / np.cos(np.radians(self.pitch))
+        roof_height = self.convert_plan_value_to_value_along_pitch(polygon.average_plan_height)
         print(f"roof height = {roof_height}, roof_width = {polygon.average_width}")
         print("long side up roof")
         option_1 = self.number_of_panels_in_rectangle(side_1=polygon.average_width, side_2=roof_height)
@@ -102,6 +102,8 @@ class Solar:
         option_2 = self.number_of_panels_in_rectangle(side_1=roof_height, side_2=polygon.average_width)
         number = max(option_1, option_2)
         return number
+
+    @staticmethod
 
     @staticmethod
     def number_of_panels_in_rectangle(side_1: float, side_2: float) -> int:

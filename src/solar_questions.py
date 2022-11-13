@@ -11,7 +11,8 @@ def render() -> "Solar":
 
     st.header("How much solar power could you generate?")
     st.markdown(
-        f"<p class='more-info'> If you already have a solar array <a  href='javascript:document.getElementsByClassName({CLASS_NAME_OF_SIDEBAR_DIV})[1].click();' target='_self'>"
+        f"<p class='more-info'> If you already have a solar array <a  href='javascript:document.getElementsByClassName("
+        f"{CLASS_NAME_OF_SIDEBAR_DIV})[1].click();' target='_self'>"
         "you can enter the details here</a></p>",
         unsafe_allow_html=True,
     )
