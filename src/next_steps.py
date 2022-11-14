@@ -18,7 +18,7 @@ def render_solar_next_steps(solar_install: Solar):
              " edge of the roof and your solar panels whereas we only assume you need to leave 300mm. Real practices "
              "seem to vary widely! ")
 
-    if len(solar_install.polygons > 1):
+    if len(solar_install.polygons) > 1:
         for i, polygon in enumerate(solar_install.polygons):
             height = solar_install.convert_plan_value_to_value_along_pitch(polygon.average_plan_height)
             width = polygon.average_width
