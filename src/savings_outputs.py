@@ -115,6 +115,13 @@ def render(house: "House", solar_install: "Solar"):
             unsafe_allow_html=True,
         )
 
+def render_costs_and_payback(solar_install: Solar):
+
+    st.header("Ballpark costs and payback")
+    st.write(f"Based on 2020/2021 data residential size solar PV installations cost about £1700 per kW. That means "
+             f"your install would cost £ {int(solar_install.peak_capacity_kw_out_per_kw_in_per_m2 * 1700):,d}")
+    st.write(f"That install would payback in about ")
+    # TODO: put costs and paybacks in the savings objects?
 
 def render_and_update_improvement_options(solar_install: Solar) -> Tuple[HeatingSystem, Solar]:
     with st.expander("Heat pump assumptions"):

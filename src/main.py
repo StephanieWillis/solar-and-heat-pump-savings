@@ -31,6 +31,12 @@ class ResultsPage(Page):
         savings_outputs.render(house=house, solar_install=solar_install)
 
 
+class FinancesPage(Page):
+    def render(self):
+        solar_install = solar_questions.get_solar_install_from_session_state_if_exists_or_create_default()
+        savings_outputs.render_costs_and_payback(solar_install)
+
+
 class NextStepsPage(Page):
     def render(self):
         solar_install = solar_questions.get_solar_install_from_session_state_if_exists_or_create_default()
@@ -38,7 +44,8 @@ class NextStepsPage(Page):
         next_steps.render_heat_pump_next_steps()
 
 
-wizard = Wizard(pages=[YourHousePage("house"), SolarPage("solar"), ResultsPage("results"), NextStepsPage("next_steps")])
+wizard = Wizard(pages=[YourHousePage("house"), SolarPage("solar"), ResultsPage("results"),
+                       FinancesPage("finances"), NextStepsPage("next_steps")])
 
 st.markdown(
     "<p class='title'>Cut your bills with solar + heat pump </p>"
