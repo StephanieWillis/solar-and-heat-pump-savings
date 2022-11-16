@@ -1,31 +1,11 @@
-import copy
 from dataclasses import dataclass
-from typing import Dict, List, Tuple
+from typing import Dict
 
 import pandas as pd
 
 import constants
 from consumption import Consumption
 from solar import Solar
-
-
-def upgrade_buildings(baseline_house: 'House', upgrade_heating: 'HeatingSystem', upgrade_solar: 'Solar'
-                      ) -> Tuple['House', 'House', 'House']:
-    hp_house = copy.deepcopy(baseline_house)  # do after modifications so modifications flow through
-    solar_house = copy.deepcopy(baseline_house)
-    hp_house.heating_system = upgrade_heating
-    solar_house.solar_install = upgrade_solar
-    both_house = copy.deepcopy(hp_house)
-    both_house.solar_install = upgrade_solar
-    return hp_house, solar_house, both_house
-
-
-def combine_results_dfs_multiple_houses(houses: List['House'], keys: List['str']):
-    results_df = pd.concat([house.energy_and_bills_df for house in houses], keys=keys)
-    results_df.index.names = ['Upgrade option', 'old_index']
-    results_df = results_df.reset_index()
-    results_df = results_df.drop(columns='old_index')
-    return results_df
 
 
 class House:
@@ -41,6 +21,8 @@ class House:
         if solar_install is None:
             solar_install = Solar.create_zero_area_instance()
         self.solar_install = solar_install
+
+        self.lifetime = (heating_system.lifetime + solar_install.lifetime)/2  # very rough approach
 
     @classmethod
     def set_up_from_heating_name(cls, envelope: 'BuildingEnvelope', heating_name: str) -> 'House':
@@ -138,6 +120,13 @@ class House:
         df = df.reset_index()
         return df
 
+    @property
+    def upfront_cost(self) -> int:
+        cost = (self.heating_system.calculate_upfront_cost(house_type=self.envelope.house_type)
+                + self.solar_install.upfront_cost)
+        rounded_cost = round(cost, -2)
+        return rounded_cost
+
 
 @dataclass
 class Tariff:
@@ -164,6 +153,7 @@ class HeatingSystem:
     efficiency: float
     fuel: constants.Fuel
     hourly_normalized_demand_profile: pd.Series
+    lifetime = constants.HEATING_SYSTEM_LIFETIME
 
     @classmethod
     def from_constants(cls, name, parameters: constants.HeatingConstants):
@@ -184,6 +174,12 @@ class HeatingSystem:
         consumption = Consumption(hourly_profile_kwh=profile_kwh, fuel=self.fuel)
         return consumption
 
+    def calculate_upfront_cost(self, house_type: str):
+        cost = constants.HEATING_SYSTEM_COSTS[self.name][house_type]
+        if self.name == "Heat pump":
+            cost = cost - constants.HEAT_PUMP_GRANT
+        return cost
+
 
 @dataclass()
 class BuildingEnvelope:
@@ -203,3 +199,5 @@ class BuildingEnvelope:
         return cls(house_type=building_type_constants.name,
                    annual_heating_demand=building_type_constants.annual_heat_demand_kWh,
                    base_electricity_demand_profile_kwh=base_electricity_demand_profile)
+
+

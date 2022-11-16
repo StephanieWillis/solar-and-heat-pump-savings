@@ -99,6 +99,24 @@ DEFAULT_HEATING_CONSTANTS = {
         normalized_hourly_heat_demand_profile=NORMALIZED_HOURLY_HEAT_DEMAND_DF['Normalised_ASHP_heat']),
 }
 
+# Tables 1 (for semi only) and 2 (for terrace, flat, detached) from
+# https://media.nesta.org.uk/documents/How_to_reduce_the_cost_of_heat_pumps_v4_1.pdf
+# Correct semi gas boiler cost by same amount as heat pump shifts to keep equivalent
+# TODO: write up costs properly and decide on sensible values for oil and elec
+# https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/656866/BEIS_Update_of_Domestic_Cost_Assumptions_031017.pdf
+# https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1104051/CODE-Final-Report-WHOLE-FINAL-v20.pdf
+HEAT_PUMP_COSTS = {"Terrace": 10000, "Semi-detached": 11100, "Flat": 9100, "Detached": 13100}
+GAS_BOILER_COSTS = {"Terrace": 1800 * 10000/11100, "Semi-detached": 1800, "Flat": 1500, "Detached": 2200}
+HEATING_SYSTEM_COSTS = {"Gas boiler": GAS_BOILER_COSTS,
+                        "Heat pump": HEAT_PUMP_COSTS,
+                        "Oil boiler": GAS_BOILER_COSTS,  # assume they are the same
+                        "Direct electric": GAS_BOILER_COSTS
+                        }
+HEAT_PUMP_GRANT = 5000  # Boiler upgrade scheme
+HEATING_SYSTEM_LIFETIME = 20
+
+# TODO: reference nesta tool: http://asf-hp-cost-demo-l-b-1046547218.eu-west-1.elb.amazonaws.com
+
 
 @dataclass
 class TariffConstants:
@@ -153,8 +171,11 @@ class SolarConstants:
     PANEL_AREA = PANEL_HEIGHT_M * PANEL_WIDTH_M
     KW_PEAK_PER_PANEL = 0.355  # output with incident radiation of 1kW/m2
     # Panel dimensions and kW_peak from https://www.greenmatch.co.uk/blog/how-many-solar-panels-do-i-need
+    COST_PER_KWP_LESS_THAN_4_KW = 1883
+    COST_PER_KWP_MORE_THAN_4_KW = 1616
+    LIFETIME = 25
 
-    PERCENT_SQUARE_USABLE = 0.8  # complete guess
+    PERCENT_SQUARE_USABLE = 0.8  # complete guess - only used when shape drawn isn't rectangular
 
     API_YEAR = 2013
     # Was 202 Based on quick comparison of years for one location in the uk.
@@ -163,3 +184,5 @@ class SolarConstants:
 
 
 CLASS_NAME_OF_SIDEBAR_DIV = "\"css-1f8pn94 edgvbvh3\""
+
+# Based on 2020/2021 data residential size solar PV installations cost about £1700 per kW.

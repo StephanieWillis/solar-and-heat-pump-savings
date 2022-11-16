@@ -1,15 +1,16 @@
 import plotly.express as px
 import streamlit as st
+from typing import Tuple
 
 from building_model import *
 import house_questions
+import retrofit
 from solar import Solar
 from solar_questions import render_and_update_solar_inputs
 from constants import CLASS_NAME_OF_SIDEBAR_DIV
 
 
 def render(house: "House", solar_install: "Solar"):
-
     with st.sidebar:
         st.header("Assumptions")
         st.subheader("Current Performance")
@@ -23,12 +24,16 @@ def render(house: "House", solar_install: "Solar"):
         # saving state may work without above but above makes clearer
 
     # Upgraded buildings
-    hp_house, solar_house, both_house = upgrade_buildings(
+    hp_house, solar_house, both_house = retrofit.upgrade_buildings(
         baseline_house=house, upgrade_heating=upgrade_heating, upgrade_solar=upgrade_solar
     )
+    solar_retrofit, hp_retrofit, both_retrofit = retrofit.generate_all_retrofit_cases(baseline_house=house,
+                                                                                      solar_house=solar_house,
+                                                                                      hp_house=hp_house,
+                                                                                      both_house=both_house)
 
-    # Combine results
-    results_df = combine_results_dfs_multiple_houses(
+    # Combine results all variables
+    results_df = retrofit.combine_results_dfs_multiple_houses(
         [house, solar_house, hp_house, both_house],
         ["Current", "With solar", "With a heat pump", "With solar and a heat pump"],
     )
@@ -41,7 +46,7 @@ def render(house: "House", solar_install: "Solar"):
     with col1:
         st.markdown(
             "<div style='text-align:center'>"
-            f"<p class='bill-estimate'>☀️ £{int(house.total_annual_bill - solar_house.total_annual_bill):,d} </p>"
+            f"<p class='bill-estimate'>☀️ £{int(solar_retrofit.bill_savings_absolute):,d} </p>"
             "<p> with solar panels</p>"
             "</div>",
             unsafe_allow_html=True,
@@ -49,7 +54,7 @@ def render(house: "House", solar_install: "Solar"):
     with col2:
         st.markdown(
             "<div style='text-align:center'>"
-            f"<p class='bill-estimate'> 💨 £{int(house.total_annual_bill - hp_house.total_annual_bill):,d}</p>"
+            f"<p class='bill-estimate'> 💨 £{int(hp_retrofit.bill_savings_absolute):,d}</p>"
             f"<p> with a heat pump</p>"
             "</div>",
             unsafe_allow_html=True,
@@ -58,7 +63,7 @@ def render(house: "House", solar_install: "Solar"):
     with col3:
         st.markdown(
             "<div style='text-align:center'>"
-            f"<p class='bill-estimate'> 😍 £{int(house.total_annual_bill - both_house.total_annual_bill):,d} </p>"
+            f"<p class='bill-estimate'> 😍 £{int(both_retrofit.bill_savings_absolute):,d} </p>"
             "<p> with both</p>"
             "</div>",
             unsafe_allow_html=True,
@@ -83,7 +88,7 @@ def render(house: "House", solar_install: "Solar"):
     with col1:
         st.markdown(
             "<div style='text-align:center'>"
-            f"<p class='bill-estimate '>☀️ {int(100*((house.total_annual_tco2 - solar_house.total_annual_tco2)/house.total_annual_tco2))}%</p>"
+            f"<p class='bill-estimate '>☀️ {int(100 * solar_retrofit.carbon_savings_pct)}%</p>"
             f"<p class='bill-details snug'> tCO2e</p>"
             "<p> with solar panels</p>"
             "</div>",
@@ -92,7 +97,7 @@ def render(house: "House", solar_install: "Solar"):
     with col2:
         st.markdown(
             "<div style='text-align:center'>"
-            f"<p class='bill-estimate '> 💨️ {int(100*((house.total_annual_tco2 - hp_house.total_annual_tco2)/house.total_annual_tco2))}%</p>"
+            f"<p class='bill-estimate '> 💨️ {int(100 * hp_retrofit.carbon_savings_pct)}%</p>"
             f"<p class='bill-details snug '> tCO2e</p>"
             f"<p> with a heat pump</p>"
             "</div>",
@@ -102,7 +107,7 @@ def render(house: "House", solar_install: "Solar"):
     with col3:
         st.markdown(
             "<div style='text-align:center'>"
-            f"<p class='bill-estimate '>😍️ {int(100*((house.total_annual_tco2 - both_house.total_annual_tco2)/house.total_annual_tco2))}%</p>"
+            f"<p class='bill-estimate '>😍️ {int(100 * both_retrofit.carbon_savings_pct)}%</p>"
             f"<p class='bill-details snug '> tCO2e</p>"
             "<p> with both</p>"
             "</div>",
@@ -113,19 +118,113 @@ def render(house: "House", solar_install: "Solar"):
         render_carbon_outputs(house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
 
     st.markdown(
-            f"<p style='margin:20px; text-align: center'> You can <a  href='javascript:document.getElementsByClassName({CLASS_NAME_OF_SIDEBAR_DIV})[1].click();' target='_self'>"
-            "view and edit </a> all of the numbers we've used in this calculation if you know the "
-            "details of your tariff, heating demand, heat pump or solar install!</p>",
+        f"<h2>After government incentives, these options would cost about </h2>",
+        unsafe_allow_html=True,
+    )
+
+    _, col1, col2, col3, _ = st.columns([0.2, 1, 1, 1, 0.2])
+
+    with col1:
+        st.markdown(
+            "<div style='text-align:center'>"
+            f"<p class='bill-estimate '>☀️ £{int(solar_house.solar_install.upfront_cost):,d} </p>"
+            "<p> for solar panels</p>"
+            "</div>",
+            unsafe_allow_html=True,
+        )
+    with col2:
+        st.markdown(
+            "<div style='text-align:center'>"
+            f"<p class='bill-estimate '> 💨️ £{int(hp_house.upfront_cost):,d} </p>"
+            f"<p> for a heat pump</p>"
+            "</div>",
             unsafe_allow_html=True,
         )
 
-def render_costs_and_payback(solar_install: Solar):
+    with col3:
+        st.markdown(
+            "<div style='text-align:center'>"
+            f"<p class='bill-estimate '>😍️ £{int(both_house.upfront_cost):,d} </p>"
+            "<p> for both</p>"
+            "</div>",
+            unsafe_allow_html=True,
+        )
 
-    st.header("Ballpark costs and payback")
-    st.write(f"Based on 2020/2021 data residential size solar PV installations cost about £1700 per kW. That means "
-             f"your install would cost £ {int(solar_install.peak_capacity_kw_out_per_kw_in_per_m2 * 1700):,d}")
-    st.write(f"That install would payback in about ")
-    # TODO: put costs and paybacks in the savings objects?
+    st.markdown(
+        f"<h2>Assuming that energy costs remain at their current levels, and that "
+        f"replacing your current boiler would cost about <span style='color:hsl(220, 60%, 30%)'>"
+        f"£{house.upfront_cost:.0f}</span>, this  translates into a simple payback time of </h2>",
+        unsafe_allow_html=True,
+    )
+
+    _, col1, col2, col3, _ = st.columns([0.2, 1, 1, 1, 0.2])
+
+    with col1:
+        st.markdown(
+            "<div style='text-align:center'>"
+            f"<p class='bill-estimate '>☀️ {solar_retrofit.simple_payback} years </p>"
+            "<p> for solar panels</p>"
+            "</div>",
+            unsafe_allow_html=True,
+        )
+    with col2:
+        st.markdown(
+            "<div style='text-align:center'>"
+            f"<p class='bill-estimate '> 💨️ {hp_retrofit.simple_payback} years</p>"
+            f"<p> for a heat pump</p>"
+            "</div>",
+            unsafe_allow_html=True,
+        )
+
+    with col3:
+        st.markdown(
+            "<div style='text-align:center'>"
+            f"<p class='bill-estimate '>😍️ {both_retrofit.simple_payback} years </p>"
+            "<p> for both</p>"
+            "</div>",
+            unsafe_allow_html=True,
+        )
+
+    st.markdown(
+        f"<h2>Or an annualized return on investment of </h2>",
+        unsafe_allow_html=True,
+    )
+    # TODO: deal with nans in this and in simple payback
+
+    _, col1, col2, col3, _ = st.columns([0.2, 1, 1, 1, 0.2])
+
+    with col1:
+        st.markdown(
+            "<div style='text-align:center'>"
+            f"<p class='bill-estimate '>☀️ {int(100 * solar_retrofit.annualized_return_on_investment)}%  </p>"
+            "<p> for solar panels</p>"
+            "</div>",
+            unsafe_allow_html=True,
+        )
+    with col2:
+        st.markdown(
+            "<div style='text-align:center'>"
+            f"<p class='bill-estimate '> 💨️ {int(100 * hp_retrofit.annualized_return_on_investment)}%  </p>"
+            f"<p> for a heat pump</p>"
+            "</div>",
+            unsafe_allow_html=True,
+        )
+
+    with col3:
+        st.markdown(
+            "<div style='text-align:center'>"
+            f"<p class='bill-estimate '>😍️ {int(100 * both_retrofit.annualized_return_on_investment)}%  </p>"
+            "<p> for both</p>"
+            "</div>",
+            unsafe_allow_html=True,
+        )
+
+    st.markdown(
+        f"<p style='margin:20px; text-align: center'> You can <a  href='javascript:document.getElementsByClassName({CLASS_NAME_OF_SIDEBAR_DIV})[1].click();' target='_self'>"
+        "view and edit </a> all of the numbers we've used in this calculation if you know the "
+        "details of your tariff, heating demand, heat pump or solar install!</p>",
+        unsafe_allow_html=True,
+    )
 
 
 def render_and_update_improvement_options(solar_install: Solar) -> Tuple[HeatingSystem, Solar]:
@@ -156,7 +255,6 @@ def render_and_update_improvement_options(solar_install: Solar) -> Tuple[Heating
 
 
 def overwrite_upgrade_heating_system_assumptions(heating_system: "HeatingSystem") -> "HeatingSystem":
-
     if "upgrade_heating_efficiency" not in st.session_state or st.session_state.upgrade_heating_efficiency == 0:
         st.session_state.upgrade_heating_efficiency = heating_system.efficiency
     heating_system.efficiency = st.number_input(

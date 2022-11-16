@@ -34,6 +34,8 @@ class Solar:
         self.number_of_panels = self.get_number_of_panels_from_polygons()
         self.kwp_per_panel = SolarConstants.KW_PEAK_PER_PANEL
 
+        self.lifetime = SolarConstants.LIFETIME
+
     def __hash__(self):
         return hash((self.latitude,
                      self.longitude,
@@ -64,6 +66,18 @@ class Solar:
     def roof_area(self):
         area = self.convert_plan_value_to_value_along_pitch(self.roof_plan_area)
         return area
+
+    @property
+    def capacity_kwp(self):
+        return self.number_of_panels * self.kwp_per_panel
+
+    @property
+    def upfront_cost(self):
+        if self.capacity_kwp <= 4:
+            cost_per_kwp = SolarConstants.COST_PER_KWP_LESS_THAN_4_KW
+        else:
+            cost_per_kwp = SolarConstants.COST_PER_KWP_MORE_THAN_4_KW
+        return round(self.capacity_kwp * cost_per_kwp, -2)
 
     def convert_plan_value_to_value_along_pitch(self, value: float):
         return value / np.cos(np.radians(self.pitch))
@@ -102,8 +116,6 @@ class Solar:
         option_2 = self.number_of_panels_in_rectangle(side_1=roof_height, side_2=polygon.average_width)
         number = max(option_1, option_2)
         return number
-
-    @staticmethod
 
     @staticmethod
     def number_of_panels_in_rectangle(side_1: float, side_2: float) -> int:

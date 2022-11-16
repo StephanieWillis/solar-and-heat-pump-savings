@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 
+import building_model
+import retrofit
 from .context import src
 from src import building_model, solar, constants, roof
 from src.constants import SolarConstants
@@ -160,9 +162,9 @@ def test_upgrade_buildings():
                                   [0.132377, 52.19524]])
     solar_install = solar.Solar(orientation=SolarConstants.ORIENTATIONS['South'],
                                 polygons=[test_polygon])
-    hp_house, solar_house, both_house = building_model.upgrade_buildings(baseline_house=oil_house,
-                                                                         upgrade_heating=upgrade_heating,
-                                                                         upgrade_solar=solar_install)
+    hp_house, solar_house, both_house = retrofit.upgrade_buildings(baseline_house=oil_house,
+                                                                   upgrade_heating=upgrade_heating,
+                                                                   upgrade_solar=solar_install)
     assert hp_house.solar_install.generation.overall.annual_sum_kwh == 0
     assert both_house.solar_install.generation.overall.annual_sum_kwh < 0  # export defined as negative
     np.testing.assert_almost_equal(both_house.consumption_per_fuel['electricity'].imported.annual_sum_kwh
