@@ -65,6 +65,10 @@ def render(house: "House", solar_install: "Solar"):
         )
 
     with st.expander("Show me the maths!"):
+        st.subheader("Bills")
+        render_bill_outputs(house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
+        render_bill_chart(results_df)
+        st.subheader("Energy")
         render_consumption_outputs(house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
         render_consumption_chart(results_df)
 
@@ -122,6 +126,7 @@ def render_costs_and_payback(solar_install: Solar):
              f"your install would cost £ {int(solar_install.peak_capacity_kw_out_per_kw_in_per_m2 * 1700):,d}")
     st.write(f"That install would payback in about ")
     # TODO: put costs and paybacks in the savings objects?
+
 
 def render_and_update_improvement_options(solar_install: Solar) -> Tuple[HeatingSystem, Solar]:
     with st.expander("Heat pump assumptions"):
