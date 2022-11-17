@@ -35,9 +35,9 @@ class Retrofit:
         return self.upgrade_house.upfront_cost - self.baseline_house.upfront_cost
 
     @property
-    def simple_payback(self):
+    def simple_payback(self) -> float:
         if self.bill_savings_absolute > 0:
-            payback = int(self.incremental_cost/self.bill_savings_absolute)
+            payback = self.incremental_cost/self.bill_savings_absolute
         else:
             payback = np.nan
         return payback

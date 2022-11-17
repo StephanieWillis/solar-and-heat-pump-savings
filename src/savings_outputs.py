@@ -162,7 +162,7 @@ def render(house: "House", solar_install: "Solar"):
     with col1:
         st.markdown(
             "<div style='text-align:center'>"
-            f"<p class='bill-estimate '>☀️ {solar_retrofit.simple_payback} years </p>"
+            f"<p class='bill-estimate '>☀️ {solar_retrofit.simple_payback:.1f} years </p>"
             "<p> for solar panels</p>"
             "</div>",
             unsafe_allow_html=True,
@@ -170,7 +170,7 @@ def render(house: "House", solar_install: "Solar"):
     with col2:
         st.markdown(
             "<div style='text-align:center'>"
-            f"<p class='bill-estimate '> 💨️ {hp_retrofit.simple_payback} years</p>"
+            f"<p class='bill-estimate '> 💨️ {hp_retrofit.simple_payback:.1f} years</p>"
             f"<p> for a heat pump</p>"
             "</div>",
             unsafe_allow_html=True,
@@ -179,7 +179,7 @@ def render(house: "House", solar_install: "Solar"):
     with col3:
         st.markdown(
             "<div style='text-align:center'>"
-            f"<p class='bill-estimate '>😍️ {both_retrofit.simple_payback} years </p>"
+            f"<p class='bill-estimate '>😍️ {both_retrofit.simple_payback:.1f} years </p>"
             "<p> for both</p>"
             "</div>",
             unsafe_allow_html=True,
