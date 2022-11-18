@@ -63,7 +63,7 @@ def render_heat_pump_next_steps():
     st.header("Heat pumps - more info")
 
     with st.expander("Learn more about heat pumps"):
-        st.write("If you'd like to better understand more about heat pumps, including whether a heat pump is suitable "
+        st.write("If you'd like to understand more about heat pumps, including whether a heat pump is suitable "
                  "for your home and whether you need to insulate your home before installing a heat pump, check out "
             "[Sero's explainer on all things heat pump.]("
                  "https://help.sero.life/hc/en-gb/articles/6498847104914-What-is-an-Air-Source-Heat-Pump-)")

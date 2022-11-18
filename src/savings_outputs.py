@@ -260,8 +260,8 @@ def render_and_update_improvement_options(solar_install: Solar) -> Tuple[Heating
 
         st.caption(
             "The efficiency of your heat pump depends on how well the system is designed and how low a flow "
-            "temperature it can run at. A COP of 3.6 or more is possible with a high quality, low flow temperature "
-            "install.  \n  \n"
+            "temperature it can run at. A COP of 3.6 or more is possible with a [high quality, low flow temperature "
+            "install](https://heatpumpmonitor.org).  \n  \n"
             "A good installer is key to ensuring your heat pump runs efficiently. The [heat geek map"
             "](https://www.heatgeek.com/find-a-heat-geek/) is a great place to start your search."
         )
