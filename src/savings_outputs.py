@@ -1,13 +1,15 @@
-import plotly.express as px
-import streamlit as st
 from typing import Tuple
 
-from building_model import *
+import numpy as np
+import plotly.express as px
+import streamlit as st
+
 import house_questions
 import retrofit
+from building_model import *
+from constants import CLASS_NAME_OF_SIDEBAR_DIV
 from solar import Solar
 from solar_questions import render_and_update_solar_inputs
-from constants import CLASS_NAME_OF_SIDEBAR_DIV
 
 
 def render(house: "House", solar_install: "Solar"):
@@ -162,7 +164,7 @@ def render(house: "House", solar_install: "Solar"):
     with col1:
         st.markdown(
             "<div style='text-align:center'>"
-            f"<p class='bill-estimate '>☀️ {solar_retrofit.simple_payback:.1f} years </p>"
+            f"<p class='bill-estimate '>☀️ {format_payback(solar_retrofit.simple_payback)} </p>"
             "<p> for solar panels</p>"
             "</div>",
             unsafe_allow_html=True,
@@ -170,7 +172,7 @@ def render(house: "House", solar_install: "Solar"):
     with col2:
         st.markdown(
             "<div style='text-align:center'>"
-            f"<p class='bill-estimate '> 💨️ {hp_retrofit.simple_payback:.1f} years</p>"
+            f"<p class='bill-estimate '> 💨️ {format_payback(hp_retrofit.simple_payback)} </p>"
             f"<p> for a heat pump</p>"
             "</div>",
             unsafe_allow_html=True,
@@ -179,7 +181,7 @@ def render(house: "House", solar_install: "Solar"):
     with col3:
         st.markdown(
             "<div style='text-align:center'>"
-            f"<p class='bill-estimate '>😍️ {both_retrofit.simple_payback:.1f} years </p>"
+            f"<p class='bill-estimate '>😍️ {format_payback(both_retrofit.simple_payback)} </p>"
             "<p> for both</p>"
             "</div>",
             unsafe_allow_html=True,
@@ -189,14 +191,13 @@ def render(house: "House", solar_install: "Solar"):
         f"<h2>Or an annualized return on investment of </h2>",
         unsafe_allow_html=True,
     )
-    # TODO: deal with nans in this and in simple payback
 
     _, col1, col2, col3, _ = st.columns([0.2, 1, 1, 1, 0.2])
 
     with col1:
         st.markdown(
             "<div style='text-align:center'>"
-            f"<p class='bill-estimate '>☀️ {int(100 * solar_retrofit.annualized_return_on_investment)}%  </p>"
+            f"<p class='bill-estimate '>☀️ {format_roi(solar_retrofit.annualized_return_on_investment)}  </p>"
             "<p> for solar panels</p>"
             "</div>",
             unsafe_allow_html=True,
@@ -204,7 +205,7 @@ def render(house: "House", solar_install: "Solar"):
     with col2:
         st.markdown(
             "<div style='text-align:center'>"
-            f"<p class='bill-estimate '> 💨️ {int(100 * hp_retrofit.annualized_return_on_investment)}%  </p>"
+            f"<p class='bill-estimate '> 💨️ {format_roi(hp_retrofit.annualized_return_on_investment)}  </p>"
             f"<p> for a heat pump</p>"
             "</div>",
             unsafe_allow_html=True,
@@ -213,7 +214,7 @@ def render(house: "House", solar_install: "Solar"):
     with col3:
         st.markdown(
             "<div style='text-align:center'>"
-            f"<p class='bill-estimate '>😍️ {int(100 * both_retrofit.annualized_return_on_investment)}%  </p>"
+            f"<p class='bill-estimate '>😍️ {format_roi(both_retrofit.annualized_return_on_investment)}  </p>"
             "<p> for both</p>"
             "</div>",
             unsafe_allow_html=True,
@@ -225,6 +226,22 @@ def render(house: "House", solar_install: "Solar"):
         "details of your tariff, heating demand, heat pump or solar install!</p>",
         unsafe_allow_html=True,
     )
+
+
+def format_payback(payback: float) -> str:
+    if np.isnan(payback):
+        output = "No payback"
+    else:
+        output = f'{payback: .1f} years'
+    return output
+
+
+def format_roi(roi: float) -> str:
+    if np.isnan(roi):
+        output = "No return"
+    else:
+        output = f'{int(100 * roi)}%'
+    return output
 
 
 def render_and_update_improvement_options(solar_install: Solar) -> Tuple[HeatingSystem, Solar]:
