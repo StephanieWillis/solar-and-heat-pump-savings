@@ -279,11 +279,27 @@ def render_and_update_improvement_options(solar_install: Solar) -> Tuple[Heating
 def overwrite_upgrade_heating_system_assumptions(heating_system: "HeatingSystem") -> "HeatingSystem":
     if "upgrade_heating_efficiency" not in st.session_state or st.session_state.upgrade_heating_efficiency == 0:
         st.session_state.upgrade_heating_efficiency = heating_system.efficiency
+
     heating_system.efficiency = st.number_input(
         label="Efficiency: ", min_value=0.0, max_value=8.0, key="upgrade_heating_efficiency",
         value=constants.DEFAULT_HEATING_CONSTANTS[heating_system.name].efficiency
     )
     return heating_system
+
+
+def overwrite_baseline_costs(house: "House") -> "House":
+    if "baseline_heating_cost" not in st.session_state:
+        st.session_state.baseline_heating_cost = house.upfront_cost
+    house.upfront_cost = st.number_input(
+        label="Baseline heating system cost", min_value=0.0, max_value=30000, key="baseline_heating_cost",
+        value=constants.GAS_BOILER_COSTS["Terrace"])  # TODO: is there a better way here?
+    return house
+
+
+def overwrite_upgrade_costs(house: "House", upgrade_heating: "HeatingSystem", upgrade_solar: "Solar"
+                    ) -> ("House", "HeatingSystem", "Solar"):
+
+    return house, upgrade_heating, upgrade_solar
 
 
 def render_bill_chart(results_df: pd.DataFrame):
