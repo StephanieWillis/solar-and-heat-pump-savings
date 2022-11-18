@@ -154,8 +154,9 @@ def render(house: "House", solar_install: "Solar"):
 
     st.markdown(
         f"<h2>Assuming that energy costs remain at their current levels, and that "
-        f"replacing your current boiler would cost about <span style='color:hsl(220, 60%, 30%)'>"
-        f"£{house.upfront_cost:.0f}</span>, this  translates into a simple payback time of </h2>",
+        f"you'd replace your current boiler at a cost of <span style='color:hsl(220, 60%, 30%)'>"
+        f"£{house.upfront_cost:.0f}</span> if you didn't install a heat pump,"
+        f" this  translates into a simple payback time of </h2>",
         unsafe_allow_html=True,
     )
 
