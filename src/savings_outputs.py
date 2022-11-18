@@ -25,6 +25,10 @@ def render(house: "House", solar_install: "Solar"):
         st.session_state["page_state"]["solar"] = dict(solar=upgrade_solar)  # so any overwrites saved if move tabs
         # saving state may work without above but above makes clearer
 
+        st.subheader("Costs")
+        with st.expander("Upfront costs"):
+            st.write("To do")
+
     # Upgraded buildings
     hp_house, solar_house, both_house = retrofit.upgrade_buildings(
         baseline_house=house, upgrade_heating=upgrade_heating, upgrade_solar=upgrade_solar
