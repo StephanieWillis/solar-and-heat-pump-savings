@@ -134,6 +134,13 @@ def roof_mapper(width: int, height: int) -> Optional[List[Polygon]]:
 
     centre = [selected_location["lat"], selected_location["lng"]] if selected_location else [55, 0]
 
+    st.write("""
+        - Now use the tool with the ⭓ icon to draw the biggest rectangle that fits on your most south facing roof
+            - Make sure you 'close' the rectangle by clicking back on the first point at the end
+            - You can draw multiple rectangles if needed
+        - Enter the orientation of the side of the roof you have drawn on
+    """)
+
     m = leafmap.Map(google_map="SATELLITE", location=centre, zoom_start=21 if selected_location else 4,
                     measure_control=False,
                     search_control=False,
