@@ -54,7 +54,7 @@ p.bill-label{
     
 }
 
-p.bill-details{
+p.bill-details, div.install-disclaimer{
     font-size: 1em;
     color: hsl(220, 30%, 70%);   
 }
@@ -177,7 +177,7 @@ button.css-sc7x0u.edgvbvh9 {
     color: hsl(0,0%,0%); 
 }
 
-div.toc, p.toc {
+div.toc, p.toc, div.saving-maths {
     border-radius: 10px;
     background-color: hsl(220, 60%, 95%);
     color: hsl(220, 10%, 40%);
@@ -186,6 +186,37 @@ div.toc, p.toc {
     font-size: 18px;
     margin-bottom: 20px;
     font-weight: 600;
+}
+
+div.saving-maths {
+ text-align: center;
+ font-size: 14px;
+ color: hsl(0, 0%, 31%, 1);
+ padding: 30px;
+ display: flex;
+ flex-direction: column;
+ justify-content: space-between;
+ 
+}
+
+p.install-disclaimer {
+    text-weight:400;
+    color: hsl(220, 30%, 70%);
+    font-size: 10px;
+    margin: 0;
+}
+
+p.saving-maths,p.saving-maths-headline {
+    color: hsl(0, 0%, 31%);
+    line-height:12px;
+}
+
+p.saving-maths-headline {
+ font-size: 20px;
+ font-weight: 700;
+ space-after: 80px;
+ display: block;
+ margin: 10px;
 }
 
 a.toc {

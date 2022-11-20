@@ -53,8 +53,21 @@ def render(house: "House", solar_install: "Solar"):
         st.markdown(
             "<div style='text-align:center'>"
             f"<p class='bill-estimate'>☀️ £{int(solar_retrofit.bill_savings_absolute):,d} </p>"
-            "<p> with solar panels</p>"
-            "</div>",
+                "<p> with solar panels</p>"
+                "</div>"
+                "<div class='saving-maths'>"
+                "<div>"
+                    f"<p class='saving-maths-headline'> ~£{int(solar_house.solar_install.upfront_cost/1000)*1000:,d}</p>"
+                    "<p class='saving-maths'> to install</p>"
+                "</div>"
+                "<div>"
+                    f"<p class='saving-maths-headline'> {format_payback(solar_retrofit.simple_payback)}</p>"
+                    "<p class='saving-maths'> payback time</p>"
+            "<p class='install-disclaimer'> costs after grants </p> "
+            "<br>"
+                "</div>"
+            "</div>"
+            ,
             unsafe_allow_html=True,
         )
     with col2:
@@ -62,6 +75,17 @@ def render(house: "House", solar_install: "Solar"):
             "<div style='text-align:center'>"
             f"<p class='bill-estimate'> 💨 £{int(hp_retrofit.bill_savings_absolute):,d}</p>"
             f"<p> with a heat pump</p>"
+                "<div class='saving-maths'>"
+                "<div>"
+                    f"<p class='saving-maths-headline'> ~£{int(hp_house.upfront_cost/1000)*1000:,d}</p>"
+                    "<p class='saving-maths'> to install</p>"
+                "</div>"
+                "<div>"
+                    f"<p class='saving-maths-headline'> {format_payback(hp_retrofit.simple_payback)}</p>"
+                    "<p class='saving-maths'> payback time</p>"
+            "<p class='install-disclaimer'> costs after grants, assuming avoided boiler replacement </p> "
+                "</div>"
+            
             "</div>",
             unsafe_allow_html=True,
         )
@@ -71,6 +95,16 @@ def render(house: "House", solar_install: "Solar"):
             "<div style='text-align:center'>"
             f"<p class='bill-estimate'> 😍 £{int(both_retrofit.bill_savings_absolute):,d} </p>"
             "<p> with both</p>"
+                    "<div class='saving-maths'>"
+                "<div>"
+                    f"<p class='saving-maths-headline'> ~£{int(both_house.upfront_cost/1000)*1000:,d}</p>"
+                    "<p class='saving-maths'> to install</p>"
+                "</div>"
+                "<div>"
+                    f"<p class='saving-maths-headline'> {format_payback(both_retrofit.simple_payback)}</p>"
+                    "<p class='saving-maths'> payback time</p>"
+                "</div>"
+            "<p class='install-disclaimer'> costs after grants, assuming avoided boiler replacement </p> "
             "</div>",
             unsafe_allow_html=True,
         )
@@ -84,8 +118,8 @@ def render(house: "House", solar_install: "Solar"):
         render_consumption_chart(results_df)
 
     st.markdown(
-        f"<h2>Your home currently emits about <span style='color:hsl(220, 60%, 30%)'>{house.total_annual_tco2:.2f} tonnes"
-        f" </span>of CO2e each year, but you could cut your emissions by </h2>",
+        f"<h2>Your home emits about <span style='color:hsl(220, 60%, 30%)'>{house.total_annual_tco2:.2f} tonnes"
+        f" </span>of CO2e each year, you could cut your emissions by </h2>",
         unsafe_allow_html=True,
     )
 
@@ -237,7 +271,7 @@ def format_payback(payback: float) -> str:
     if np.isnan(payback):
         output = "No payback"
     else:
-        output = f'{payback: .1f} years'
+        output = f'~{int(payback): d} years'
     return output
 
 
