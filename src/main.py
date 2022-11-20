@@ -34,8 +34,7 @@ class ResultsPage(Page):
 class NextStepsPage(Page):
     def render(self):
         solar_install = solar_questions.get_solar_install_from_session_state_if_exists_or_create_default()
-        next_steps.render_solar_next_steps(solar_install)
-        next_steps.render_heat_pump_next_steps()
+        next_steps.render(solar_install)
 
 
 wizard = Wizard(pages=[YourHousePage("house"), SolarPage("solar"), ResultsPage("results"), NextStepsPage("next_steps")])
