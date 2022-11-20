@@ -287,19 +287,40 @@ def overwrite_upgrade_heating_system_assumptions(heating_system: "HeatingSystem"
     return heating_system
 
 
-def overwrite_baseline_costs(house: "House") -> "House":
-    if "baseline_heating_cost" not in st.session_state:
+def overwrite_upfront_costs(house: "House", hp_house: "House", upgrade_solar: "Solar"
+                    ) -> ("House", "HeatingSystem", "Solar"):
+    # Figure out how to deal with baseline heating system or solar size overwrite
+    if "baseline_heating_cost" not in st.session_state or st.session_state.baseline_heating_cost_overwritten is False:
         st.session_state.baseline_heating_cost = house.upfront_cost
     house.upfront_cost = st.number_input(
         label="Baseline heating system cost", min_value=0.0, max_value=30000, key="baseline_heating_cost",
-        value=constants.GAS_BOILER_COSTS["Terrace"])  # TODO: is there a better way here?
-    return house
+        on_change=flag_that_baseline_heating_cost_overwritten)
+
+    if "solar_cost" not in st.session_state or st.session_state.solar_cost_overwritten is False:
+        st.session_state.solar_cost_overwritten = upgrade_solar.upfront_cost
+    upgrade_solar.upfront_cost = st.number_input(
+        label="Solar cost", min_value=0.0, max_value=30000, key="solar_cost",
+        on_change=flag_that_solar_cost_overwritten)
+
+    if "heat_pump_cost" not in st.session_state or st.session_state.heat_pump_cost_overwritten is False:
+        st.session_state.heat_pump_cost = hp_house.upfront_cost
+    hp_house.upfront_cost = st.number_input(
+        label="Heat pump cost", min_value=0.0, max_value=30000, key="heat_pump_cost",
+        on_change=flag_that_heat_pump_cost_overwritten)
+
+    return house, hp_house, upgrade_solar
 
 
-def overwrite_upgrade_costs(house: "House", upgrade_heating: "HeatingSystem", upgrade_solar: "Solar"
-                    ) -> ("House", "HeatingSystem", "Solar"):
+def flag_that_baseline_heating_cost_overwritten():
+    st.session_state.baseline_heating_cost_overwritten = True
 
-    return house, upgrade_heating, upgrade_solar
+
+def flag_that_heat_pump_cost_overwritten():
+    st.session_state.heat_pump_cost_overwritten = True
+
+
+def flag_that_solar_cost_overwritten():
+    st.session_state.solar_cost_overwritten = True
 
 
 def render_bill_chart(results_df: pd.DataFrame):
