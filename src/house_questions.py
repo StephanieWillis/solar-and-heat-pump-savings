@@ -163,6 +163,7 @@ def overwrite_baseline_heating_system_assumptions(heating_system: "HeatingSystem
 
     heating_system.efficiency = st.number_input(
         label="Efficiency: ", min_value=0.0, max_value=8.0, key="baseline_heating_efficiency",
+        value=constants.DEFAULT_HEATING_CONSTANTS[heating_system.name].efficiency,
         on_change=flag_that_baseline_heating_efficiency_defined_by_dropdown)
 
     if heating_system.fuel.name == "gas":
