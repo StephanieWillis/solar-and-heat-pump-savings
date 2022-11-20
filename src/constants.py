@@ -149,7 +149,8 @@ class SolarConstants:
     # Specs for this panel: https://midsummerwholesale.co.uk/buy/longi-solar/longi-355-hib
     PANEL_HEIGHT_M = 1.755
     PANEL_WIDTH_M = 1.038
-    PANEL_BORDER_M = 0.6  # gap to leave at side of roof (so 30cm each side)
+    SMALL_PANEL_BORDER_M = 0.6  # gap to leave at side of roof (so 30cm each side)
+    BIG_PANEL_BORDER_M = 0.8  # gap to leave at side of roof for bigger roofs (so 40cm each side)
     PANEL_AREA = PANEL_HEIGHT_M * PANEL_WIDTH_M
     KW_PEAK_PER_PANEL = 0.355  # output with incident radiation of 1kW/m2
     # Panel dimensions and kW_peak from https://www.greenmatch.co.uk/blog/how-many-solar-panels-do-i-need

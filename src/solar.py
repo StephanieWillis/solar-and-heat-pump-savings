@@ -96,20 +96,27 @@ class Solar:
         """ Assume shape is rectangular. Try panels in either orientation"""
         roof_height = polygon.average_plan_height / np.cos(np.radians(self.pitch))
         print(f"roof height = {roof_height}, roof_width = {polygon.average_width}")
+        # Typically installers leave a bigger border on big roofs. Increase border if fit more than 2 rows heightwise
+        if roof_height >= 2 * (SolarConstants.SMALL_PANEL_BORDER_M + SolarConstants.PANEL_HEIGHT_M):
+            border_to_use = SolarConstants.BIG_PANEL_BORDER_M
+        else:
+            border_to_use = SolarConstants.SMALL_PANEL_BORDER_M
         print("long side up roof")
-        option_1 = self.number_of_panels_in_rectangle(side_1=polygon.average_width, side_2=roof_height)
+        option_1 = self.number_of_panels_in_rectangle(side_1=polygon.average_width, side_2=roof_height,
+                                                      border=border_to_use)
         print("short side up roof")
-        option_2 = self.number_of_panels_in_rectangle(side_1=roof_height, side_2=polygon.average_width)
+        option_2 = self.number_of_panels_in_rectangle(side_1=roof_height, side_2=polygon.average_width,
+                                                      border=border_to_use)
         number = max(option_1, option_2)
         return number
 
     @staticmethod
-    def number_of_panels_in_rectangle(side_1: float, side_2: float) -> int:
-        if side_1 < SolarConstants.PANEL_BORDER_M or side_2 < SolarConstants.PANEL_BORDER_M:
+    def number_of_panels_in_rectangle(side_1: float, side_2: float, border: float) -> int:
+        if side_1 < SolarConstants.SMALL_PANEL_BORDER_M or side_2 < SolarConstants.SMALL_PANEL_BORDER_M:
             number = 0
         else:
-            rows_axis_1 = floor((side_1 - SolarConstants.PANEL_BORDER_M) / SolarConstants.PANEL_WIDTH_M)
-            rows_axis_2 = floor((side_2 - SolarConstants.PANEL_BORDER_M)/SolarConstants.PANEL_HEIGHT_M)
+            rows_axis_1 = floor((side_1 - border) / SolarConstants.PANEL_WIDTH_M)
+            rows_axis_2 = floor((side_2 - border) / SolarConstants.PANEL_HEIGHT_M)
             number = rows_axis_1 * rows_axis_2
             print(f"{rows_axis_1} by {rows_axis_2}")
         return number
