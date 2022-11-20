@@ -73,6 +73,7 @@ def render_heating_system_questions(house: House) -> House:
             if "baseline_heating_efficiency" not in st.session_state:
                 st.session_state.baseline_heating_efficiency = house.heating_system.efficiency
                 st.session_state.baseline_heating_efficiency_set_by_dropdown = False
+                st.session_state.heating_fuel_tariff_defined_by_dropdown = False
 
             heating_name = st.selectbox(
                 "", options=list(constants.DEFAULT_HEATING_CONSTANTS.keys()), key="heating_system_name")
@@ -87,6 +88,7 @@ def render_heating_system_questions(house: House) -> House:
                 if house.heating_system.fuel.name != original_fuel_name:
                     # only overwrite tariffs if heating fuel changed, keep any overwrites otherwise
                     house.tariffs = house.set_up_standard_tariffs()
+                    st.session_state.heating_fuel_tariff_defined_by_dropdown = False
 
     return house
 
@@ -180,8 +182,8 @@ def flag_that_baseline_heating_efficiency_defined_by_dropdown():
 
 def overwrite_tariffs(tariffs: Tariff, fuel_name: "str") -> Tariff:
 
-    if "p_per_unit_elec_import" not in st.session_state or st.session_state.p_per_unit_elec_import == 0:
-        # Set initial values or, where fuel has been changed, reset values
+    if "p_per_unit_elec_import" not in st.session_state:
+        # Set initial values
         st.session_state.p_per_unit_elec_import = tariffs["electricity"].p_per_unit_import
         st.session_state.p_per_unit_elec_export = tariffs["electricity"].p_per_unit_export
         st.session_state.p_per_day_elec = tariffs["electricity"].p_per_day
@@ -201,12 +203,9 @@ def overwrite_tariffs(tariffs: Tariff, fuel_name: "str") -> Tariff:
     )
     match fuel_name:
         case "gas":
-            if (
-                "p_per_unit_gas_import" not in st.session_state
-                or st.session_state.p_per_unit_gas_import == 0
-                or st.session_state.fuel_name_tariffs_is_for != fuel_name
-            ):
-                # Set initial values or, where fuel has been changed, reset values
+            if ("p_per_unit_gas_import" not in st.session_state
+                    or st.session_state.heating_fuel_tariff_defined_by_dropdown is False):
+                # reset values when the overwrites do not apply
                 st.session_state.fuel_name_tariffs_is_for = fuel_name
                 st.session_state.p_per_unit_gas_import = tariffs["gas"].p_per_unit_import
                 st.session_state.p_per_day_gas = tariffs["gas"].p_per_day
@@ -214,26 +213,26 @@ def overwrite_tariffs(tariffs: Tariff, fuel_name: "str") -> Tariff:
             st.subheader("Gas")
             tariffs["gas"].p_per_unit_import = st.number_input(
                 label="Unit rate (p/kwh), gas", min_value=0.0, max_value=100.0, key="p_per_unit_gas_import",
-                value=constants.STANDARD_TARIFF.p_per_kwh_gas
+                value=constants.STANDARD_TARIFF.p_per_kwh_gas,
+                on_change=flag_that_heating_fuel_tariff_defined_by_dropdown
             )
             tariffs["gas"].p_per_day = st.number_input(
                 label="Standing charge (p/day), gas", min_value=0.0, max_value=100.0, key="p_per_day_gas",
-                value=constants.STANDARD_TARIFF.p_per_day_gas
+                value=constants.STANDARD_TARIFF.p_per_day_gas,
+                on_change=flag_that_heating_fuel_tariff_defined_by_dropdown
             )
         case "oil":
-            if (
-                "p_per_unit_oil_import" not in st.session_state
-                or st.session_state.fuel_name_tariffs_is_for != fuel_name
-                or st.session_state.p_per_unit_oil_import == 0
-            ):
-                # Set initial values or, where fuel has been changed, reset values
+            if ("p_per_unit_oil_import" not in st.session_state
+                    or st.session_state.heating_fuel_tariff_defined_by_dropdown is False):
+                # reset values when the overwrites do not apply
                 st.session_state.fuel_name_tariffs_is_for = fuel_name
                 st.session_state.p_per_unit_oil_import = tariffs["oil"].p_per_unit_import
 
             st.subheader("Oil")
             tariffs["oil"].p_per_unit_import = st.number_input(
                 label="Oil price, (p/litre)", min_value=0.0, max_value=200.0, key="p_per_unit_oil_import",
-                value=constants.STANDARD_TARIFF.p_per_L_oil
+                value=constants.STANDARD_TARIFF.p_per_L_oil,
+                on_change=flag_that_heating_fuel_tariff_defined_by_dropdown
             )
     st.caption(
         "Our default tariffs reflect the [Energy Price Guarantee]("
@@ -241,6 +240,10 @@ def overwrite_tariffs(tariffs: Tariff, fuel_name: "str") -> Tariff:
         ", but you can change them if you have fixed at a different rate."
     )
     return tariffs
+
+
+def flag_that_heating_fuel_tariff_defined_by_dropdown():
+    st.session_state.heating_fuel_tariff_defined_by_dropdown = True
 
 
 def render_results(house: House):
