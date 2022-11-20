@@ -71,6 +71,7 @@ def render_heating_system_questions(house: House) -> House:
             st.write("My home is heated with a")
         with col2:
             if "baseline_heating_efficiency" not in st.session_state:
+                # initialise
                 st.session_state.baseline_heating_efficiency = house.heating_system.efficiency
                 st.session_state.baseline_heating_efficiency_set_by_dropdown = False
                 st.session_state.heating_fuel_tariff_defined_by_dropdown = False
@@ -117,11 +118,11 @@ def overwrite_house_assumptions(house: House):
 
 def overwrite_envelope_assumptions(envelope: BuildingEnvelope) -> BuildingEnvelope:
 
-    if st.session_state.heating_demand_set_by_dropdown is False:
+    if "annual_heating_demand" not in st.session_state or st.session_state.heating_demand_set_by_dropdown is False:
         print("Set heating demand state from object")
         st.session_state.annual_heating_demand = int(envelope.annual_heating_demand)
 
-    if st.session_state.base_demand_set_by_dropdown is False:
+    if "annual_base_demand" not in st.session_state or st.session_state.base_demand_set_by_dropdown is False:
         print("Set base demand state from object")
         st.session_state.annual_base_demand = int(envelope.base_demand.sum())
 
@@ -157,13 +158,13 @@ def flag_that_base_demand_defined_by_dropdown():
 
 def overwrite_baseline_heating_system_assumptions(heating_system: "HeatingSystem") -> "HeatingSystem":
 
-    if st.session_state.baseline_heating_efficiency_set_by_dropdown is False:
+    if ("baseline_heating_efficiency" not in st.session_state
+            or st.session_state.baseline_heating_efficiency_set_by_dropdown is False):
         print("Set heating efficiency state from object")
         st.session_state.baseline_heating_efficiency = heating_system.efficiency
 
     heating_system.efficiency = st.number_input(
-        label="Efficiency: ", min_value=0.0, max_value=8.0, key="baseline_heating_efficiency",
-        value=constants.DEFAULT_HEATING_CONSTANTS[heating_system.name].efficiency,
+        label="Efficiency: ", min_value=0.1, max_value=8.0, key="baseline_heating_efficiency",
         on_change=flag_that_baseline_heating_efficiency_defined_by_dropdown)
 
     if heating_system.fuel.name == "gas":
