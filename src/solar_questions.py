@@ -62,7 +62,7 @@ def get_solar_install_from_session_state_if_exists_or_create_default():
     return solar_install
 
 
-def overwrite_number_of_panels():
+def flag_that_number_of_panels_defined_by_dropdown():
     st.session_state.number_of_panels_defined_by_dropdown = True
 
 
@@ -74,7 +74,7 @@ def render_and_update_solar_inputs(solar_install: "Solar"):
 
     solar_install.number_of_panels = st.number_input(
         label="Number of panels", min_value=0, max_value=None, key="number_of_panels", value=0,
-        on_change=overwrite_number_of_panels
+        on_change=flag_that_number_of_panels_defined_by_dropdown
     )
 
     solar_install.kwp_per_panel = st.number_input(

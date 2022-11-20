@@ -9,29 +9,28 @@ def render() -> "House":
 
     st.header("Start by telling us about your home")
     st.markdown(
-        f"<p class='more-info'> If you know lots more about your home and tariff, you can  <a  href='javascript:document.getElementsByClassName({constants.CLASS_NAME_OF_SIDEBAR_DIV})[1].click();' target='_self'>"
-        "enter more details here!</a></p>",
+        f"<p class='more-info'> If you know lots more about your home and tariff, you can"
+        f"  <a  href='javascript:document.getElementsByClassName({constants.CLASS_NAME_OF_SIDEBAR_DIV}"
+        f")[1].click();' target='_self'> enter more details here!</a></p>",
         unsafe_allow_html=True,
     )
 
     house.envelope = render_building_envelope_questions(house.envelope)
     house = render_heating_system_questions(house=house)
+    house = render_assumptions_sidebar(house=house)
 
-    house = render_results(house)
+    render_results(house)
 
     return house
 
 
 def get_house_from_session_state_if_exists_or_create_default():
     if st.session_state["page_state"]["house"] == {}:
+        print("Setting up default house")
         house = set_up_default_house()
         st.session_state["page_state"]["house"] = dict(house=house)  # in case this page isn't always rendered
-        st.session_state.house_type_changed = False
-        st.session_state.heating_system_changed = False
-        st.session_state.heating_demand_defined_by_dropdown = False
-        st.session_state.other_demand_defined_by_dropdown = False
-        st.session_state.baseline_heating_efficiency_defined_by_dropdown = False
     else:
+        print("reading house from session state")
         house = st.session_state["page_state"]["house"]["house"]
     return house
 
@@ -49,17 +48,20 @@ def render_building_envelope_questions(envelope: BuildingEnvelope) -> BuildingEn
         with col1:
             st.write("I live in a")
         with col2:
-            if "house_type" not in st.session_state:  # set initial value
+            if "house_type" not in st.session_state:
                 st.session_state.house_type = envelope.house_type
-            house_type = st.selectbox("", options=constants.BUILDING_TYPE_OPTIONS.keys(), key="house_type",
-                                      on_change=flag_change_of_building_type)
-            if st.session_state.house_type_changed:  # only overwrite if house type changed by user
+                st.session_state.heating_demand_set_by_dropdown = False
+                st.session_state.base_demand_set_by_dropdown = False
+
+            house_type = st.selectbox("", options=constants.BUILDING_TYPE_OPTIONS.keys(), key="house_type")
+
+            if house_type != envelope.house_type:  # only overwrite if house type changed by user
+                print("Behaves as if house changed")
                 envelope = BuildingEnvelope.from_building_type_constants(constants.BUILDING_TYPE_OPTIONS[house_type])
+                st.session_state.heating_demand_set_by_dropdown = False
+                st.session_state.base_demand_set_by_dropdown = False
+
     return envelope
-
-
-def flag_change_of_building_type():
-    st.session_state.house_type_changed = True
 
 
 def render_heating_system_questions(house: House) -> House:
@@ -68,17 +70,20 @@ def render_heating_system_questions(house: House) -> House:
         with col1:
             st.write("My home is heated with a")
         with col2:
-            if "heating_system_name" not in st.session_state:  # set initial value
-                st.session_state.heating_system_name = house.heating_system.name
+            if "baseline_heating_efficiency" not in st.session_state:
+                st.session_state.baseline_heating_efficiency = house.heating_system.efficiency
+                st.session_state.baseline_heating_efficiency_set_by_dropdown = False
 
             heating_name = st.selectbox(
-                "", options=list(constants.DEFAULT_HEATING_CONSTANTS.keys()), key="heating_system_name",
-                on_change=flag_change_of_heating_system)
-            if st.session_state.heating_system_changed:  # only overwrite heating system if changed by user
+                "", options=list(constants.DEFAULT_HEATING_CONSTANTS.keys()), key="heating_system_name")
+
+            if heating_name != house.heating_system.name:  # only overwrite heating system if changed by user
+                print("Behaves as if heating system changed")
                 original_fuel_name = house.heating_system.fuel.name
                 house.heating_system = HeatingSystem.from_constants(
-                    name=heating_name, parameters=constants.DEFAULT_HEATING_CONSTANTS[heating_name]
-                )
+                    name=heating_name, parameters=constants.DEFAULT_HEATING_CONSTANTS[heating_name])
+                st.session_state.baseline_heating_efficiency_set_by_dropdown = False
+
                 if house.heating_system.fuel.name != original_fuel_name:
                     # only overwrite tariffs if heating fuel changed, keep any overwrites otherwise
                     house.tariffs = house.set_up_standard_tariffs()
@@ -86,11 +91,7 @@ def render_heating_system_questions(house: House) -> House:
     return house
 
 
-def flag_change_of_heating_system():
-    st.session_state.heating_system_changed = True
-
-
-def render_results(house) -> House:
+def render_assumptions_sidebar(house: House) -> House:
     with st.sidebar:
         st.header("Assumptions")
         st.markdown(
@@ -99,18 +100,6 @@ def render_results(house) -> House:
         )
         st.subheader("Current Performance")
         house = overwrite_house_assumptions(house)
-
-    st.markdown(
-        f"<div class='results-container'>"
-        f"<p class='bill-label'>Your bill next year will be around <p>"
-        f"<p class='bill-estimate'>£{int(house.total_annual_bill):,d}"
-        f"</p>"
-        f"<p class='bill-details'>Based on estimated usage of "
-        f"<a class='bill-consumption-kwh' href='javascript:document.getElementsByClassName({constants.CLASS_NAME_OF_SIDEBAR_DIV})[1].click();' target='_self'>"
-        f"{int(house.total_annual_consumption_kwh):,d} kwh</a> </p>"
-        f"</div>",
-        unsafe_allow_html=True,
-    )
     return house
 
 
@@ -125,24 +114,23 @@ def overwrite_house_assumptions(house: House):
 
 
 def overwrite_envelope_assumptions(envelope: BuildingEnvelope) -> BuildingEnvelope:
-    if "annual_heating_demand" not in st.session_state or st.session_state.house_type_changed:
-        # Set initial values or, where house type has been changed, reset values
-        st.session_state.annual_heating_demand = int(envelope.annual_heating_demand)
-        st.session_state.house_type_that_annual_heating_demand_is_for = envelope.house_type
-        st.session_state.house_type_changed = False
 
-    if "annual_base_demand" or st.session_state.house_type_changed:
+    if st.session_state.heating_demand_set_by_dropdown is False:
+        print("Set heating demand state from object")
+        st.session_state.annual_heating_demand = int(envelope.annual_heating_demand)
+
+    if st.session_state.base_demand_set_by_dropdown is False:
+        print("Set base demand state from object")
         st.session_state.annual_base_demand = int(envelope.base_demand.sum())
 
     envelope.annual_heating_demand = st.number_input(
         label="Space and water heating (kwh): ", min_value=0, max_value=100000, key="annual_heating_demand",
-        value=constants.BUILDING_TYPE_OPTIONS[envelope.house_type].annual_heat_demand_kWh,
-        on_change=overwrite_heating_demand()
+        on_change=flag_that_heating_demand_defined_by_dropdown
     )
 
     annual_base_demand_overwrite = st.number_input(
         label="Lighting, appliances, plug loads etc. (kwh): ", min_value=0, max_value=100000, key="annual_base_demand",
-        value=constants.BUILDING_TYPE_OPTIONS[envelope.house_type].annual_base_electricity_demand_kWh
+        on_change=flag_that_base_demand_defined_by_dropdown
     )
     if annual_base_demand_overwrite != int(envelope.base_demand.sum()):  # scale profile  by correction factor
         envelope.base_demand = annual_base_demand_overwrite / int(envelope.base_demand.sum()) * envelope.base_demand
@@ -157,28 +145,24 @@ def overwrite_envelope_assumptions(envelope: BuildingEnvelope) -> BuildingEnvelo
     return envelope
 
 
-def overwrite_heating_demand():
-    st.session_state.heating_demand_defined_by_dropdown = True
+def flag_that_heating_demand_defined_by_dropdown():
+    st.session_state.heating_demand_set_by_dropdown = True
 
 
-def overwrite_other_demand():
-    st.session_state.other_demand_defined_by_dropdown = False
+def flag_that_base_demand_defined_by_dropdown():
+    st.session_state.base_demand_set_by_dropdown = True
 
 
 def overwrite_baseline_heating_system_assumptions(heating_system: "HeatingSystem") -> "HeatingSystem":
 
-    if (
-        "baseline_heating_efficiency" not in st.session_state
-        or heating_system.name != st.session_state.baseline_heating_system_name
-        or st.session_state.baseline_heating_efficiency == 0
-    ):
+    if st.session_state.baseline_heating_efficiency_set_by_dropdown is False:
+        print("Set heating efficiency state from object")
         st.session_state.baseline_heating_efficiency = heating_system.efficiency
-        st.session_state.baseline_heating_system_name = heating_system.name
 
     heating_system.efficiency = st.number_input(
         label="Efficiency: ", min_value=0.0, max_value=8.0, key="baseline_heating_efficiency",
-        value=constants.DEFAULT_HEATING_CONSTANTS[heating_system.name].efficiency
-    )
+        on_change=flag_that_baseline_heating_efficiency_defined_by_dropdown)
+
     if heating_system.fuel.name == "gas":
         st.caption(
             "Many modern boilers have a low efficiency because they run at a high a flow temperature. "
@@ -190,8 +174,8 @@ def overwrite_baseline_heating_system_assumptions(heating_system: "HeatingSystem
     return heating_system
 
 
-def overwrite_baseline_heating_efficiency():
-    st.session_state.baseline_heating_efficiency_defined_by_dropdown = False
+def flag_that_baseline_heating_efficiency_defined_by_dropdown():
+    st.session_state.baseline_heating_efficiency_set_by_dropdown = True
 
 
 def overwrite_tariffs(tariffs: Tariff, fuel_name: "str") -> Tariff:
@@ -257,3 +241,19 @@ def overwrite_tariffs(tariffs: Tariff, fuel_name: "str") -> Tariff:
         ", but you can change them if you have fixed at a different rate."
     )
     return tariffs
+
+
+def render_results(house: House):
+
+    st.markdown(
+        f"<div class='results-container'>"
+        f"<p class='bill-label'>Your bill next year will be around <p>"
+        f"<p class='bill-estimate'>£{int(house.total_annual_bill):,d}"
+        f"</p>"
+        f"<p class='bill-details'>Based on estimated usage of "
+        f"<a class='bill-consumption-kwh' href='javascript:document.getElementsByClassName("
+        f"{constants.CLASS_NAME_OF_SIDEBAR_DIV})[1].click();' target='_self'>"
+        f"{int(house.total_annual_consumption_kwh):,d} kwh</a> </p>"
+        f"</div>",
+        unsafe_allow_html=True,
+    )
