@@ -36,6 +36,7 @@ def render() -> "Solar":
     if "number_of_panels_defined_by_dropdown" not in st.session_state:  # initialise value
         st.session_state.number_of_panels_defined_by_dropdown = False
     if polygons != solar_install_in.polygons:  # if polygons have changed:
+        #  I think 'polygons get reset when you change the page so would need to cache that for this to work
         st.session_state.number_of_panels_defined_by_dropdown = False
 
     orientation_options = [name for name, _ in SolarConstants.ORIENTATIONS.items()]
@@ -66,7 +67,6 @@ def overwrite_number_of_panels():
 
 
 def render_and_update_solar_inputs(solar_install: "Solar"):
-    # Note: once this has been overwritten it is decoupled from roof area for the rest of the session
 
     if "number_of_panels" not in st.session_state or st.session_state.number_of_panels_defined_by_dropdown is False:
         st.session_state.number_of_panels = solar_install.number_of_panels
