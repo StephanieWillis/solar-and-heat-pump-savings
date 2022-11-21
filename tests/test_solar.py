@@ -40,8 +40,8 @@ def test_get_number_of_panels_returns_expected_type_and_value():
                                 polygons=[TEST_POLYGONS[0]],
                                 pitch=pitch)
     assert isinstance(solar_install.number_of_panels, int)
-    assert solar_install.number_of_panels == 1
-    assert solar_install.number_of_panels != solar_install.get_number_of_panels_from_polygon_area(TEST_POLYGONS[0])
+    assert solar_install.number_of_panels == 2
+    assert solar_install.get_number_of_panels_from_polygon_area(TEST_POLYGONS[0]) == 2
 
 
 def test_peak_capacity_kw_out_per_kw_in_per_m2_returns_expected_type_and_value():
@@ -62,7 +62,7 @@ def test_get_hourly_radiation_from_eu_api_returns_expected_annual_sum():
 
     assert solar_install.peak_capacity_kw_out_per_kw_in_per_m2 == 10 * SolarConstants.KW_PEAK_PER_PANEL
     pv_power_kw = solar_install.get_hourly_radiation_from_eu_api()
-    ANNUAL_KWH = 2753.56156
+    ANNUAL_KWH = 3102.6047200000003
     np.testing.assert_almost_equal(pv_power_kw.sum(), ANNUAL_KWH)
     np.testing.assert_almost_equal(solar_install.generation.exported.annual_sum_kwh, ANNUAL_KWH)
     np.testing.assert_almost_equal(solar_install.generation.overall.annual_sum_kwh, - ANNUAL_KWH)

@@ -86,10 +86,7 @@ class Consumption:
         return exported
 
     def add(self, other: 'Consumption') -> 'Consumption':
-        if self.fuel == other.fuel:
-            combined_overall_consumption = self.overall.add(other.overall)
-            combined_consumption = Consumption(hourly_profile_kwh=combined_overall_consumption.hourly_profile_kwh,
-                                               fuel=self.fuel)
-        else:
-            raise ValueError("The fuel of the two consumptions must match")
+        combined_overall_consumption = self.overall.add(other.overall)
+        combined_consumption = Consumption(hourly_profile_kwh=combined_overall_consumption.hourly_profile_kwh,
+                                           fuel=self.fuel)
         return combined_consumption

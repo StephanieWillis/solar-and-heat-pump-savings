@@ -28,7 +28,7 @@ def render() -> "Solar":
     try:
         polygons = roof.roof_mapper(800, 400)  # figure out how to save state here
     except KeyError:
-        st.error("You've used a drawing tool we don't support, sorry! Please try with the ⭓ or ◼️ tools")
+        st.error("You've used a drawing tool we don't support, sorry! Please try with the ⭓ tool")
         polygons = None
 
     polygons = polygons if polygons else Solar.create_zero_area_instance().polygons
