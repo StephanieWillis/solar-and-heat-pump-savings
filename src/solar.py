@@ -96,11 +96,13 @@ class Solar:
         """ Assume shape is rectangular. Try panels in either orientation"""
         roof_height = polygon.average_plan_height / np.cos(np.radians(self.pitch))
         print(f"roof height = {roof_height}, roof_width = {polygon.average_width}")
-        # Typically installers leave a bigger border on big roofs. Increase border if fit more than 2 rows heightwise
+        # Typically, installers leave a bigger border on big roofs. Increase border if fit more than 2 rows height-wise
         if roof_height >= 2 * (SolarConstants.SMALL_PANEL_BORDER_M + SolarConstants.PANEL_HEIGHT_M):
             border_to_use = SolarConstants.BIG_PANEL_BORDER_M
+            print("Using big border")
         else:
             border_to_use = SolarConstants.SMALL_PANEL_BORDER_M
+            print("Using small border")
         print("long side up roof")
         option_1 = self.number_of_panels_in_rectangle(side_1=polygon.average_width, side_2=roof_height,
                                                       border=border_to_use)
