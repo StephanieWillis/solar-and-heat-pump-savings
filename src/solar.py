@@ -114,7 +114,7 @@ class Solar:
 
     @staticmethod
     def number_of_panels_in_rectangle(side_1: float, side_2: float, border: float) -> int:
-        if side_1 < SolarConstants.SMALL_PANEL_BORDER_M or side_2 < SolarConstants.SMALL_PANEL_BORDER_M:
+        if side_1 < border or side_2 < border:
             number = 0
         else:
             rows_axis_1 = floor((side_1 - border) / SolarConstants.PANEL_WIDTH_M)
