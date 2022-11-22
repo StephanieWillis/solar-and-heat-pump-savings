@@ -6,6 +6,7 @@ import pandas as pd
 import constants
 from consumption import Consumption
 from solar import Solar
+from fuels import Fuel
 
 
 class House:
@@ -16,7 +17,7 @@ class House:
         self.envelope = envelope
         # Set up initial values for heating system and tariffs but allow to be modified by the user later
         self.heating_system = heating_system
-        self.tariffs = self.set_up_standard_tariffs()
+        self.tariffs = Tariff.set_up_standard_tariffs(heating_system_fuel=heating_system.fuel)
 
         if solar_install is None:
             solar_install = Solar.create_zero_area_instance()
@@ -29,25 +30,6 @@ class House:
         heating_system = HeatingSystem.from_constants(name=heating_name,
                                                       parameters=constants.DEFAULT_HEATING_CONSTANTS[heating_name])
         return cls(envelope=envelope, heating_system=heating_system)
-
-    def set_up_standard_tariffs(self) -> Dict[str, 'Tariff']:
-
-        tariffs = {'electricity': Tariff(p_per_unit_import=constants.STANDARD_TARIFF.p_per_kwh_elec_import,
-                                         p_per_unit_export=constants.STANDARD_TARIFF.p_per_kwh_elec_export,
-                                         p_per_day=constants.STANDARD_TARIFF.p_per_day_elec,
-                                         fuel=constants.ELECTRICITY)
-                   }
-
-        match self.heating_system.fuel.name:
-            case 'gas':
-                tariffs['gas'] = Tariff(p_per_unit_import=constants.STANDARD_TARIFF.p_per_kwh_gas,
-                                        p_per_day=constants.STANDARD_TARIFF.p_per_day_gas,
-                                        fuel=self.heating_system.fuel)
-            case 'oil':
-                tariffs['oil'] = Tariff(p_per_unit_import=constants.STANDARD_TARIFF.p_per_L_oil,
-                                        p_per_day=0.0,
-                                        fuel=self.heating_system.fuel)
-        return tariffs
 
     @property
     def has_multiple_fuels(self) -> bool:
@@ -145,6 +127,32 @@ class Tariff:
         income_p_exports = consumption.exported.annual_sum_fuel_units * self.p_per_unit_export
         annual_cost = (cost_p_per_day + cost_p_imports - income_p_exports) / 100
         return annual_cost
+
+    @classmethod
+    def set_up_standard_tariffs(cls, heating_system_fuel: Fuel) -> Dict[str, 'Tariff']:
+
+        tariffs = {'electricity': Tariff(p_per_unit_import=constants.STANDARD_TARIFF.p_per_kwh_elec_import,
+                                         p_per_unit_export=constants.STANDARD_TARIFF.p_per_kwh_elec_export,
+                                         p_per_day=constants.STANDARD_TARIFF.p_per_day_elec,
+                                         fuel=constants.ELECTRICITY)
+                   }
+        if heating_system_fuel.name != 'electricity':
+            tariffs[heating_system_fuel.name] = cls.set_up_heating_tariff(heating_system_fuel=heating_system_fuel)
+
+        return tariffs
+
+    @classmethod
+    def set_up_heating_tariff(cls, heating_system_fuel: Fuel) -> 'Tariff':
+        match heating_system_fuel.name:
+            case 'gas':
+                heating_tariff = Tariff(p_per_unit_import=constants.STANDARD_TARIFF.p_per_kwh_gas,
+                                        p_per_day=constants.STANDARD_TARIFF.p_per_day_gas,
+                                        fuel=heating_system_fuel)
+            case 'oil':
+                heating_tariff = Tariff(p_per_unit_import=constants.STANDARD_TARIFF.p_per_L_oil,
+                                        p_per_day=0.0,
+                                        fuel=heating_system_fuel)
+        return heating_tariff
 
 
 @dataclass
