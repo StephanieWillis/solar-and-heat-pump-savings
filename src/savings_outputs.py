@@ -25,10 +25,6 @@ def render(house: "House", solar_install: "Solar"):
         st.session_state["page_state"]["solar"] = dict(solar=upgrade_solar)  # so any overwrites saved if move tabs
         # saving state may work without above but above makes clearer
 
-        st.subheader("Costs")
-        with st.expander("Upfront costs"):
-            st.write("To do")
-
     # Upgraded buildings
     hp_house, solar_house, both_house = retrofit.upgrade_buildings(
         baseline_house=house, upgrade_heating=upgrade_heating, upgrade_solar=upgrade_solar
@@ -44,7 +40,8 @@ def render(house: "House", solar_install: "Solar"):
     )
 
     st.markdown(
-        f"<h2> On your bills of <span style='color:hsl(220, 60%, 30%)'> £{int(house.total_annual_bill):,d} </span> you could save </h2>",
+        f"<h2> On your bills of <span style='color:hsl(220, 60%, 30%)'> "
+        f"£{int(house.total_annual_bill):,d} </span> you could save </h2>",
         unsafe_allow_html=True,
     )
     _, col1, col2, col3, _ = st.columns([0.2, 1, 1, 1, 0.2])
@@ -221,40 +218,8 @@ def overwrite_upgrade_heating_system_assumptions(heating_system: "HeatingSystem"
     return heating_system
 
 
-def overwrite_upfront_costs(house: "House", hp_house: "House", upgrade_solar: "Solar"
-                    ) -> ("House", "HeatingSystem", "Solar"):
-    # Figure out how to deal with baseline heating system or solar size overwrite
-    if "baseline_heating_cost" not in st.session_state or st.session_state.baseline_heating_cost_overwritten is False:
-        st.session_state.baseline_heating_cost = house.upfront_cost
-    house.upfront_cost = st.number_input(
-        label="Baseline heating system cost", min_value=0.0, max_value=30000, key="baseline_heating_cost",
-        on_change=flag_that_baseline_heating_cost_overwritten)
-
-    if "solar_cost" not in st.session_state or st.session_state.solar_cost_overwritten is False:
-        st.session_state.solar_cost_overwritten = upgrade_solar.upfront_cost
-    upgrade_solar.upfront_cost = st.number_input(
-        label="Solar cost", min_value=0.0, max_value=30000, key="solar_cost",
-        on_change=flag_that_solar_cost_overwritten)
-
-    if "heat_pump_cost" not in st.session_state or st.session_state.heat_pump_cost_overwritten is False:
-        st.session_state.heat_pump_cost = hp_house.upfront_cost
-    hp_house.upfront_cost = st.number_input(
-        label="Heat pump cost", min_value=0.0, max_value=30000, key="heat_pump_cost",
-        on_change=flag_that_heat_pump_cost_overwritten)
-
-    return house, hp_house, upgrade_solar
-
-
-def flag_that_baseline_heating_cost_overwritten():
-    st.session_state.baseline_heating_cost_overwritten = True
-
-
-def flag_that_heat_pump_cost_overwritten():
-    st.session_state.heat_pump_cost_overwritten = True
-
-
-def flag_that_solar_cost_overwritten():
-    st.session_state.solar_cost_overwritten = True
+def overwrite_upgrade_heating_efficiency_in_session_state():
+    st.session_state.upgrade_heating_efficiency = st.session_state.upgrade_heating_efficiency_overwrite
 
 
 def render_bill_chart(results_df: pd.DataFrame):
