@@ -182,10 +182,6 @@ def overwrite_house_assumptions(house: House):
 
 
 def overwrite_envelope_assumptions(envelope: BuildingEnvelope) -> BuildingEnvelope:
-    if "annual_heating_demand" not in st.session_state:
-        print("Wierd that writing annual heating demand here")
-        write_annual_heating_demand_to_session_state(envelope=envelope)
-
     print(f"annual_heating_demand: {st.session_state.annual_heating_demand}")
 
     st.number_input(
@@ -202,10 +198,6 @@ def overwrite_envelope_assumptions(envelope: BuildingEnvelope) -> BuildingEnvelo
         st.session_state.heating_demand_changed = False
 
     print(f"annual_heating_demand: {st.session_state.annual_heating_demand}")
-
-    if "annual_base_demand" not in st.session_state:
-        print("Wierd that writing annual base demand here")
-        write_annual_base_demand_to_session_state(envelope=envelope)
 
     print(f"annual_base_demand: {st.session_state.annual_base_demand}")
 
