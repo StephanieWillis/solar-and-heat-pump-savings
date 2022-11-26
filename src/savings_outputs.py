@@ -176,6 +176,10 @@ def format_roi(roi: float) -> str:
 
 
 def render_and_update_improvement_options(solar_install: Solar) -> Tuple[HeatingSystem, Solar]:
+
+    with st.expander("Solar PV assumptions "):
+        solar_install = render_and_update_solar_inputs(solar_install=solar_install)
+
     with st.expander("Heat pump assumptions"):
         if "upgrade_heating" not in st.session_state["page_state"]:
             upgrade_heating = HeatingSystem.from_constants(
@@ -195,9 +199,6 @@ def render_and_update_improvement_options(solar_install: Solar) -> Tuple[Heating
             "A good installer is key to ensuring your heat pump runs efficiently. The [heat geek map"
             "](https://www.heatgeek.com/find-a-heat-geek/) is a great place to start your search."
         )
-
-    with st.expander("Solar PV assumptions "):
-        solar_install = render_and_update_solar_inputs(solar_install=solar_install)
 
     return upgrade_heating, solar_install
 
