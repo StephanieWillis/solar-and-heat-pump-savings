@@ -16,7 +16,7 @@ def render(house: "House", solar_install: "Solar"):
     with st.sidebar:
         st.header("Assumptions")
         st.subheader("Current Performance")
-        house = house_questions.overwrite_house_assumptions(house)
+        house = house_questions.render_house_overwrite_options(house)
         st.session_state["page_state"]["house"] = dict(house=house)  # so any overwrites saved if move tabs
         # saving state may work without above but above makes clearer
 
