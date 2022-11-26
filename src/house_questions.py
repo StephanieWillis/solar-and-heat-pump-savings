@@ -1,3 +1,6 @@
+""" Spelling out the state pieces because opaque otherwise. I think state (apart from st.session_state["page_state"])
+is lost when you move from one page to another"""
+
 from typing import Dict
 
 import streamlit as st
@@ -20,8 +23,9 @@ def render() -> "House":
 
     house.envelope = render_building_envelope_questions(envelope=house.envelope)
     house.heating_system = render_heating_system_questions(heating_system=house.heating_system)
-    house.tariffs = update_tariffs_if_heating_fuel_changed(heating_system_fuel=house.heating_system.fuel,
-                                                           tariffs=house.tariffs)
+    if st.session_state.heating_fuel_changed:
+        update_tariffs_if_heating_fuel_changed(heating_system_fuel=house.heating_system.fuel,
+                                               tariffs=house.tariffs)
     house = render_assumptions_sidebar(house=house)
 
     render_results(house)
@@ -31,7 +35,6 @@ def render() -> "House":
 
 def get_house_from_session_state_if_exists_or_create_default():
     if st.session_state["page_state"]["house"] == {}:
-        print("Setting up default house")
         house = set_up_default_house()
         print("Writing default house to session state")
         st.session_state["page_state"]["house"] = dict(house=house)  # in case this page isn't always rendered
@@ -42,6 +45,7 @@ def get_house_from_session_state_if_exists_or_create_default():
 
 
 def set_up_default_house() -> "House":
+    print("Setting up default house")
     envelope = BuildingEnvelope.from_building_type_constants(constants.BUILDING_TYPE_OPTIONS["Terrace"])
     heating_system_name = list(constants.DEFAULT_HEATING_CONSTANTS.keys())[0]
     house = House.set_up_from_heating_name(envelope=envelope, heating_name=heating_system_name)
@@ -56,6 +60,7 @@ def render_building_envelope_questions(envelope: BuildingEnvelope) -> BuildingEn
             st.write("I live in a")
         with col2:
             if "house_type" not in st.session_state:
+                print("Writing house type to session state")
                 st.session_state.house_type = envelope.house_type
                 write_house_type_variables_to_session_state(envelope=envelope)
 
@@ -73,6 +78,7 @@ def render_building_envelope_questions(envelope: BuildingEnvelope) -> BuildingEn
 def write_house_type_variables_to_session_state(envelope: BuildingEnvelope):
     st.session_state.house_type_changed = False
     write_annual_heating_demand_to_session_state(envelope)
+    st.session_state.heating_demand_changed = False
     write_annual_base_demand_to_session_state(envelope)
     st.session_state.base_demand_changed = False
 
@@ -98,6 +104,7 @@ def render_heating_system_questions(heating_system: HeatingSystem) -> HeatingSys
             st.write("My home is heated with a")
         with col2:
             if "heating_system_name" not in st.session_state:
+                print("Writing heating system name and fuel name to session state ")
                 st.session_state.heating_system_name = heating_system.name
                 st.session_state.heating_fuel_name = heating_system.fuel.name
                 write_baseline_heating_system_to_session_state(heating_system=heating_system)
@@ -116,11 +123,14 @@ def render_heating_system_questions(heating_system: HeatingSystem) -> HeatingSys
 
 
 def write_baseline_heating_system_to_session_state(heating_system: HeatingSystem):
-    print("Writing baseline heating system to session state")
-    if heating_system.fuel.name != st.session_state.heating_fuel_name:
-        st.session_state.heating_fuel_changed = True
-    st.session_state.heating_fuel_name = heating_system.fuel.name
 
+    if heating_system.fuel.name != st.session_state.heating_fuel_name:
+        print(f"Behaves as if heating fuel changed from {st.session_state.heating_fuel_name} to"
+              f" {heating_system.fuel.name}. Writing new fuel name to session state.")
+        st.session_state.heating_fuel_changed = True  # flag change so tariff changes
+        st.session_state.heating_fuel_name = heating_system.fuel.name
+
+    print("Writing baseline heating system efficiency to session state")
     st.session_state.baseline_heating_efficiency = heating_system.efficiency
     st.session_state.heating_system_changed = False
 
@@ -130,23 +140,26 @@ def flag_change_in_heating_system():
 
 
 def update_tariffs_if_heating_fuel_changed(heating_system_fuel: Fuel, tariffs: Dict[str, Tariff]):
-    if st.session_state.heating_fuel_changed:
-        print("Behaves as if heating fuel changed")
-        st.session_state.heating_fuel_changed = False
-        if heating_system_fuel.name != 'electricity':
-            heating_tariff = Tariff.set_up_heating_tariff(heating_system_fuel=heating_system_fuel)
-            tariffs[heating_system_fuel.name] = heating_tariff
-            write_heating_tariffs_to_sessions_state(tariff=heating_tariff)
+    print(f"Update heating tariff as if heating fuel is now {st.session_state.heating_fuel_name}")
+    st.session_state.heating_fuel_changed = False
+    if heating_system_fuel.name != 'electricity':  # if heating fuel is electric then use elec tariff already defined
+        heating_tariff = Tariff.set_up_heating_tariff(heating_system_fuel=heating_system_fuel)
+        tariffs[heating_system_fuel.name] = heating_tariff
+        write_heating_tariffs_to_sessions_state(tariff=heating_tariff)
+    print(f"Electric p per kWh = {tariffs['electricity'].p_per_unit_import}")
     return tariffs
 
 
 def write_heating_tariffs_to_sessions_state(tariff: Tariff):
-    print("Writing tariff to session state")
+    print("Writing heating tariff to session state")
+    print(f"heating tariff is {tariff.p_per_unit_import} per unit import, {tariff.p_per_unit_export} export, "
+          f"and {tariff.p_per_day} per day")
     st.session_state.p_per_unit_heating_fuel_import = tariff.p_per_unit_import
     st.session_state.p_per_day_heating_fuel = tariff.p_per_day
 
 
 def render_assumptions_sidebar(house: House) -> House:
+    print("Rendering assumptions sidebar")
     with st.sidebar:
         st.header("Assumptions")
         st.markdown(
@@ -170,20 +183,41 @@ def overwrite_house_assumptions(house: House):
 
 def overwrite_envelope_assumptions(envelope: BuildingEnvelope) -> BuildingEnvelope:
     if "annual_heating_demand" not in st.session_state:
+        print("Wierd that writing annual heating demand here")
         write_annual_heating_demand_to_session_state(envelope=envelope)
 
-    envelope.annual_heating_demand = st.number_input(
-        label="Space and water heating (kwh): ", min_value=0, max_value=100000, key="annual_heating_demand")
+    print(f"annual_heating_demand: {st.session_state.annual_heating_demand}")
+
+    annual_heating_demand_overwrite = st.number_input(
+        label="Space and water heating (kwh): ", min_value=0, max_value=100000, key="annual_heating_demand",
+        on_change=flag_change_in_heating_demand
+    )
+
+    if st.session_state.heating_demand_changed:  # scale profile  by correction factor
+        print("Behaves as if heating demand changed")
+        envelope.annual_heating_demand = annual_heating_demand_overwrite
+        st.session_state.heating_demand_changed = False
+
+    print(f"annual_heating_demand: {st.session_state.annual_heating_demand}")
 
     if "annual_base_demand" not in st.session_state:
+        print("Wierd that writing annual base demand here")
         write_annual_base_demand_to_session_state(envelope=envelope)
 
-    annual_base_demand_overwrite = st.number_input(
-        label="Lighting, appliances, plug loads etc. (kwh): ", min_value=0, max_value=100000, key="annual_base_demand",
+    print(f"annual_base_demand: {st.session_state.annual_base_demand}")
+
+    st.number_input(
+        label="Lighting, appliances, plug loads etc. (kwh): ", min_value=0, max_value=100000,
+        value=st.session_state.annual_base_demand,
+        key="annual_base_demand_overwrite",
         on_change=flag_change_in_base_demand
     )
     if st.session_state.base_demand_changed:  # scale profile  by correction factor
-        envelope.base_demand = annual_base_demand_overwrite / int(envelope.base_demand.sum()) * envelope.base_demand
+        print("Behaves as if base demand changed")
+        envelope.base_demand = st.session_state.annual_base_demand / int(envelope.base_demand.sum()) * envelope.base_demand
+        st.session_state.base_demand_changed = False
+
+    print(f"annual_base_demand: {st.session_state.annual_base_demand}")
 
     st.caption(
         f"A typical {envelope.house_type.lower()} home needs "
@@ -195,17 +229,26 @@ def overwrite_envelope_assumptions(envelope: BuildingEnvelope) -> BuildingEnvelo
     return envelope
 
 
+def flag_change_in_heating_demand():
+    st.session_state.heating_demand_changed = True
+
+
 def flag_change_in_base_demand():
+    st.session_state.annual_base_demand = st.session_state.annual_base_demand_overwrite
     st.session_state.base_demand_changed = True
 
 
 def overwrite_baseline_heating_system_assumptions(heating_system: "HeatingSystem") -> "HeatingSystem":
-
     if "baseline_heating_efficiency" not in st.session_state:
+        print("Writing baseline heating efficiency to session state at a wierd time when should exist already")
         st.session_state.baseline_heating_efficiency = heating_system.efficiency
+
+    print(f"baseline_heating_efficiency: {st.session_state.baseline_heating_efficiency}")
 
     heating_system.efficiency = st.number_input(
         label="Efficiency: ", min_value=0.1, max_value=8.0, key="baseline_heating_efficiency")
+
+    print(f"baseline_heating_efficiency: {st.session_state.baseline_heating_efficiency}")
 
     if heating_system.fuel.name == "gas":
         st.caption(
@@ -219,11 +262,13 @@ def overwrite_baseline_heating_system_assumptions(heating_system: "HeatingSystem
 
 
 def overwrite_tariffs(tariffs: Tariff, fuel_name: "str") -> Tariff:
-    if "p_per_unit_elec_import" not in st.session_state:
-        # Set initial values
+    if "p_per_unit_elec_import" not in st.session_state:  # Set initial values
+        print("Writing electric rates to session state")
         st.session_state.p_per_unit_elec_import = tariffs["electricity"].p_per_unit_import
         st.session_state.p_per_unit_elec_export = tariffs["electricity"].p_per_unit_export
         st.session_state.p_per_day_elec = tariffs["electricity"].p_per_day
+
+    print(f"p_per_unit_elec_import: {st.session_state.p_per_unit_elec_import}")
 
     st.subheader("Electricity")
     tariffs["electricity"].p_per_unit_import = st.number_input(
@@ -235,10 +280,13 @@ def overwrite_tariffs(tariffs: Tariff, fuel_name: "str") -> Tariff:
     tariffs["electricity"].p_per_day = st.number_input(
         label="Standing charge (p/day), electricity", min_value=0.0, max_value=100.0, key="p_per_day_elec"
     )
+    print(f"p_per_unit_elec_import: {st.session_state.p_per_unit_elec_import}")
 
-    match fuel_name:
+    match fuel_name:  # only need to define other tariff if heating fuel is gas or oil as elec already defined
         case "gas":
+            print("rendered gas input boxes")
             if "p_per_unit_heating_fuel_import" not in st.session_state:
+                print("writing gas price to session state")
                 write_heating_tariffs_to_sessions_state(tariff=tariffs["gas"])
 
             st.subheader("Gas")
@@ -250,6 +298,7 @@ def overwrite_tariffs(tariffs: Tariff, fuel_name: "str") -> Tariff:
             )
         case "oil":
             if "p_per_unit_heating_fuel_import" not in st.session_state:
+                print("writing oil price to session state")
                 write_heating_tariffs_to_sessions_state(tariff=tariffs["oil"])
 
             st.subheader("Oil")
@@ -259,7 +308,7 @@ def overwrite_tariffs(tariffs: Tariff, fuel_name: "str") -> Tariff:
     st.caption(
         "Our default tariffs reflect the current [Energy Price Guarantee]("
         "https://www.gov.uk/government/publications/energy-bills-support/energy-bills-support-factsheet-8-september-2022)"
-        ", but you can change them if you have fixed at a different rate."
+        " which is in place until April, but you can change them if you have fixed at a different rate."
     )
     return tariffs
 
