@@ -82,7 +82,6 @@ class Wizard:
 
     def store_current_page_state(self, state: dict):
         st.session_state["page_state"][self.current_page.name] = state
-        print("writing current page state")
 
     def render(self):
 
