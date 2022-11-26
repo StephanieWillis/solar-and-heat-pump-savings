@@ -212,7 +212,7 @@ def overwrite_upgrade_heating_system_assumptions(heating_system: "HeatingSystem"
         max_value=8.0,
         value=st.session_state.upgrade_heating_efficiency,
         key="upgrade_heating_efficiency_overwrite",
-        on_change=overwrite_upgrade_heating_efficiency_in_session_state())
+        on_change=overwrite_upgrade_heating_efficiency_in_session_state)
 
     heating_system.efficiency = st.session_state.upgrade_heating_efficiency
     return heating_system
