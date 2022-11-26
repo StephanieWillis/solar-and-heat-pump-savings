@@ -140,21 +140,21 @@ def render_assumptions_sidebar(house: House) -> House:
             unsafe_allow_html=True,
         )
         st.subheader("Current Performance")
-        house = overwrite_house_assumptions(house)
+        house = render_house_overwrite_options(house)
     return house
 
 
-def overwrite_house_assumptions(house: House):
+def render_house_overwrite_options(house: House):
     with st.expander("Demand"):
-        house.envelope = overwrite_envelope_assumptions(envelope=house.envelope)
+        house.envelope = render_envelope_overwrite_options(envelope=house.envelope)
     with st.expander("Baseline heating system"):
-        house.heating_system = overwrite_baseline_heating_system_assumptions(heating_system=house.heating_system)
+        house.heating_system = render_baseline_heating_system_overwrite_options(heating_system=house.heating_system)
     with st.expander("Tariff"):
-        house.tariffs = overwrite_tariffs(tariffs=house.tariffs, fuel_name=house.heating_system.fuel.name)
+        house.tariffs = render_tariff_overwrite_options(tariffs=house.tariffs, fuel_name=house.heating_system.fuel.name)
     return house
 
 
-def overwrite_envelope_assumptions(envelope: BuildingEnvelope) -> BuildingEnvelope:
+def render_envelope_overwrite_options(envelope: BuildingEnvelope) -> BuildingEnvelope:
 
     st.number_input(
         label="Space and water heating (kwh): ",
@@ -204,7 +204,7 @@ def overwrite_base_demand_in_session_state():
     st.session_state.base_demand_changed = True
 
 
-def overwrite_baseline_heating_system_assumptions(heating_system: "HeatingSystem") -> "HeatingSystem":
+def render_baseline_heating_system_overwrite_options(heating_system: "HeatingSystem") -> "HeatingSystem":
 
     st.number_input(
         label="Efficiency: ", min_value=0.1, max_value=8.0, value=st.session_state.baseline_heating_efficiency,
@@ -227,7 +227,7 @@ def overwrite_baseline_heating_efficiency_in_session_state():
     st.session_state.baseline_heating_efficiency = st.session_state.baseline_heating_efficiency_overwrite
 
 
-def overwrite_tariffs(tariffs: Tariff, fuel_name: "str") -> Tariff:
+def render_tariff_overwrite_options(tariffs: Tariff, fuel_name: "str") -> Tariff:
     st.subheader("Electricity")
 
     if "p_per_unit_elec_import" not in st.session_state:
