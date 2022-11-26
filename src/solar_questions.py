@@ -16,11 +16,6 @@ def render() -> "Solar":
         "you can enter the details here</a></p>",
         unsafe_allow_html=True,
     )
-    st.write(
-        """
-        - Search for your home below (you have to click on the address rather than pressing enter)
-        """
-    )
 
     try:
         polygons = roof.roof_mapper(800, 400)  # figure out how to save state here
@@ -36,10 +31,12 @@ def render() -> "Solar":
         #  I think 'polygons get reset when you change the page so would need to cache that for this to work
         st.session_state.number_of_panels_defined_by_dropdown = False
 
+    st.subheader("Orientation")
     orientation_options = [name for name, _ in SolarConstants.ORIENTATIONS.items()]
     if "orientation_name" not in st.session_state:
         st.session_state.orientation_name = solar_install_in.orientation.name
-    orientation_name: str = st.selectbox("Orientation of the side of the roof you have drawn on", orientation_options,
+    orientation_name: str = st.selectbox(label="Enter the orientation of the side of the roof you have drawn on",
+                                         options=orientation_options,
                                          key="orientation_name")
     orientation = SolarConstants.ORIENTATIONS[orientation_name]
 
