@@ -1,5 +1,5 @@
-""" Spelling out the state pieces because opaque otherwise. I think state (apart from st.session_state["page_state"])
-is lost when you move from one page to another"""
+""" Using session state solution described here:
+https://discuss.streamlit.io/t/make-a-widget-remember-its-value-after-it-is-hidden-and-shown-again-in-later-script-runs/29702/2"""
 
 from typing import Dict
 
@@ -24,8 +24,8 @@ def render() -> "House":
     house.envelope = render_building_envelope_questions(envelope=house.envelope)
     house.heating_system = render_heating_system_questions(heating_system=house.heating_system)
     if st.session_state.heating_fuel_changed:
-        update_tariffs_if_heating_fuel_changed(heating_system_fuel=house.heating_system.fuel,
-                                               tariffs=house.tariffs)
+        update_tariffs_for_new_heating_fuel(heating_fuel=house.heating_system.fuel,
+                                            tariffs=house.tariffs)
     house = render_assumptions_sidebar(house=house)
 
     render_results(house)
@@ -123,7 +123,6 @@ def render_heating_system_questions(heating_system: HeatingSystem) -> HeatingSys
 
 
 def write_baseline_heating_system_to_session_state(heating_system: HeatingSystem):
-
     if heating_system.fuel.name != st.session_state.heating_fuel_name:
         print(f"Behaves as if heating fuel changed from {st.session_state.heating_fuel_name} to"
               f" {heating_system.fuel.name}. Writing new fuel name to session state.")
@@ -139,12 +138,12 @@ def flag_change_in_heating_system():
     st.session_state.heating_system_changed = True
 
 
-def update_tariffs_if_heating_fuel_changed(heating_system_fuel: Fuel, tariffs: Dict[str, Tariff]):
+def update_tariffs_for_new_heating_fuel(heating_fuel: Fuel, tariffs: Dict[str, Tariff]):
     print(f"Update heating tariff as if heating fuel is now {st.session_state.heating_fuel_name}")
     st.session_state.heating_fuel_changed = False
-    if heating_system_fuel.name != 'electricity':  # if heating fuel is electric then use elec tariff already defined
-        heating_tariff = Tariff.set_up_heating_tariff(heating_system_fuel=heating_system_fuel)
-        tariffs[heating_system_fuel.name] = heating_tariff
+    if heating_fuel.name != 'electricity':  # if heating fuel is electric then use elec tariff already defined
+        heating_tariff = Tariff.set_up_heating_tariff(heating_system_fuel=heating_fuel)
+        tariffs[heating_fuel.name] = heating_tariff
         write_heating_tariffs_to_sessions_state(tariff=heating_tariff)
     print(f"Electric p per kWh = {tariffs['electricity'].p_per_unit_import}")
     return tariffs
@@ -159,7 +158,6 @@ def write_heating_tariffs_to_sessions_state(tariff: Tariff):
 
 
 def render_assumptions_sidebar(house: House) -> House:
-    print("Rendering assumptions sidebar")
     with st.sidebar:
         st.header("Assumptions")
         st.markdown(
@@ -211,7 +209,8 @@ def overwrite_envelope_assumptions(envelope: BuildingEnvelope) -> BuildingEnvelo
     )
     if st.session_state.base_demand_changed:  # scale profile  by correction factor
         print("Behaves as if base demand changed")
-        envelope.base_demand = st.session_state.annual_base_demand / int(envelope.base_demand.sum()) * envelope.base_demand
+        envelope.base_demand = st.session_state.annual_base_demand / int(
+            envelope.base_demand.sum()) * envelope.base_demand
         st.session_state.base_demand_changed = False
 
     print(f"annual_base_demand: {st.session_state.annual_base_demand}")
@@ -243,8 +242,11 @@ def overwrite_baseline_heating_system_assumptions(heating_system: "HeatingSystem
 
     print(f"baseline_heating_efficiency: {st.session_state.baseline_heating_efficiency}")
 
-    heating_system.efficiency = st.number_input(
-        label="Efficiency: ", min_value=0.1, max_value=8.0, key="baseline_heating_efficiency")
+    st.number_input(
+        label="Efficiency: ", min_value=0.1, max_value=8.0, value=st.session_state.baseline_heating_efficiency,
+        key="baseline_heating_efficiency_overwrite", on_change=overwrite_baseline_heating_efficiency_in_session_state)
+
+    heating_system.efficiency = st.session_state.baseline_heating_efficiency
 
     print(f"baseline_heating_efficiency: {st.session_state.baseline_heating_efficiency}")
 
@@ -259,6 +261,10 @@ def overwrite_baseline_heating_system_assumptions(heating_system: "HeatingSystem
     return heating_system
 
 
+def overwrite_baseline_heating_efficiency_in_session_state():
+    st.session_state.baseline_heating_efficiency = st.session_state.baseline_heating_efficiency_overwrite
+
+
 def overwrite_tariffs(tariffs: Tariff, fuel_name: "str") -> Tariff:
     if "p_per_unit_elec_import" not in st.session_state:  # Set initial values
         print("Writing electric rates to session state")
@@ -269,46 +275,84 @@ def overwrite_tariffs(tariffs: Tariff, fuel_name: "str") -> Tariff:
     print(f"p_per_unit_elec_import: {st.session_state.p_per_unit_elec_import}")
 
     st.subheader("Electricity")
-    tariffs["electricity"].p_per_unit_import = st.number_input(
-        label="Unit rate (p/kwh), electricity import", min_value=0.0, max_value=100.0, key="p_per_unit_elec_import"
-    )
-    tariffs["electricity"].p_per_unit_export = st.number_input(
-        label="Unit rate (p/kwh), electricity export", min_value=0.0, max_value=100.0, key="p_per_unit_elec_export"
-    )
-    tariffs["electricity"].p_per_day = st.number_input(
-        label="Standing charge (p/day), electricity", min_value=0.0, max_value=100.0, key="p_per_day_elec"
-    )
+
+    st.number_input(label="Unit rate (p/kwh), electricity import", min_value=0.0, max_value=100.0,
+                    value=st.session_state.p_per_unit_elec_import, key="p_per_unit_elec_import_overwrite",
+                    on_change=overwrite_elec_p_per_unit_import_in_session_state)
+
+    st.number_input(label="Unit rate (p/kwh), electricity export", min_value=0.0, max_value=100.0,
+                    value=st.session_state.p_per_unit_elec_export, key="p_per_unit_elec_export_overwrite",
+                    on_change=overwrite_elec_p_per_unit_export_in_session_state)
+
+    st.number_input(label="Standing charge (p/day), electricity", min_value=0.0, max_value=100.0,
+                    value=st.session_state.p_per_day_elec, key="p_per_day_elec_overwrite",
+                    on_change=overwrite_elec_p_per_day_in_session_state)
+
+    tariffs["electricity"].p_per_unit_import = st.session_state.p_per_unit_elec_import
+    tariffs["electricity"].p_per_unit_export = st.session_state.p_per_unit_elec_export
+    tariffs["electricity"].p_per_day = st.session_state.p_per_day_elec
+
     print(f"p_per_unit_elec_import: {st.session_state.p_per_unit_elec_import}")
 
     match fuel_name:  # only need to define other tariff if heating fuel is gas or oil as elec already defined
         case "gas":
-            print("rendered gas input boxes")
             if "p_per_unit_heating_fuel_import" not in st.session_state:
-                print("writing gas price to session state")
+                print("writing gas price to session state - maybe delete this?")
                 write_heating_tariffs_to_sessions_state(tariff=tariffs["gas"])
 
             st.subheader("Gas")
-            tariffs["gas"].p_per_unit_import = st.number_input(
-                label="Unit rate (p/kwh), gas", min_value=0.0, max_value=100.0, key="p_per_unit_heating_fuel_import"
-            )
-            tariffs["gas"].p_per_day = st.number_input(
-                label="Standing charge (p/day), gas", min_value=0.0, max_value=100.0, key="p_per_day_heating_fuel"
-            )
+            st.number_input(label="Unit rate (p/kwh), gas", min_value=0.0, max_value=100.0,
+                            value=st.session_state.p_per_unit_heating_fuel_import,
+                            key="p_per_unit_heating_fuel_import_overwrite",
+                            on_change=overwrite_p_per_unit_heating_fuel_import)
+            st.number_input(label="Standing charge (p/day), gas", min_value=0.0, max_value=100.0,
+                            value=st.session_state.p_per_day_heating_fuel,
+                            key="p_per_day_heating_fuel_overwrite",
+                            on_change=overwrite_p_per_unit_heating_fuel_import)
+
+            tariffs["gas"].p_per_unit_import = st.session_state.p_per_unit_heating_fuel_import
+            tariffs["gas"].p_per_day = st.session_state.p_per_day_heating_fuel
+
         case "oil":
             if "p_per_unit_heating_fuel_import" not in st.session_state:
-                print("writing oil price to session state")
+                print("writing oil price to session state - maybe delete this?")
                 write_heating_tariffs_to_sessions_state(tariff=tariffs["oil"])
 
             st.subheader("Oil")
-            tariffs["oil"].p_per_unit_import = st.number_input(
-                label="Oil price, (p/litre)", min_value=0.0, max_value=200.0, key="p_per_unit_heating_fuel_import"
-            )
+            st.number_input(label="Oil price, (p/litre)", min_value=0.0, max_value=200.0,
+                            value=st.session_state.p_per_unit_heating_fuel_import,
+                            key="p_per_unit_heating_fuel_import_overwrite",
+                            on_change=overwrite_p_per_unit_heating_fuel_import)
+
+            tariffs["oil"].p_per_unit_import = st.session_state.p_per_unit_heating_fuel_import
+
     st.caption(
         "Our default tariffs reflect the current [Energy Price Guarantee]("
         "https://www.gov.uk/government/publications/energy-bills-support/energy-bills-support-factsheet-8-september-2022)"
         " which is in place until April, but you can change them if you have fixed at a different rate."
     )
+
     return tariffs
+
+
+def overwrite_elec_p_per_unit_import_in_session_state():
+    st.session_state.p_per_unit_elec_import = st.session_state.p_per_unit_elec_import_overwrite
+
+
+def overwrite_elec_p_per_unit_export_in_session_state():
+    st.session_state.p_per_unit_elec_export = st.session_state.p_per_unit_elec_export_overwrite
+
+
+def overwrite_elec_p_per_day_in_session_state():
+    st.session_state.p_per_day_elec = st.session_state.p_per_day_elec_overwrite
+
+
+def overwrite_p_per_unit_heating_fuel_import():
+    st.session_state.p_per_unit_heating_fuel_import = st.session_state.p_per_unit_heating_fuel_import_overwrite
+
+
+def overwrite_p_per_day_heating_fuel():
+    st.session_state.p_per_day_heating_fuel = st.session_state.p_per_day_heating_fuel_overwrite
 
 
 def render_results(house: House):
