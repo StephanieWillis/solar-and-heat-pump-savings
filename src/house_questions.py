@@ -188,14 +188,17 @@ def overwrite_envelope_assumptions(envelope: BuildingEnvelope) -> BuildingEnvelo
 
     print(f"annual_heating_demand: {st.session_state.annual_heating_demand}")
 
-    annual_heating_demand_overwrite = st.number_input(
-        label="Space and water heating (kwh): ", min_value=0, max_value=100000, key="annual_heating_demand",
+    st.number_input(
+        label="Space and water heating (kwh): ",
+        min_value=0, max_value=100000,
+        value=st.session_state.annual_heating_demand,
+        key="annual_heating_demand_overwrite",
         on_change=flag_change_in_heating_demand
     )
 
     if st.session_state.heating_demand_changed:  # scale profile  by correction factor
         print("Behaves as if heating demand changed")
-        envelope.annual_heating_demand = annual_heating_demand_overwrite
+        envelope.annual_heating_demand = st.session_state.annual_heating_demand
         st.session_state.heating_demand_changed = False
 
     print(f"annual_heating_demand: {st.session_state.annual_heating_demand}")
@@ -207,7 +210,9 @@ def overwrite_envelope_assumptions(envelope: BuildingEnvelope) -> BuildingEnvelo
     print(f"annual_base_demand: {st.session_state.annual_base_demand}")
 
     st.number_input(
-        label="Lighting, appliances, plug loads etc. (kwh): ", min_value=0, max_value=100000,
+        label="Lighting, appliances, plug loads etc. (kwh): ",
+        min_value=0,
+        max_value=100000,
         value=st.session_state.annual_base_demand,
         key="annual_base_demand_overwrite",
         on_change=flag_change_in_base_demand
@@ -230,6 +235,7 @@ def overwrite_envelope_assumptions(envelope: BuildingEnvelope) -> BuildingEnvelo
 
 
 def flag_change_in_heating_demand():
+    st.session_state.annual_heating_demand = st.session_state.annual_heating_demand_overwrite
     st.session_state.heating_demand_changed = True
 
 
