@@ -6,9 +6,9 @@ this_file = Path(__name__)
 
 primary_hue = 158
 
-primary_dark = f'hsl({primary_hue},50%,50%)'
-primary_light = f'hsl({primary_hue},50%,90%)'
-primary_desat = f'hsl({primary_hue},5%,95%)'
+primary_dark = f"hsl({primary_hue},50%,50%)"
+primary_light = f"hsl({primary_hue},50%,90%)"
+primary_desat = f"hsl({primary_hue},5%,95%)"
 
 style = """
 
@@ -44,7 +44,9 @@ p.bill-estimate {
     color: hsl(220, 60%, 30%);   
 }
 
-
+p.next-steps {
+    font-size: 16px;
+}
 
 p.bill-label{
     font-size: 1.5em;
@@ -52,7 +54,7 @@ p.bill-label{
     
 }
 
-p.bill-details{
+p.bill-details, div.install-disclaimer{
     font-size: 1em;
     color: hsl(220, 30%, 70%);   
 }
@@ -114,6 +116,17 @@ h2 {
     color: hsl(220, 10%, 30%);
 }
 
+h3 {
+    margin-top: -1em;
+    font-size: 1.2em;
+    font-weight: bold;
+    line-height: 1.4em;
+    margin-bottom: .1em;
+    color: hsl(220, 10%, 30%);
+    scroll-margin-top: 50px;
+}
+
+
 /* This is the main container */
 #root > div:nth-child(1) > div.withScreencast > div > div > div > section > div > div:nth-child(1) > div > div:nth-child(2) > div{
     
@@ -164,6 +177,67 @@ button.css-sc7x0u.edgvbvh9 {
     color: hsl(0,0%,0%); 
 }
 
+div.toc, p.toc, div.saving-maths {
+    border-radius: 10px;
+    background-color: hsl(220, 60%, 95%);
+    color: hsl(220, 10%, 40%);
+    padding: 15px;
+    line-height: 15px;
+    font-size: 18px;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+div.saving-maths {
+ text-align: center;
+ font-size: 14px;
+ color: hsl(0, 0%, 31%, 1);
+ padding: 30px;
+ display: flex;
+ flex-direction: column;
+ justify-content: space-between;
+ 
+}
+
+p.install-disclaimer {
+    text-weight:400;
+    color: hsl(220, 30%, 70%);
+    font-size: 10px;
+    margin: 0;
+}
+
+p.saving-maths,p.saving-maths-headline {
+    color: hsl(0, 0%, 31%);
+    line-height:12px;
+}
+
+p.saving-maths-headline {
+ font-size: 20px;
+ font-weight: 700;
+ space-after: 80px;
+ display: block;
+ margin: 10px;
+}
+
+a.toc {
+font-weight: 600;
+    text-decoration-line: underline;
+    text-decoration-style: dotted;
+    color: hsl(220, 10%, 40%);
+}
+
+p.toc, ul.toc, li.toc{
+    list-style-type: none;
+    margin: 0;
+    padding: 5px 8px;
+    line-height: 12px;
+       
+}
+
+ ul.toc, li.toc {
+ font-size: 15px;
+ }
+
 @media only screen and (max-width: 650px) {
   button.css-1q8dd3e {
     text-align: center;
@@ -184,13 +258,13 @@ button.css-sc7x0u.edgvbvh9 {
      display: none;
   }
 }
+
+
 """
 
-style = style.replace('primary_desat', primary_desat)
+style = style.replace("primary_desat", primary_desat)
 
 
 def inject_style():
     """Reads a local stylesheet and injects it"""
-    st.markdown(
-        "<style>" + style + "</style>", unsafe_allow_html=True
-    )
+    st.markdown("<style>" + style + "</style>", unsafe_allow_html=True)

@@ -11,17 +11,15 @@ def render() -> "Solar":
 
     st.header("How much solar power could you generate?")
     st.markdown(
-        f"<p class='more-info'> If you already have a solar array <a  href='javascript:document.getElementsByClassName({CLASS_NAME_OF_SIDEBAR_DIV})[1].click();' target='_self'>"
+        f"<p class='more-info'> If you already have a solar array <a  href='javascript:document.getElementsByClassName("
+        f"{CLASS_NAME_OF_SIDEBAR_DIV})[1].click();' target='_self'>"
         "you can enter the details here</a></p>",
         unsafe_allow_html=True,
     )
     st.write(
         """
         - Search for your home below (you have to click on the address rather than pressing enter)
-        - Using the tool with the ⭓ icon, draw the biggest rectangle that fits on your most south facing roof
-        - Make sure you 'close' the rectangle by clicking back on the first point at the end
-        - You can draw multiple rectangles if needed
-        - Enter the orientation of the side of the roof you have drawn on"""
+        """
     )
 
     try:
@@ -35,6 +33,7 @@ def render() -> "Solar":
     if "number_of_panels_defined_by_dropdown" not in st.session_state:  # initialise value
         st.session_state.number_of_panels_defined_by_dropdown = False
     if polygons != solar_install_in.polygons:  # if polygons have changed:
+        #  I think 'polygons get reset when you change the page so would need to cache that for this to work
         st.session_state.number_of_panels_defined_by_dropdown = False
 
     orientation_options = [name for name, _ in SolarConstants.ORIENTATIONS.items()]
@@ -60,12 +59,11 @@ def get_solar_install_from_session_state_if_exists_or_create_default():
     return solar_install
 
 
-def overwrite_number_of_panels():
+def flag_that_number_of_panels_defined_by_dropdown():
     st.session_state.number_of_panels_defined_by_dropdown = True
 
 
 def render_and_update_solar_inputs(solar_install: "Solar"):
-    # Note: once this has been overwritten it is decoupled from roof area for the rest of the session
 
     if "number_of_panels" not in st.session_state or st.session_state.number_of_panels_defined_by_dropdown is False:
         st.session_state.number_of_panels = solar_install.number_of_panels
@@ -73,7 +71,7 @@ def render_and_update_solar_inputs(solar_install: "Solar"):
 
     solar_install.number_of_panels = st.number_input(
         label="Number of panels", min_value=0, max_value=None, key="number_of_panels", value=0,
-        on_change=overwrite_number_of_panels
+        on_change=flag_that_number_of_panels_defined_by_dropdown
     )
 
     solar_install.kwp_per_panel = st.number_input(

@@ -34,6 +34,8 @@ class Solar:
         self.number_of_panels = self.get_number_of_panels_from_polygons()
         self.kwp_per_panel = SolarConstants.KW_PEAK_PER_PANEL
 
+        self.lifetime = SolarConstants.LIFETIME
+
     def __hash__(self):
         return hash((self.latitude,
                      self.longitude,
@@ -65,6 +67,18 @@ class Solar:
         area = self.convert_plan_value_to_value_along_pitch(self.roof_plan_area)
         return area
 
+    @property
+    def capacity_kwp(self):
+        return self.number_of_panels * self.kwp_per_panel
+
+    @property
+    def upfront_cost(self):
+        if self.capacity_kwp <= 4:
+            cost_per_kwp = SolarConstants.COST_PER_KWP_LESS_THAN_4_KW
+        else:
+            cost_per_kwp = SolarConstants.COST_PER_KWP_MORE_THAN_4_KW
+        return round(self.capacity_kwp * cost_per_kwp, -2)
+
     def convert_plan_value_to_value_along_pitch(self, value: float):
         return value / np.cos(np.radians(self.pitch))
 
@@ -94,7 +108,7 @@ class Solar:
 
     def max_number_of_panels_in_a_rectangle(self, polygon) -> int:
         """ Assume shape is rectangular. Try panels in either orientation"""
-        roof_height = polygon.average_plan_height / np.cos(np.radians(self.pitch))
+        roof_height = self.convert_plan_value_to_value_along_pitch(polygon.average_plan_height)
         print(f"roof height = {roof_height}, roof_width = {polygon.average_width}")
         # Typically, installers leave a bigger border on big roofs. Increase border if fit more than 2 rows height-wise
         if roof_height >= 2 * (SolarConstants.SMALL_PANEL_BORDER_M + SolarConstants.PANEL_HEIGHT_M):

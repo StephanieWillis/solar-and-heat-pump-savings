@@ -52,14 +52,11 @@ class ConsumptionStream:
         return annual_tco2
 
     def add(self, other: 'ConsumptionStream') -> 'ConsumptionStream':
-        if self.fuel == other.fuel:
-            if self.year == other.year:
-                combined_hourly_profile_kwh = self.hourly_profile_kwh + other.hourly_profile_kwh
-                combined = ConsumptionStream(hourly_profile_kwh=combined_hourly_profile_kwh, fuel=self.fuel)
-            else:
-                raise ValueError("The year must be the same to be able to sum two profiles")
+        if self.year == other.year:
+            combined_hourly_profile_kwh = self.hourly_profile_kwh + other.hourly_profile_kwh
+            combined = ConsumptionStream(hourly_profile_kwh=combined_hourly_profile_kwh, fuel=self.fuel)
         else:
-            raise ValueError("The fuel of the two consumption streams must match")
+            raise ValueError("The year must be the same to be able to sum two profiles")
         return combined
 
 
