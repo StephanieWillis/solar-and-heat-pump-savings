@@ -29,10 +29,6 @@ def render(house: "House", solar_install: "Solar"):
     hp_house, solar_house, both_house = retrofit.upgrade_buildings(
         baseline_house=house, upgrade_heating=upgrade_heating, upgrade_solar=upgrade_solar
     )
-    assert hp_house.envelope.annual_heating_demand == house.envelope.annual_heating_demand
-    print("elec consumption", hp_house.consumption_per_fuel['electricity'].overall.annual_sum_kwh)
-    print("elec plus heating", hp_house.heating_consumption.overall.annual_sum_kwh
-          + hp_house.electricity_consumption_excluding_heating.overall.annual_sum_kwh)
     assert (hp_house.consumption_per_fuel['electricity'].overall.annual_sum_kwh -
             hp_house.heating_consumption.overall.annual_sum_kwh
             - hp_house.electricity_consumption_excluding_heating.overall.annual_sum_kwh) < 0.1
