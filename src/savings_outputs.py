@@ -13,15 +13,8 @@ from solar_questions import render_solar_overwrite_options
 
 
 def render(house: "House", solar_install: "Solar"):
-
-    upgrade_heating = get_upgrade_heating_from_session_state_if_exists_or_create_default()
-
-    solar_house, hp_house, both_house = retrofit.upgrade_buildings(
-        baseline_house=house, solar_install=solar_install, upgrade_heating=upgrade_heating, )
-
-    # Figure out if this should be above upgrade buildings and only adjust the inputs?
-    house, solar_house, hp_house, both_house = render_savings_assumptions_sidebar(
-        house=house, hp_house=hp_house, solar_house=solar_house, both_house=both_house)
+    house, solar_house, hp_house, both_house = render_savings_assumptions_sidebar_and_calculate_upgraded_houses(
+        house=house, solar_install=solar_install)
 
     solar_retrofit, hp_retrofit, both_retrofit = retrofit.generate_all_retrofit_cases(
         baseline_house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
@@ -30,47 +23,41 @@ def render(house: "House", solar_install: "Solar"):
                    solar_retrofit=solar_retrofit, hp_retrofit=hp_retrofit, both_retrofit=both_retrofit)
 
 
-def get_upgrade_heating_from_session_state_if_exists_or_create_default():
-    if "upgrade_heating" not in st.session_state["page_state"]:
-        upgrade_heating = HeatingSystem.from_constants(
-            name="Heat pump", parameters=constants.DEFAULT_HEATING_CONSTANTS["Heat pump"]
-        )
-        st.session_state["page_state"]["upgrade_heating"] = dict(upgrade_heating=upgrade_heating)
-    else:
-        upgrade_heating = st.session_state["page_state"]["upgrade_heating"]["upgrade_heating"]
-        return upgrade_heating
-
-
-def render_savings_assumptions_sidebar(house: House, solar_house: House, hp_house: House, both_house: House
-                                       ) -> Tuple[House, House, House, House]:
-
+def render_savings_assumptions_sidebar_and_calculate_upgraded_houses(house: House, solar_install: Solar,
+                                                                     ) -> Tuple[House, House, House, House]:
     with st.sidebar:
         st.header("Assumptions")
         st.subheader("Current Performance")
         house = house_questions.render_house_overwrite_options(house)
 
         st.subheader("Improvement Options")
-        upgrade_heating, upgrade_solar = render_improvement_overwrite_options(solar_install=solar_house.solar_install)
+        solar_install, upgrade_heating = render_improvement_overwrite_options(solar_install=solar_install)
 
-        st.subheader("Upfront Costs")
-        house, upgrade_heating, upgrade_solar = render_upfront_cost_overwrite_options()
+        solar_house, hp_house, both_house = retrofit.upgrade_buildings(
+            baseline_house=house, solar_install=solar_install, upgrade_heating=upgrade_heating)
 
-        # TODO: upgrade both house
+        st.subheader("Costs")
+        house, solar_house, hp_house, both_house = render_cost_overwrite_options(house=house,
+                                                                                 solar_house=solar_house,
+                                                                                 hp_house=hp_house,
+                                                                                 both_house=both_house)
 
+        st.text("")
     return house, solar_house, hp_house, both_house
 
 
-def render_improvement_overwrite_options(solar_install: Solar) -> Tuple[HeatingSystem, Solar]:
+def render_improvement_overwrite_options(solar_install: Solar) -> Tuple[Solar, HeatingSystem]:
     with st.expander("Solar PV assumptions "):
         solar_install = render_solar_overwrite_options(solar_install=solar_install)
     with st.expander("Heat pump assumptions"):
         upgrade_heating = render_heat_pump_overwrite_options()
     st.text("")
 
-    return upgrade_heating, solar_install
+    return solar_install, upgrade_heating
 
 
-def render_heat_pump_overwrite_options(upgrade_heating: HeatingSystem) -> HeatingSystem:
+def render_heat_pump_overwrite_options() -> HeatingSystem:
+    upgrade_heating = get_upgrade_heating_from_session_state_if_exists_or_create_default()
 
     if "upgrade_heating_efficiency" not in st.session_state:
         st.session_state.upgrade_heating_efficiency = upgrade_heating.efficiency
@@ -98,44 +85,75 @@ def render_heat_pump_overwrite_options(upgrade_heating: HeatingSystem) -> Heatin
     return upgrade_heating
 
 
+def get_upgrade_heating_from_session_state_if_exists_or_create_default() -> HeatingSystem:
+    if "upgrade_heating" not in st.session_state["page_state"]:
+        upgrade_heating = HeatingSystem.from_constants(
+            name="Heat pump", parameters=constants.DEFAULT_HEATING_CONSTANTS["Heat pump"]
+        )
+        st.session_state["page_state"]["upgrade_heating"] = dict(upgrade_heating=upgrade_heating)
+    else:
+        upgrade_heating = st.session_state["page_state"]["upgrade_heating"]["upgrade_heating"]
+    return upgrade_heating
+
+
 def overwrite_upgrade_heating_efficiency_in_session_state():
     st.session_state.upgrade_heating_efficiency = st.session_state.upgrade_heating_efficiency_overwrite
     st.session_state.upgrade_heating_efficiency_overwritten = True
 
 
-def render_upfront_cost_overwrite_options(house: "House", hp_house: "House", upgrade_solar: "Solar"
-                                          ) -> ("House", "House", "Solar"):
-    # Figure out how to deal with baseline heating system or solar size overwrite
+def render_cost_overwrite_options(house: House, solar_house: House, hp_house: House, both_house: House
+                                  ) -> Tuple[House, House, House, House]:
+    with st.expander("Upfront Costs"):
+        house, solar_house, hp_house, both_house = render_upfront_cost_overwrite_options(house=house,
+                                                                                         solar_house=solar_house,
+                                                                                         hp_house=hp_house,
+                                                                                         both_house=both_house)
+        st.text("")
+    with st.expander("Grants"):
+        hp_grant = 5000
+        st.write("To do")
+    return house, solar_house, hp_house, both_house
+
+
+def render_upfront_cost_overwrite_options(house: House, solar_house: House, hp_house: House, both_house: House
+                                          ) -> Tuple[House, House, House, House]:
+    """ Update baseline heating cost, heat pump cost, or solar cost.
+
+     Have to pass whole house as costs only defined for heating systems when have envelope plus heating system
+     """
+
     if "baseline_heating_cost" not in st.session_state:
-        st.session_state.baseline_heating_cost = house.upfront_cost
+        st.session_state.baseline_heating_cost = house.heating_system_upfront_cost
         st.session_state.baseline_heating_cost_overwritten = False
 
     st.number_input(
         label="Baseline heating system cost",
-        min_value=0.0,
+        min_value=0,
         max_value=30000,
         value=st.session_state.baseline_heating_cost,
         key="baseline_heating_cost_overwrite",
         on_change=flag_that_baseline_heating_cost_overwritten)
 
     if st.session_state.baseline_heating_cost_overwritten:
-        house.upfront_cost = st.session_state.baseline_heating_cost
+        house.heating_system_upfront_cost = st.session_state.baseline_heating_cost
+        solar_house.heating_system_upfront_cost = st.session_state.baseline_heating_cost
         st.session_state.baseline_heating_cost_overwritten = False
 
     if "solar_cost" not in st.session_state:
-        st.session_state.solar_cost = upgrade_solar.upfront_cost
+        st.session_state.solar_cost = solar_house.solar_install.upfront_cost
         st.session_state.solar_cost_overwritten = False
 
     st.number_input(
         label="Solar cost",
-        min_value=0.0,
+        min_value=0,
         max_value=30000,
         value=st.session_state.solar_cost,
         key="solar_cost_overwrite",
         on_change=flag_that_solar_cost_overwritten)
 
     if st.session_state.solar_cost_overwritten:
-        upgrade_solar.upfront_cost = st.session_state.solar_cost
+        solar_house.solar_install.upfront_cost = st.session_state.solar_cost
+        both_house.solar_install.upfront_cost = st.session_state.solar_cost
         st.session_state.solar_cost_overwritten = False
 
     if "heat_pump_cost" not in st.session_state:
@@ -144,19 +162,18 @@ def render_upfront_cost_overwrite_options(house: "House", hp_house: "House", upg
 
     st.number_input(
         label="Heat pump cost",
-        min_value=0.0,
+        min_value=0,
         max_value=30000,
         value=st.session_state.heat_pump_cost,
         key="heat_pump_cost_overwrite",
         on_change=flag_that_heat_pump_cost_overwritten)
 
     if st.session_state.heat_pump_cost_overwritten:
-        hp_house.upfront_cost = st.session_state.heat_pump_cost
+        hp_house.heating_system_upfront_cost = st.session_state.heat_pump_cost
+        both_house.heating_system_upfront_cost = st.session_state.heat_pump_cost
         st.session_state.heat_pump_cost_overwritten = False
 
-    #  Add grant? or elsewhere
-
-    return house, hp_house, upgrade_solar
+    return house, solar_house, hp_house, both_house
 
 
 def flag_that_baseline_heating_cost_overwritten():
@@ -177,7 +194,6 @@ def flag_that_solar_cost_overwritten():
 def render_results(house: House, solar_house: House, hp_house: House, both_house: House,
                    solar_retrofit: retrofit.Retrofit, hp_retrofit: retrofit.Retrofit,
                    both_retrofit: retrofit.Retrofit):
-
     # Combine results all variables
     results_df = retrofit.combine_results_dfs_multiple_houses(
         [house, solar_house, hp_house, both_house],

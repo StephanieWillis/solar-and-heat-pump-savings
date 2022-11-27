@@ -25,6 +25,8 @@ class House:
 
         self.lifetime = (heating_system.lifetime + solar_install.lifetime)/2  # very rough approach
 
+        self._heating_system_upfront_cost: int | None = None  # to help with overwrites
+
     @classmethod
     def set_up_from_heating_name(cls, envelope: 'BuildingEnvelope', heating_name: str) -> 'House':
         heating_system = HeatingSystem.from_constants(name=heating_name,
@@ -107,9 +109,26 @@ class House:
         return df
 
     @property
+    def heating_system_upfront_cost(self) -> int:
+        if self._heating_system_upfront_cost is None:
+            cost = self.heating_system.calculate_upfront_cost(house_type=self.envelope.house_type)
+            rounded_cost = round(cost, -2)
+        else:  # if has been overwritten, will remain overwritten unless clear_cost_overwrite function called
+            rounded_cost = self._heating_system_upfront_cost
+        return int(rounded_cost)
+
+    @heating_system_upfront_cost.setter
+    def heating_system_upfront_cost(self, value):
+        if value is not None:
+            value = round(value, -2)
+        self._heating_system_upfront_cost = value
+
+    def clear_cost_overwrite(self):
+        self.heating_system_upfront_cost = None
+
+    @property
     def upfront_cost(self) -> int:
-        cost = (self.heating_system.calculate_upfront_cost(house_type=self.envelope.house_type)
-                + self.solar_install.upfront_cost)
+        cost = self.heating_system_upfront_cost + self.solar_install.upfront_cost
         rounded_cost = round(cost, -2)
         return rounded_cost
 
@@ -211,5 +230,3 @@ class BuildingEnvelope:
         return cls(house_type=building_type_constants.name,
                    annual_heating_demand=building_type_constants.annual_heat_demand_kWh,
                    base_electricity_demand_profile_kwh=base_electricity_demand_profile)
-
-
