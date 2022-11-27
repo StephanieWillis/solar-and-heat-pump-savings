@@ -144,7 +144,9 @@ def overwrite_kwp_of_panels_in_session_state():
 
 
 def write_solar_cost_to_session_state(solar_install):
+    solar_install.clear_cost_overwrite()
     st.session_state.solar_cost = solar_install.upfront_cost
+    st.session_state.solar_cost_overwritten = False
 
 
 def render_results(solar_install: Solar):

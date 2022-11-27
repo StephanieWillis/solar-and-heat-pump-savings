@@ -145,7 +145,6 @@ def render_upfront_cost_overwrite_options(house: House, solar_house: House, hp_h
 
     if "solar_cost" not in st.session_state:
         solar_questions.write_solar_cost_to_session_state(solar_install=solar_house.solar_install)
-        st.session_state.solar_cost_overwritten = False
 
     st.number_input(
         label="Solar cost",
@@ -247,7 +246,7 @@ def render_results(house: House, solar_house: House, hp_house: House, both_house
             "</div>"
             "<div class='saving-maths'>"
             "<div>"
-            f"<p class='saving-maths-headline'> ~£{int(solar_house.solar_install.upfront_cost / 1000) * 1000:,d}</p>"
+            f"<p class='saving-maths-headline'> ~£{solar_house.solar_install.upfront_cost:,d}</p>"
             "<p class='saving-maths'> to install</p>"
             "</div>"
             "<div>"
@@ -266,7 +265,7 @@ def render_results(house: House, solar_house: House, hp_house: House, both_house
             f"<p> with a heat pump</p>"
             "<div class='saving-maths'>"
             "<div>"
-            f"<p class='saving-maths-headline'> ~£{int(hp_house.upfront_cost_after_grants / 1000) * 1000:,d}</p>"
+            f"<p class='saving-maths-headline'> ~£{hp_house.upfront_cost_after_grants:,d}</p>"
             "<p class='saving-maths'> to install</p>"
             "</div>"
             "<div>"
@@ -285,7 +284,7 @@ def render_results(house: House, solar_house: House, hp_house: House, both_house
             "<p> with both</p>"
             "<div class='saving-maths'>"
             "<div>"
-            f"<p class='saving-maths-headline'> ~£{int(both_house.upfront_cost_after_grants / 1000) * 1000:,d}</p>"
+            f"<p class='saving-maths-headline'> ~£{both_house.upfront_cost_after_grants:,d}</p>"
             "<p class='saving-maths'> to install</p>"
             "</div>"
             "<div>"
