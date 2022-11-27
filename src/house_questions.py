@@ -155,8 +155,8 @@ def render_assumptions_sidebar(house: House) -> House:
 
 
 def render_house_overwrite_options(house: House):
-    with st.expander("Consumption"):
-        house.envelope = render_envelope_overwrite_options(house=house)
+    with st.expander("Energy use"):
+        house.envelope = render_consumption_overwrite_options(house=house)
     with st.expander("Baseline heating system"):
         house.heating_system = render_baseline_heating_system_overwrite_options(heating_system=house.heating_system)
     with st.expander("Tariff"):
@@ -164,7 +164,7 @@ def render_house_overwrite_options(house: House):
     return house
 
 
-def render_envelope_overwrite_options(house: 'House') -> BuildingEnvelope:
+def render_consumption_overwrite_options(house: 'House') -> BuildingEnvelope:
 
     heat_label = f"{house.heating_system.fuel.name.capitalize()} use for heat/hot water" \
                  f" ({house.heating_system.fuel.units})"
