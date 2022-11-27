@@ -132,6 +132,10 @@ class House:
         rounded_cost = round(cost, -2)
         return rounded_cost
 
+    @property
+    def upfront_cost_after_grants(self) -> int:
+        return self.upfront_cost - self.heating_system.grant
+
 
 @dataclass
 class Tariff:
@@ -186,16 +190,17 @@ class HeatingSystem:
     hourly_normalized_demand_profile: pd.Series
     lifetime = constants.HEATING_SYSTEM_LIFETIME
 
+    def __post_init__(self):
+        self.grant = constants.HEATING_SYSTEM_GRANTS[self.name]
+        if self.fuel not in constants.FUELS:
+            raise ValueError(f"fuel must be one of {constants.FUELS}")
+
     @classmethod
     def from_constants(cls, name, parameters: constants.HeatingConstants):
         return cls(name=name,
                    efficiency=parameters.efficiency,
                    fuel=parameters.fuel,
                    hourly_normalized_demand_profile=parameters.normalized_hourly_heat_demand_profile)
-
-    def __post_init__(self):
-        if self.fuel not in constants.FUELS:
-            raise ValueError(f"fuel must be one of {constants.FUELS}")
 
     def calculate_consumption(self, annual_space_heating_demand_kwh: float) -> Consumption:
         try:
@@ -207,8 +212,6 @@ class HeatingSystem:
 
     def calculate_upfront_cost(self, house_type: str):
         cost = constants.HEATING_SYSTEM_COSTS[self.name][house_type]
-        if self.name == "Heat pump":
-            cost = cost - constants.HEAT_PUMP_GRANT
         return cost
 
 

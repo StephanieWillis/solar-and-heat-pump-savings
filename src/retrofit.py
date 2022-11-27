@@ -32,7 +32,7 @@ class Retrofit:
 
     @property
     def incremental_cost(self):
-        return self.upgrade_house.upfront_cost - self.baseline_house.upfront_cost
+        return self.upgrade_house.upfront_cost_after_grants - self.baseline_house.upfront_cost
 
     @property
     def simple_payback(self) -> float:
@@ -47,7 +47,6 @@ def upgrade_buildings(baseline_house: 'House', solar_install: 'Solar', upgrade_h
                       ) -> Tuple['House', 'House', 'House']:
     hp_house = copy.deepcopy(baseline_house)  # do after modifications so modifications flow through
     hp_house.heating_system = upgrade_heating
-    print("setting up heat pump house")
 
     solar_house = copy.deepcopy(baseline_house)
     solar_house.solar_install = solar_install

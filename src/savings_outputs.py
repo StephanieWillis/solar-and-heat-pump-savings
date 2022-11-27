@@ -110,8 +110,7 @@ def render_cost_overwrite_options(house: House, solar_house: House, hp_house: Ho
                                                                                          both_house=both_house)
         st.text("")
     with st.expander("Grants"):
-        hp_grant = 5000
-        st.write("To do")
+        hp_house, both_house = render_grant_overwrite_options(hp_house=hp_house, both_house=both_house)
     return house, solar_house, hp_house, both_house
 
 
@@ -161,7 +160,7 @@ def render_upfront_cost_overwrite_options(house: House, solar_house: House, hp_h
         st.session_state.heat_pump_cost_overwritten = False
 
     st.number_input(
-        label="Heat pump cost",
+        label="Heat pump cost (without grants)",
         min_value=0,
         max_value=30000,
         value=st.session_state.heat_pump_cost,
@@ -189,6 +188,32 @@ def flag_that_heat_pump_cost_overwritten():
 def flag_that_solar_cost_overwritten():
     st.session_state.solar_cost = st.session_state.solar_cost_overwrite
     st.session_state.solar_cost_overwritten = True
+
+
+def render_grant_overwrite_options(hp_house: House, both_house: House) -> Tuple[House, House]:
+    if "heat_pump_grant_value" not in st.session_state:
+        st.session_state.heat_pump_grant_value = hp_house.heating_system.grant
+        st.session_state.heat_pump_grant_value_overwritten = False
+
+    st.number_input(
+        label="Heat pump grant amount",
+        min_value=0,
+        max_value=20000,
+        value=st.session_state.heat_pump_grant_value,
+        key="heat_pump_grant_value_overwrite",
+        on_change=flag_that_heat_pump_grant_value_overwritten)
+
+    if st.session_state.heat_pump_grant_value_overwritten:
+        hp_house.heating_system.grant = st.session_state.heat_pump_grant_value
+        both_house.heating_system.grant = st.session_state.heat_pump_grant_value
+        st.session_state.heat_pump_grant_value_overwritten = False
+
+    return hp_house, both_house
+
+
+def flag_that_heat_pump_grant_value_overwritten():
+    st.session_state.heat_pump_grant_value = st.session_state.heat_pump_grant_value_overwrite
+    st.session_state.heat_pump_grant_value_overwritten = True
 
 
 def render_results(house: House, solar_house: House, hp_house: House, both_house: House,
@@ -220,7 +245,7 @@ def render_results(house: House, solar_house: House, hp_house: House, both_house
             "<div>"
             f"<p class='saving-maths-headline'> {format_payback(solar_retrofit.simple_payback)}</p>"
             "<p class='saving-maths'> payback time</p>"
-            "<p class='install-disclaimer'> costs after grants </p> "
+            "<p class='install-disclaimer'>                                                                  </p> "
             "<br>"
             "</div>"
             "</div>",
@@ -233,13 +258,13 @@ def render_results(house: House, solar_house: House, hp_house: House, both_house
             f"<p> with a heat pump</p>"
             "<div class='saving-maths'>"
             "<div>"
-            f"<p class='saving-maths-headline'> ~£{int(hp_house.upfront_cost / 1000) * 1000:,d}</p>"
+            f"<p class='saving-maths-headline'> ~£{int(hp_house.upfront_cost_after_grants / 1000) * 1000:,d}</p>"
             "<p class='saving-maths'> to install</p>"
             "</div>"
             "<div>"
             f"<p class='saving-maths-headline'> {format_payback(hp_retrofit.simple_payback)}</p>"
             "<p class='saving-maths'> payback time</p>"
-            "<p class='install-disclaimer'> costs after grants, assuming avoided boiler replacement </p> "
+            "<p class='install-disclaimer'> cost after grant, payback assumes avoided boiler replacement </p> "
             "</div>"
             "</div>",
             unsafe_allow_html=True,
@@ -252,14 +277,14 @@ def render_results(house: House, solar_house: House, hp_house: House, both_house
             "<p> with both</p>"
             "<div class='saving-maths'>"
             "<div>"
-            f"<p class='saving-maths-headline'> ~£{int(both_house.upfront_cost / 1000) * 1000:,d}</p>"
+            f"<p class='saving-maths-headline'> ~£{int(both_house.upfront_cost_after_grants / 1000) * 1000:,d}</p>"
             "<p class='saving-maths'> to install</p>"
             "</div>"
             "<div>"
             f"<p class='saving-maths-headline'> {format_payback(both_retrofit.simple_payback)}</p>"
             "<p class='saving-maths'> payback time</p>"
             "</div>"
-            "<p class='install-disclaimer'> costs after grants, assuming avoided boiler replacement </p> "
+            "<p class='install-disclaimer'> cost after grant, payback assumes avoided boiler replacement </p> "
             "</div>",
             unsafe_allow_html=True,
         )
@@ -309,6 +334,7 @@ def render_results(house: House, solar_house: House, hp_house: House, both_house
             unsafe_allow_html=True,
         )
     with st.expander("Show me the maths!"):
+        st.subheader("Carbon")
         render_carbon_chart(results_df)
         render_carbon_outputs(house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
 

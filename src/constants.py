@@ -106,14 +106,19 @@ DEFAULT_HEATING_CONSTANTS = {
 # https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/656866/BEIS_Update_of_Domestic_Cost_Assumptions_031017.pdf
 # https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1104051/CODE-Final-Report-WHOLE-FINAL-v20.pdf
 HEAT_PUMP_COSTS = {"Terrace": 10000, "Semi-detached": 11100, "Flat": 9100, "Detached": 13100}
-GAS_BOILER_COSTS = {"Terrace": 1800 * 10000/11100, "Semi-detached": 1800, "Flat": 1500, "Detached": 2200}
+GAS_BOILER_COSTS = {"Terrace": 1800 * 10000 / 11100, "Semi-detached": 1800, "Flat": 1500, "Detached": 2200}
 HEATING_SYSTEM_COSTS = {"Gas boiler": GAS_BOILER_COSTS,
                         "Heat pump": HEAT_PUMP_COSTS,
                         "Oil boiler": GAS_BOILER_COSTS,  # assume they are the same
                         "Direct electric": GAS_BOILER_COSTS
                         }
-HEAT_PUMP_GRANT = 5000  # Boiler upgrade scheme
+HEATING_SYSTEM_GRANTS = {"Gas boiler": 0,
+                         "Heat pump": 5000,  # Boiler upgrade scheme,
+                         "Oil boiler": 0,
+                         "Direct electric": 0
+                         }
 HEATING_SYSTEM_LIFETIME = 20
+
 
 # TODO: reference nesta tool: http://asf-hp-cost-demo-l-b-1046547218.eu-west-1.elb.amazonaws.com
 
