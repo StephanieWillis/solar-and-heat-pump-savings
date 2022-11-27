@@ -46,12 +46,14 @@ class Retrofit:
 def upgrade_buildings(baseline_house: 'House', solar_install: 'Solar', upgrade_heating: 'HeatingSystem'
                       ) -> Tuple['House', 'House', 'House']:
     hp_house = copy.deepcopy(baseline_house)  # do after modifications so modifications flow through
+    hp_house.clear_cost_overwrite()  # so that changes in baseline cost don't flow through into hp_house
     hp_house.heating_system = upgrade_heating
 
     solar_house = copy.deepcopy(baseline_house)
     solar_house.solar_install = solar_install
 
     both_house = copy.deepcopy(hp_house)
+    both_house.clear_cost_overwrite()  # so that changes in baseline cost don't flow through into both_house
     both_house.solar_install = solar_install
 
     assert (hp_house.consumption_per_fuel['electricity'].overall.annual_sum_kwh -
