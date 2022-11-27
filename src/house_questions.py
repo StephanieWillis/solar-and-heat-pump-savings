@@ -127,6 +127,7 @@ def write_baseline_heating_system_to_session_state(heating_system: HeatingSystem
 
     st.session_state.baseline_heating_efficiency = heating_system.efficiency
     st.session_state.heating_system_changed = False
+    st.session_state.baseline_heating_efficiency_changed = False
 
 
 def flag_change_in_heating_system():
@@ -155,13 +156,40 @@ def render_assumptions_sidebar(house: House) -> House:
 
 
 def render_house_overwrite_options(house: House):
+    with st.expander("Baseline heating system"):
+        house.heating_system = render_baseline_heating_system_overwrite_options(house=house)
     with st.expander("Energy use"):
         house.envelope = render_consumption_overwrite_options(house=house)
-    with st.expander("Baseline heating system"):
-        house.heating_system = render_baseline_heating_system_overwrite_options(heating_system=house.heating_system)
     with st.expander("Tariff"):
         house.tariffs = render_tariff_overwrite_options(tariffs=house.tariffs, fuel_name=house.heating_system.fuel.name)
+    st.text("")  # to add some space
     return house
+
+
+def render_baseline_heating_system_overwrite_options(house: "House") -> "HeatingSystem":
+    st.number_input(
+        label="Efficiency: ", min_value=0.1, max_value=8.0, value=st.session_state.baseline_heating_efficiency,
+        key="baseline_heating_efficiency_overwrite", on_change=overwrite_baseline_heating_efficiency_in_session_state)
+
+    if st.session_state.baseline_heating_efficiency_changed:
+        house.heating_system.efficiency = st.session_state.baseline_heating_efficiency
+        write_heating_consumption_to_session_state(house)  # so change of heating efficiency changes consumption
+        st.session_state.baseline_heating_efficiency_changed = False
+
+    if house.heating_system.fuel.name == "gas":
+        st.caption(
+            "Many boilers have a low efficiency because they run at a high a flow temperature. "
+            "Your boiler may be able to run at 90% or better but in most cases the flow temperature will be too high to"
+            " achieve the boiler's advertised efficiency. "
+            "You can learn how to turn down your flow temperature "
+            "[here](https://www.nesta.org.uk/project/lowering-boiler-flow-temperature-reduce-emissions)."
+        )
+    return house.heating_system
+
+
+def overwrite_baseline_heating_efficiency_in_session_state():
+    st.session_state.baseline_heating_efficiency = st.session_state.baseline_heating_efficiency_overwrite
+    st.session_state.baseline_heating_efficiency_changed = True
 
 
 def render_consumption_overwrite_options(house: 'House') -> BuildingEnvelope:
@@ -201,8 +229,8 @@ def render_consumption_overwrite_options(house: 'House') -> BuildingEnvelope:
     typical_heat_demand = constants.BUILDING_TYPE_OPTIONS[house.envelope.house_type].annual_heat_demand_kWh
     typical_heat_consumption = house.heating_system.calculate_consumption(typical_heat_demand)
     st.caption(
-        f"A typical {house.envelope.house_type.lower()} home heated with a {house.heating_system.name.lower()} needs "
-        f"{int(typical_heat_consumption.overall.annual_sum_fuel_units):,} {house.heating_system.fuel.units} of "
+        f"A typical {house.envelope.house_type.lower()} home heated with this {house.heating_system.name.lower()} needs"
+        f" {int(typical_heat_consumption.overall.annual_sum_fuel_units):,} {house.heating_system.fuel.units} of "
         f"{house.heating_system.fuel.name} for heating and hot water, and "
         f"{constants.BUILDING_TYPE_OPTIONS[house.envelope.house_type].annual_base_electricity_demand_kWh:,} kWh of "
         f"electricity for lighting, appliances, etc.  \n\n"
@@ -219,28 +247,6 @@ def overwrite_heating_consumption_in_session_state():
 def overwrite_base_demand_in_session_state():
     st.session_state.annual_base_demand = st.session_state.annual_base_demand_overwrite
     st.session_state.base_demand_changed = True
-
-
-def render_baseline_heating_system_overwrite_options(heating_system: "HeatingSystem") -> "HeatingSystem":
-    st.number_input(
-        label="Efficiency: ", min_value=0.1, max_value=8.0, value=st.session_state.baseline_heating_efficiency,
-        key="baseline_heating_efficiency_overwrite", on_change=overwrite_baseline_heating_efficiency_in_session_state)
-
-    heating_system.efficiency = st.session_state.baseline_heating_efficiency
-
-    if heating_system.fuel.name == "gas":
-        st.caption(
-            "Many modern boilers have a low efficiency because they run at a high a flow temperature. "
-            "Your boiler may be able to run at 90% or better but in most cases the flow temperature will be too high to "
-            "achieve the boiler's stated efficiency. "
-            "You can learn how to turn down your flow temperature "
-            "[here](https://www.nesta.org.uk/project/lowering-boiler-flow-temperature-reduce-emissions)."
-        )
-    return heating_system
-
-
-def overwrite_baseline_heating_efficiency_in_session_state():
-    st.session_state.baseline_heating_efficiency = st.session_state.baseline_heating_efficiency_overwrite
 
 
 def render_tariff_overwrite_options(tariffs: Tariff, fuel_name: "str") -> Tariff:

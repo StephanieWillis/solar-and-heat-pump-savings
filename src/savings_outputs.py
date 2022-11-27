@@ -29,6 +29,13 @@ def render(house: "House", solar_install: "Solar"):
     hp_house, solar_house, both_house = retrofit.upgrade_buildings(
         baseline_house=house, upgrade_heating=upgrade_heating, upgrade_solar=upgrade_solar
     )
+    assert hp_house.envelope.annual_heating_demand == house.envelope.annual_heating_demand
+    print("elec consumption", hp_house.consumption_per_fuel['electricity'].overall.annual_sum_kwh)
+    print("elec plus heating", hp_house.heating_consumption.overall.annual_sum_kwh
+          + hp_house.electricity_consumption_excluding_heating.overall.annual_sum_kwh)
+    assert (hp_house.consumption_per_fuel['electricity'].overall.annual_sum_kwh -
+            hp_house.heating_consumption.overall.annual_sum_kwh
+            - hp_house.electricity_consumption_excluding_heating.overall.annual_sum_kwh) < 0.1
     solar_retrofit, hp_retrofit, both_retrofit = retrofit.generate_all_retrofit_cases(
         baseline_house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house
     )
@@ -53,7 +60,7 @@ def render(house: "House", solar_install: "Solar"):
             "</div>"
             "<div class='saving-maths'>"
             "<div>"
-            f"<p class='saving-maths-headline'> ~£{int(solar_house.solar_install.upfront_cost/1000)*1000:,d}</p>"
+            f"<p class='saving-maths-headline'> ~£{int(solar_house.solar_install.upfront_cost / 1000) * 1000:,d}</p>"
             "<p class='saving-maths'> to install</p>"
             "</div>"
             "<div>"
@@ -72,7 +79,7 @@ def render(house: "House", solar_install: "Solar"):
             f"<p> with a heat pump</p>"
             "<div class='saving-maths'>"
             "<div>"
-            f"<p class='saving-maths-headline'> ~£{int(hp_house.upfront_cost/1000)*1000:,d}</p>"
+            f"<p class='saving-maths-headline'> ~£{int(hp_house.upfront_cost / 1000) * 1000:,d}</p>"
             "<p class='saving-maths'> to install</p>"
             "</div>"
             "<div>"
@@ -91,7 +98,7 @@ def render(house: "House", solar_install: "Solar"):
             "<p> with both</p>"
             "<div class='saving-maths'>"
             "<div>"
-            f"<p class='saving-maths-headline'> ~£{int(both_house.upfront_cost/1000)*1000:,d}</p>"
+            f"<p class='saving-maths-headline'> ~£{int(both_house.upfront_cost / 1000) * 1000:,d}</p>"
             "<p class='saving-maths'> to install</p>"
             "</div>"
             "<div>"
@@ -176,7 +183,6 @@ def format_roi(roi: float) -> str:
 
 
 def render_and_update_improvement_options(solar_install: Solar) -> Tuple[HeatingSystem, Solar]:
-
     with st.expander("Solar PV assumptions "):
         solar_install = render_and_update_solar_inputs(solar_install=solar_install)
 

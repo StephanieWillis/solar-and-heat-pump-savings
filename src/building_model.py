@@ -37,6 +37,10 @@ class House:
         return Consumption(hourly_profile_kwh=self.envelope.base_demand, fuel=constants.ELECTRICITY)
 
     @property
+    def electricity_consumption_excluding_heating(self) -> Consumption:
+        return self.base_consumption.add(self.solar_install.generation)
+
+    @property
     def heating_consumption(self) -> Consumption:
         return self.heating_system.calculate_consumption(self.envelope.annual_heating_demand)
 
@@ -51,15 +55,12 @@ class House:
     @property
     def consumption_per_fuel(self) -> Dict[str, 'Consumption']:
 
-        # Solar
-        electricity_consumption = self.base_consumption.add(self.solar_install.generation)
-
-        # Heating
         match self.heating_system.fuel:
             case self.base_consumption.fuel:  # only one fuel (electricity)
-                consumption_dict = {self.heating_system.fuel.name: electricity_consumption.add(self.heating_consumption)}
+                consumption_dict = {'electricity': self.electricity_consumption_excluding_heating.add(
+                    self.heating_consumption)}
             case _:
-                consumption_dict = {electricity_consumption.fuel.name: electricity_consumption,
+                consumption_dict = {'electricity': self.electricity_consumption_excluding_heating,
                                     self.heating_consumption.fuel.name: self.heating_consumption}
 
         return consumption_dict
