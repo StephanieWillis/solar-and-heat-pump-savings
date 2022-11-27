@@ -228,8 +228,12 @@ def render_consumption_overwrite_options(house: 'House') -> BuildingEnvelope:
 
     typical_heat_demand = constants.BUILDING_TYPE_OPTIONS[house.envelope.house_type].annual_heat_demand_kWh
     typical_heat_consumption = house.heating_system.calculate_consumption(typical_heat_demand)
+    if house.envelope.house_type == "Flat":
+        house_name = house.envelope.house_type.lower()
+    else:
+        house_name = f"{house.envelope.house_type.lower()} house"
     st.caption(
-        f"A typical {house.envelope.house_type.lower()} home heated with this {house.heating_system.name.lower()} needs"
+        f"A typical {house_name} heated with this {house.heating_system.name.lower()} needs"
         f" {int(typical_heat_consumption.overall.annual_sum_fuel_units):,} {house.heating_system.fuel.units} of "
         f"{house.heating_system.fuel.name} for heating and hot water, and "
         f"{constants.BUILDING_TYPE_OPTIONS[house.envelope.house_type].annual_base_electricity_demand_kWh:,} kWh of "
