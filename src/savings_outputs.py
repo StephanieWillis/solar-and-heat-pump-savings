@@ -181,29 +181,33 @@ def format_roi(roi: float) -> str:
 def render_and_update_improvement_options(solar_install: Solar) -> Tuple[HeatingSystem, Solar]:
     with st.expander("Solar PV assumptions "):
         solar_install = render_and_update_solar_inputs(solar_install=solar_install)
-
     with st.expander("Heat pump assumptions"):
-        if "upgrade_heating" not in st.session_state["page_state"]:
-            upgrade_heating = HeatingSystem.from_constants(
-                name="Heat pump", parameters=constants.DEFAULT_HEATING_CONSTANTS["Heat pump"]
-            )
-            st.session_state["page_state"]["upgrade_heating"] = dict(upgrade_heating=upgrade_heating)
-            # in case this page isn't always rendered
-        else:
-            upgrade_heating = st.session_state["page_state"]["upgrade_heating"]["upgrade_heating"]
-
-        upgrade_heating = overwrite_upgrade_heating_system_assumptions(heating_system=upgrade_heating)
-
-        st.caption(
-            "The efficiency of your heat pump depends on how well the system is designed and how low a flow "
-            "temperature it can run at. A COP of 3.6 or more is possible with a [high quality, low flow temperature "
-            "install](https://heatpumpmonitor.org).  \n  \n"
-            "A good installer is key to ensuring your heat pump runs efficiently. The [heat geek map"
-            "](https://www.heatgeek.com/find-a-heat-geek/) is a great place to start your search."
-        )
+        upgrade_heating = render_and_update_heat_pump_inputs()
     st.text("")
 
     return upgrade_heating, solar_install
+
+
+def render_and_update_heat_pump_inputs() -> HeatingSystem:
+    if "upgrade_heating" not in st.session_state["page_state"]:
+        upgrade_heating = HeatingSystem.from_constants(
+            name="Heat pump", parameters=constants.DEFAULT_HEATING_CONSTANTS["Heat pump"]
+        )
+        st.session_state["page_state"]["upgrade_heating"] = dict(upgrade_heating=upgrade_heating)
+        # in case this page isn't always rendered
+    else:
+        upgrade_heating = st.session_state["page_state"]["upgrade_heating"]["upgrade_heating"]
+
+    upgrade_heating = overwrite_upgrade_heating_system_assumptions(heating_system=upgrade_heating)
+
+    st.caption(
+        "The efficiency of your heat pump depends on how well the system is designed and how low a flow "
+        "temperature it can run at. A COP of 3.6 or more is possible with a [high quality, low flow temperature "
+        "install](https://heatpumpmonitor.org).  \n  \n"
+        "A good installer is key to ensuring your heat pump runs efficiently. The [heat geek map"
+        "](https://www.heatgeek.com/find-a-heat-geek/) is a great place to start your search."
+    )
+    return upgrade_heating
 
 
 def overwrite_upgrade_heating_system_assumptions(heating_system: "HeatingSystem") -> "HeatingSystem":
