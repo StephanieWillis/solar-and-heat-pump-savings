@@ -73,11 +73,11 @@ def render_solar_assumptions_sidebar(solar_install: 'Solar') -> 'Solar':
 
         st.caption("If you have a better estimate of how much solar could fit on your roof, enter it below:")
 
-        solar_install = render_and_update_solar_inputs(solar_install=solar_install)
+        solar_install = render_solar_overwrite_options(solar_install=solar_install)
     return solar_install
 
 
-def render_and_update_solar_inputs(solar_install: "Solar"):
+def render_solar_overwrite_options(solar_install: "Solar"):
 
     if "number_of_panels" not in st.session_state or st.session_state.number_of_panels_defined_by_dropdown is False:
         st.session_state.number_of_panels = solar_install.number_of_panels

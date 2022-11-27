@@ -9,32 +9,174 @@ import retrofit
 from building_model import *
 from constants import CLASS_NAME_OF_SIDEBAR_DIV
 from solar import Solar
-from solar_questions import render_and_update_solar_inputs
+from solar_questions import render_solar_overwrite_options
 
 
 def render(house: "House", solar_install: "Solar"):
+
+    upgrade_heating = get_upgrade_heating_from_session_state_if_exists_or_create_default()
+
+    solar_house, hp_house, both_house = retrofit.upgrade_buildings(
+        baseline_house=house, solar_install=solar_install, upgrade_heating=upgrade_heating, )
+
+    # Figure out if this should be above upgrade buildings and only adjust the inputs?
+    house, solar_house, hp_house, both_house = render_savings_assumptions_sidebar(
+        house=house, hp_house=hp_house, solar_house=solar_house, both_house=both_house)
+
+    solar_retrofit, hp_retrofit, both_retrofit = retrofit.generate_all_retrofit_cases(
+        baseline_house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
+
+    render_results(house=house, hp_house=hp_house, solar_house=solar_house, both_house=both_house,
+                   solar_retrofit=solar_retrofit, hp_retrofit=hp_retrofit, both_retrofit=both_retrofit)
+
+
+def get_upgrade_heating_from_session_state_if_exists_or_create_default():
+    if "upgrade_heating" not in st.session_state["page_state"]:
+        upgrade_heating = HeatingSystem.from_constants(
+            name="Heat pump", parameters=constants.DEFAULT_HEATING_CONSTANTS["Heat pump"]
+        )
+        st.session_state["page_state"]["upgrade_heating"] = dict(upgrade_heating=upgrade_heating)
+    else:
+        upgrade_heating = st.session_state["page_state"]["upgrade_heating"]["upgrade_heating"]
+        return upgrade_heating
+
+
+def render_savings_assumptions_sidebar(house: House, solar_house: House, hp_house: House, both_house: House
+                                       ) -> Tuple[House, House, House, House]:
+
     with st.sidebar:
         st.header("Assumptions")
         st.subheader("Current Performance")
         house = house_questions.render_house_overwrite_options(house)
-        st.session_state["page_state"]["house"] = dict(house=house)  # so any overwrites saved if move tabs
-        # saving state may work without above but above makes clearer
 
         st.subheader("Improvement Options")
-        upgrade_heating, upgrade_solar = render_and_update_improvement_options(solar_install=solar_install)
-        st.session_state["page_state"]["solar"] = dict(solar=upgrade_solar)  # so any overwrites saved if move tabs
-        # saving state may work without above but above makes clearer
+        upgrade_heating, upgrade_solar = render_improvement_overwrite_options(solar_install=solar_house.solar_install)
 
-    # Upgraded buildings
-    hp_house, solar_house, both_house = retrofit.upgrade_buildings(
-        baseline_house=house, upgrade_heating=upgrade_heating, upgrade_solar=upgrade_solar
+        st.subheader("Upfront Costs")
+        house, upgrade_heating, upgrade_solar = render_upfront_cost_overwrite_options()
+
+        # TODO: upgrade both house
+
+    return house, solar_house, hp_house, both_house
+
+
+def render_improvement_overwrite_options(solar_install: Solar) -> Tuple[HeatingSystem, Solar]:
+    with st.expander("Solar PV assumptions "):
+        solar_install = render_solar_overwrite_options(solar_install=solar_install)
+    with st.expander("Heat pump assumptions"):
+        upgrade_heating = render_heat_pump_overwrite_options()
+    st.text("")
+
+    return upgrade_heating, solar_install
+
+
+def render_heat_pump_overwrite_options(upgrade_heating: HeatingSystem) -> HeatingSystem:
+
+    if "upgrade_heating_efficiency" not in st.session_state:
+        st.session_state.upgrade_heating_efficiency = upgrade_heating.efficiency
+        st.session_state.upgrade_heating_efficiency_overwritten = False
+
+    st.number_input(
+        label="Efficiency: ",
+        min_value=1.0,
+        max_value=8.0,
+        value=st.session_state.upgrade_heating_efficiency,
+        key="upgrade_heating_efficiency_overwrite",
+        on_change=overwrite_upgrade_heating_efficiency_in_session_state)
+
+    if st.session_state.upgrade_heating_efficiency_overwritten:
+        upgrade_heating.efficiency = st.session_state.upgrade_heating_efficiency
+        st.session_state.upgrade_heating_efficiency_overwritten = False
+
+    st.caption(
+        "The efficiency of your heat pump depends on how well the system is designed and how low a flow "
+        "temperature it can run at. A COP of 3.6 or more is possible with a [high quality, low flow temperature "
+        "install](https://heatpumpmonitor.org).  \n  \n"
+        "A good installer is key to ensuring your heat pump runs efficiently. The [heat geek map"
+        "](https://www.heatgeek.com/find-a-heat-geek/) is a great place to start your search."
     )
-    assert (hp_house.consumption_per_fuel['electricity'].overall.annual_sum_kwh -
-            hp_house.heating_consumption.overall.annual_sum_kwh
-            - hp_house.electricity_consumption_excluding_heating.overall.annual_sum_kwh) < 0.1
-    solar_retrofit, hp_retrofit, both_retrofit = retrofit.generate_all_retrofit_cases(
-        baseline_house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house
-    )
+    return upgrade_heating
+
+
+def overwrite_upgrade_heating_efficiency_in_session_state():
+    st.session_state.upgrade_heating_efficiency = st.session_state.upgrade_heating_efficiency_overwrite
+    st.session_state.upgrade_heating_efficiency_overwritten = True
+
+
+def render_upfront_cost_overwrite_options(house: "House", hp_house: "House", upgrade_solar: "Solar"
+                                          ) -> ("House", "House", "Solar"):
+    # Figure out how to deal with baseline heating system or solar size overwrite
+    if "baseline_heating_cost" not in st.session_state:
+        st.session_state.baseline_heating_cost = house.upfront_cost
+        st.session_state.baseline_heating_cost_overwritten = False
+
+    st.number_input(
+        label="Baseline heating system cost",
+        min_value=0.0,
+        max_value=30000,
+        value=st.session_state.baseline_heating_cost,
+        key="baseline_heating_cost_overwrite",
+        on_change=flag_that_baseline_heating_cost_overwritten)
+
+    if st.session_state.baseline_heating_cost_overwritten:
+        house.upfront_cost = st.session_state.baseline_heating_cost
+        st.session_state.baseline_heating_cost_overwritten = False
+
+    if "solar_cost" not in st.session_state:
+        st.session_state.solar_cost = upgrade_solar.upfront_cost
+        st.session_state.solar_cost_overwritten = False
+
+    st.number_input(
+        label="Solar cost",
+        min_value=0.0,
+        max_value=30000,
+        value=st.session_state.solar_cost,
+        key="solar_cost_overwrite",
+        on_change=flag_that_solar_cost_overwritten)
+
+    if st.session_state.solar_cost_overwritten:
+        upgrade_solar.upfront_cost = st.session_state.solar_cost
+        st.session_state.solar_cost_overwritten = False
+
+    if "heat_pump_cost" not in st.session_state:
+        st.session_state.heat_pump_cost = hp_house.upfront_cost
+        st.session_state.heat_pump_cost_overwritten = False
+
+    st.number_input(
+        label="Heat pump cost",
+        min_value=0.0,
+        max_value=30000,
+        value=st.session_state.heat_pump_cost,
+        key="heat_pump_cost_overwrite",
+        on_change=flag_that_heat_pump_cost_overwritten)
+
+    if st.session_state.heat_pump_cost_overwritten:
+        hp_house.upfront_cost = st.session_state.heat_pump_cost
+        st.session_state.heat_pump_cost_overwritten = False
+
+    #  Add grant? or elsewhere
+
+    return house, hp_house, upgrade_solar
+
+
+def flag_that_baseline_heating_cost_overwritten():
+    st.session_state.baseline_heating_cost = st.session_state.baseline_heating_cost_overwrite
+    st.session_state.baseline_heating_cost_overwritten = True
+
+
+def flag_that_heat_pump_cost_overwritten():
+    st.session_state.heat_pump_cost = st.session_state.heat_pump_cost_overwrite
+    st.session_state.heat_pump_cost_overwritten = True
+
+
+def flag_that_solar_cost_overwritten():
+    st.session_state.solar_cost = st.session_state.solar_cost_overwrite
+    st.session_state.solar_cost_overwritten = True
+
+
+def render_results(house: House, solar_house: House, hp_house: House, both_house: House,
+                   solar_retrofit: retrofit.Retrofit, hp_retrofit: retrofit.Retrofit,
+                   both_retrofit: retrofit.Retrofit):
 
     # Combine results all variables
     results_df = retrofit.combine_results_dfs_multiple_houses(
@@ -155,7 +297,8 @@ def render(house: "House", solar_install: "Solar"):
         render_carbon_outputs(house=house, solar_house=solar_house, hp_house=hp_house, both_house=both_house)
 
     st.markdown(
-        f"<p style='margin:20px; text-align: center'> You can <a  href='javascript:document.getElementsByClassName({CLASS_NAME_OF_SIDEBAR_DIV})[1].click();' target='_self'>"
+        f"<p style='margin:20px; text-align: center'> You can <a  href='javascript:document.getElementsByClassName("
+        f"{CLASS_NAME_OF_SIDEBAR_DIV})[1].click();' target='_self'>"
         "view and edit </a> all of the numbers we've used in this calculation if you know the "
         "details of your tariff, heating demand, heat pump or solar install!</p>",
         unsafe_allow_html=True,
@@ -168,66 +311,6 @@ def format_payback(payback: float) -> str:
     else:
         output = f"~{int(payback): d} years"
     return output
-
-
-def format_roi(roi: float) -> str:
-    if np.isnan(roi):
-        output = "No return"
-    else:
-        output = f"{int(100 * roi)}%"
-    return output
-
-
-def render_and_update_improvement_options(solar_install: Solar) -> Tuple[HeatingSystem, Solar]:
-    with st.expander("Solar PV assumptions "):
-        solar_install = render_and_update_solar_inputs(solar_install=solar_install)
-    with st.expander("Heat pump assumptions"):
-        upgrade_heating = render_and_update_heat_pump_inputs()
-    st.text("")
-
-    return upgrade_heating, solar_install
-
-
-def render_and_update_heat_pump_inputs() -> HeatingSystem:
-    if "upgrade_heating" not in st.session_state["page_state"]:
-        upgrade_heating = HeatingSystem.from_constants(
-            name="Heat pump", parameters=constants.DEFAULT_HEATING_CONSTANTS["Heat pump"]
-        )
-        st.session_state["page_state"]["upgrade_heating"] = dict(upgrade_heating=upgrade_heating)
-        # in case this page isn't always rendered
-    else:
-        upgrade_heating = st.session_state["page_state"]["upgrade_heating"]["upgrade_heating"]
-
-    upgrade_heating = overwrite_upgrade_heating_system_assumptions(heating_system=upgrade_heating)
-
-    st.caption(
-        "The efficiency of your heat pump depends on how well the system is designed and how low a flow "
-        "temperature it can run at. A COP of 3.6 or more is possible with a [high quality, low flow temperature "
-        "install](https://heatpumpmonitor.org).  \n  \n"
-        "A good installer is key to ensuring your heat pump runs efficiently. The [heat geek map"
-        "](https://www.heatgeek.com/find-a-heat-geek/) is a great place to start your search."
-    )
-    return upgrade_heating
-
-
-def overwrite_upgrade_heating_system_assumptions(heating_system: "HeatingSystem") -> "HeatingSystem":
-    if "upgrade_heating_efficiency" not in st.session_state:
-        st.session_state.upgrade_heating_efficiency = heating_system.efficiency
-
-    st.number_input(
-        label="Efficiency: ",
-        min_value=1.0,
-        max_value=8.0,
-        value=st.session_state.upgrade_heating_efficiency,
-        key="upgrade_heating_efficiency_overwrite",
-        on_change=overwrite_upgrade_heating_efficiency_in_session_state)
-
-    heating_system.efficiency = st.session_state.upgrade_heating_efficiency
-    return heating_system
-
-
-def overwrite_upgrade_heating_efficiency_in_session_state():
-    st.session_state.upgrade_heating_efficiency = st.session_state.upgrade_heating_efficiency_overwrite
 
 
 def render_bill_chart(results_df: pd.DataFrame):

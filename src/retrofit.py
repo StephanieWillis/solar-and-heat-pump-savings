@@ -43,7 +43,7 @@ class Retrofit:
         return payback
 
 
-def upgrade_buildings(baseline_house: 'House', upgrade_heating: 'HeatingSystem', solar_install: 'Solar'
+def upgrade_buildings(baseline_house: 'House', solar_install: 'Solar', upgrade_heating: 'HeatingSystem'
                       ) -> Tuple['House', 'House', 'House']:
     hp_house = copy.deepcopy(baseline_house)  # do after modifications so modifications flow through
     hp_house.heating_system = upgrade_heating
@@ -54,7 +54,12 @@ def upgrade_buildings(baseline_house: 'House', upgrade_heating: 'HeatingSystem',
 
     both_house = copy.deepcopy(hp_house)
     both_house.solar_install = solar_install
-    return hp_house, solar_house, both_house
+
+    assert (hp_house.consumption_per_fuel['electricity'].overall.annual_sum_kwh -
+            hp_house.heating_consumption.overall.annual_sum_kwh
+            - hp_house.electricity_consumption_excluding_heating.overall.annual_sum_kwh) < 0.1
+
+    return solar_house, hp_house, both_house
 
 
 def generate_all_retrofit_cases(baseline_house: 'House', solar_house: 'House', hp_house: 'House',
