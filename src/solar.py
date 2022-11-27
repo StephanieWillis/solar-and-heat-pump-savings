@@ -99,7 +99,6 @@ class Solar:
         return value / np.cos(np.radians(self.pitch))
 
     def get_number_of_panels_from_polygons(self) -> int:
-        print(self.roof_area)
         numbers = []
         for polygon in self.polygons:
             if len(polygon.dimensions) != 4:  # if not roughly rectangular

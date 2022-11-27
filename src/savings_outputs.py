@@ -6,6 +6,7 @@ import streamlit as st
 
 import house_questions
 import retrofit
+import solar_questions
 from building_model import *
 from constants import CLASS_NAME_OF_SIDEBAR_DIV
 from solar import Solar
@@ -72,8 +73,11 @@ def render_heat_pump_overwrite_options() -> HeatingSystem:
         on_change=overwrite_upgrade_heating_efficiency_in_session_state)
 
     if st.session_state.upgrade_heating_efficiency_overwritten:
+        print("Behaves as if heating efficiency overwritten")
         upgrade_heating.efficiency = st.session_state.upgrade_heating_efficiency
         st.session_state.upgrade_heating_efficiency_overwritten = False
+
+    st.session_state["page_state"]["upgrade_heating"] = dict(upgrade_heating=upgrade_heating)
 
     st.caption(
         "The efficiency of your heat pump depends on how well the system is designed and how low a flow "
@@ -131,15 +135,16 @@ def render_upfront_cost_overwrite_options(house: House, solar_house: House, hp_h
         max_value=30000,
         value=st.session_state.baseline_heating_cost,
         key="baseline_heating_cost_overwrite",
-        on_change=flag_that_baseline_heating_cost_overwritten)
+        on_change=overwrite_baseline_heating_costs_in_session_state)
 
     if st.session_state.baseline_heating_cost_overwritten:
+        print("Behaves as if baseline heating cost overwritten")
         house.heating_system_upfront_cost = st.session_state.baseline_heating_cost
         solar_house.heating_system_upfront_cost = st.session_state.baseline_heating_cost
         st.session_state.baseline_heating_cost_overwritten = False
 
     if "solar_cost" not in st.session_state:
-        st.session_state.solar_cost = solar_house.solar_install.upfront_cost
+        solar_questions.write_solar_cost_to_session_state(solar_install=solar_house.solar_install)
         st.session_state.solar_cost_overwritten = False
 
     st.number_input(
@@ -148,9 +153,10 @@ def render_upfront_cost_overwrite_options(house: House, solar_house: House, hp_h
         max_value=30000,
         value=st.session_state.solar_cost,
         key="solar_cost_overwrite",
-        on_change=flag_that_solar_cost_overwritten)
+        on_change=overwrite_solar_costs_in_session_state)
 
     if st.session_state.solar_cost_overwritten:
+        print("Behaves as if solar cost overwritten")
         solar_house.solar_install.upfront_cost = st.session_state.solar_cost
         both_house.solar_install.upfront_cost = st.session_state.solar_cost
         st.session_state.solar_cost_overwritten = False
@@ -165,9 +171,10 @@ def render_upfront_cost_overwrite_options(house: House, solar_house: House, hp_h
         max_value=30000,
         value=st.session_state.heat_pump_cost,
         key="heat_pump_cost_overwrite",
-        on_change=flag_that_heat_pump_cost_overwritten)
+        on_change=overwrite_heat_pump_costs_in_session_state)
 
     if st.session_state.heat_pump_cost_overwritten:
+        print("Behaves as if heating cost overwritten")
         hp_house.heating_system_upfront_cost = st.session_state.heat_pump_cost
         both_house.heating_system_upfront_cost = st.session_state.heat_pump_cost
         st.session_state.heat_pump_cost_overwritten = False
@@ -175,19 +182,19 @@ def render_upfront_cost_overwrite_options(house: House, solar_house: House, hp_h
     return house, solar_house, hp_house, both_house
 
 
-def flag_that_baseline_heating_cost_overwritten():
+def overwrite_baseline_heating_costs_in_session_state():
     st.session_state.baseline_heating_cost = st.session_state.baseline_heating_cost_overwrite
     st.session_state.baseline_heating_cost_overwritten = True
 
 
-def flag_that_heat_pump_cost_overwritten():
-    st.session_state.heat_pump_cost = st.session_state.heat_pump_cost_overwrite
-    st.session_state.heat_pump_cost_overwritten = True
-
-
-def flag_that_solar_cost_overwritten():
+def overwrite_solar_costs_in_session_state():
     st.session_state.solar_cost = st.session_state.solar_cost_overwrite
     st.session_state.solar_cost_overwritten = True
+
+
+def overwrite_heat_pump_costs_in_session_state():
+    st.session_state.heat_pump_cost = st.session_state.heat_pump_cost_overwrite
+    st.session_state.heat_pump_cost_overwritten = True
 
 
 def render_grant_overwrite_options(hp_house: House, both_house: House) -> Tuple[House, House]:
@@ -204,6 +211,7 @@ def render_grant_overwrite_options(hp_house: House, both_house: House) -> Tuple[
         on_change=flag_that_heat_pump_grant_value_overwritten)
 
     if st.session_state.heat_pump_grant_value_overwritten:
+        print("Behaves as if heat pump grant overwritten")
         hp_house.heating_system.grant = st.session_state.heat_pump_grant_value
         both_house.heating_system.grant = st.session_state.heat_pump_grant_value
         st.session_state.heat_pump_grant_value_overwritten = False

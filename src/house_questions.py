@@ -156,6 +156,7 @@ def render_house_assumptions_sidebar(house: House) -> House:
 
 
 def render_house_overwrite_options(house: House):
+    """ Split out because used on savings page and front page"""
     with st.expander("Baseline heating system"):
         house.heating_system = render_baseline_heating_system_overwrite_options(house=house)
     with st.expander("Energy use"):
@@ -168,8 +169,12 @@ def render_house_overwrite_options(house: House):
 
 def render_baseline_heating_system_overwrite_options(house: "House") -> "HeatingSystem":
     st.number_input(
-        label="Efficiency: ", min_value=0.1, max_value=8.0, value=st.session_state.baseline_heating_efficiency,
-        key="baseline_heating_efficiency_overwrite", on_change=overwrite_baseline_heating_efficiency_in_session_state)
+        label="Efficiency: ",
+        min_value=0.1,
+        max_value=8.0,
+        value=st.session_state.baseline_heating_efficiency,
+        key="baseline_heating_efficiency_overwrite",
+        on_change=overwrite_baseline_heating_efficiency_in_session_state)
 
     if st.session_state.baseline_heating_efficiency_changed:
         house.heating_system.efficiency = st.session_state.baseline_heating_efficiency
