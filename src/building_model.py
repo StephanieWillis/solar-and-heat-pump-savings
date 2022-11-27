@@ -32,6 +32,15 @@ class House:
         return cls(envelope=envelope, heating_system=heating_system)
 
     @property
+    def base_consumption(self) -> Consumption:
+        # Base demand is always electricity (lighting/plug loads etc.)
+        return Consumption(hourly_profile_kwh=self.envelope.base_demand, fuel=constants.ELECTRICITY)
+
+    @property
+    def heating_consumption(self) -> Consumption:
+        return self.heating_system.calculate_consumption(self.envelope.annual_heating_demand)
+
+    @property
     def has_multiple_fuels(self) -> bool:
         if self.heating_system.fuel.name == 'electricity':
             has_multiple_fuels = False
@@ -42,22 +51,16 @@ class House:
     @property
     def consumption_per_fuel(self) -> Dict[str, 'Consumption']:
 
-        # Base demand is always electricity (lighting/plug loads etc.)
-        base_consumption = Consumption(hourly_profile_kwh=self.envelope.base_demand,
-                                       fuel=constants.ELECTRICITY)
         # Solar
-        electricity_consumption = base_consumption.add(self.solar_install.generation)
+        electricity_consumption = self.base_consumption.add(self.solar_install.generation)
 
         # Heating
-        heating_consumption = self.heating_system.calculate_consumption(
-            self.envelope.annual_heating_demand)
-
         match self.heating_system.fuel:
-            case base_consumption.fuel:  # only one fuel (electricity)
-                consumption_dict = {self.heating_system.fuel.name: electricity_consumption.add(heating_consumption)}
+            case self.base_consumption.fuel:  # only one fuel (electricity)
+                consumption_dict = {self.heating_system.fuel.name: electricity_consumption.add(self.heating_consumption)}
             case _:
                 consumption_dict = {electricity_consumption.fuel.name: electricity_consumption,
-                                    heating_consumption.fuel.name: heating_consumption}
+                                    self.heating_consumption.fuel.name: self.heating_consumption}
 
         return consumption_dict
 
