@@ -21,8 +21,8 @@ def render() -> "House":
         unsafe_allow_html=True,
     )
 
-    house.envelope = render_building_envelope_questions(envelope=house.envelope)
-    house.heating_system = render_heating_system_questions(heating_system=house.heating_system)
+    house = render_building_envelope_questions(house=house)  # both take whole house because they change consumption
+    house = render_heating_system_questions(house=house)
     if st.session_state.heating_fuel_changed:
         house.tariffs = update_tariffs_for_new_heating_fuel(heating_fuel=house.heating_system.fuel,
                                                             tariffs=house.tariffs)
@@ -46,11 +46,12 @@ def set_up_default_house() -> "House":
     envelope = BuildingEnvelope.from_building_type_constants(constants.BUILDING_TYPE_OPTIONS["Terrace"])
     heating_system_name = list(constants.DEFAULT_HEATING_CONSTANTS.keys())[0]
     house = House.set_up_from_heating_name(envelope=envelope, heating_name=heating_system_name)
-    st.session_state.heating_fuel_changed = False  # ideally put all inits here so pattern consistent
+    st.session_state.heating_fuel_changed = False
     return house
 
 
-def render_building_envelope_questions(envelope: BuildingEnvelope) -> BuildingEnvelope:
+def render_building_envelope_questions(house: House) -> House:
+    envelope = house.envelope
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
@@ -59,6 +60,7 @@ def render_building_envelope_questions(envelope: BuildingEnvelope) -> BuildingEn
             if "house_type" not in st.session_state:
                 st.session_state.house_type = envelope.house_type
                 write_house_type_variables_to_session_state(envelope=envelope)
+                write_heating_consumption_to_session_state(house)
             house_type = st.selectbox("", options=constants.BUILDING_TYPE_OPTIONS.keys(), key="house_type",
                                       on_change=flag_change_in_house_type)
 
@@ -66,25 +68,32 @@ def render_building_envelope_questions(envelope: BuildingEnvelope) -> BuildingEn
                 print("Behaves as if house changed")
                 envelope = BuildingEnvelope.from_building_type_constants(constants.BUILDING_TYPE_OPTIONS[house_type])
                 write_house_type_variables_to_session_state(envelope=envelope)
+                house.envelope = envelope
+                write_heating_consumption_to_session_state(house)  # so change of house type changes consumption
 
-    return envelope
+    return house
 
 
 def write_house_type_variables_to_session_state(envelope: BuildingEnvelope):
     st.session_state.house_type_changed = False
 
     st.session_state.annual_heating_demand = int(envelope.annual_heating_demand)
-    st.session_state.heating_demand_changed = False  # delete?
+    st.session_state.heating_demand_changed = False
 
     st.session_state.annual_base_demand = int(envelope.base_demand.sum())
     st.session_state.base_demand_changed = False
+
+
+def write_heating_consumption_to_session_state(house: House):
+    st.session_state.annual_heating_consumption = int(house.heating_consumption.overall.annual_sum_fuel_units)
 
 
 def flag_change_in_house_type():
     st.session_state.house_type_changed = True
 
 
-def render_heating_system_questions(heating_system: HeatingSystem) -> HeatingSystem:
+def render_heating_system_questions(house: House) -> House:
+    heating_system = house.heating_system
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
@@ -104,12 +113,13 @@ def render_heating_system_questions(heating_system: HeatingSystem) -> HeatingSys
                 heating_system = HeatingSystem.from_constants(name=name,
                                                               parameters=constants.DEFAULT_HEATING_CONSTANTS[name])
                 write_baseline_heating_system_to_session_state(heating_system=heating_system)
+                house.heating_system = heating_system
+                write_heating_consumption_to_session_state(house=house)
 
-    return heating_system
+    return house
 
 
 def write_baseline_heating_system_to_session_state(heating_system: HeatingSystem):
-
     if heating_system.fuel.name != st.session_state.heating_fuel_name:
         print(f"Behaves as if heating fuel changed")
         st.session_state.heating_fuel_changed = True  # flag change so tariff changes
@@ -117,6 +127,7 @@ def write_baseline_heating_system_to_session_state(heating_system: HeatingSystem
 
     st.session_state.baseline_heating_efficiency = heating_system.efficiency
     st.session_state.heating_system_changed = False
+    st.session_state.baseline_heating_efficiency_changed = False
 
 
 def flag_change_in_heating_system():
@@ -145,32 +156,64 @@ def render_assumptions_sidebar(house: House) -> House:
 
 
 def render_house_overwrite_options(house: House):
-    with st.expander("Demand"):
-        house.envelope = render_envelope_overwrite_options(envelope=house.envelope)
     with st.expander("Baseline heating system"):
-        house.heating_system = render_baseline_heating_system_overwrite_options(heating_system=house.heating_system)
+        house.heating_system = render_baseline_heating_system_overwrite_options(house=house)
+    with st.expander("Energy use"):
+        house.envelope = render_consumption_overwrite_options(house=house)
     with st.expander("Tariff"):
         house.tariffs = render_tariff_overwrite_options(tariffs=house.tariffs, fuel_name=house.heating_system.fuel.name)
+    st.text("")  # to add some space
     return house
 
 
-def render_envelope_overwrite_options(envelope: BuildingEnvelope) -> BuildingEnvelope:
-
+def render_baseline_heating_system_overwrite_options(house: "House") -> "HeatingSystem":
     st.number_input(
-        label="Space and water heating (kwh): ",
-        min_value=0, max_value=100000,
-        value=st.session_state.annual_heating_demand,
-        key="annual_heating_demand_overwrite",
-        on_change=overwrite_heating_demand_in_session_state
-    )
+        label="Efficiency: ", min_value=0.1, max_value=8.0, value=st.session_state.baseline_heating_efficiency,
+        key="baseline_heating_efficiency_overwrite", on_change=overwrite_baseline_heating_efficiency_in_session_state)
 
+    if st.session_state.baseline_heating_efficiency_changed:
+        house.heating_system.efficiency = st.session_state.baseline_heating_efficiency
+        write_heating_consumption_to_session_state(house)  # so change of heating efficiency changes consumption
+        st.session_state.baseline_heating_efficiency_changed = False
+
+    if house.heating_system.fuel.name == "gas":
+        st.caption(
+            "Many boilers have a low efficiency because they run at a high a flow temperature. "
+            "Your boiler may be able to run at 90% or better but in most cases the flow temperature will be too high to"
+            " achieve the boiler's advertised efficiency. "
+            "You can learn how to turn down your flow temperature "
+            "[here](https://www.nesta.org.uk/project/lowering-boiler-flow-temperature-reduce-emissions)."
+        )
+    return house.heating_system
+
+
+def overwrite_baseline_heating_efficiency_in_session_state():
+    st.session_state.baseline_heating_efficiency = st.session_state.baseline_heating_efficiency_overwrite
+    st.session_state.baseline_heating_efficiency_changed = True
+
+
+def render_consumption_overwrite_options(house: 'House') -> BuildingEnvelope:
+
+    heat_label = f"{house.heating_system.fuel.name.capitalize()} use for heat/hot water" \
+                 f" ({house.heating_system.fuel.units})"
+    st.number_input(
+        label=heat_label,
+        min_value=0,
+        max_value=100000,
+        value=st.session_state.annual_heating_consumption,
+        key="annual_heating_consumption_overwrite",
+        on_change=overwrite_heating_consumption_in_session_state)
+
+    envelope = house.envelope
     if st.session_state.heating_demand_changed:  # scale profile  by correction factor
         print("Behaves as if heating demand changed")
-        envelope.annual_heating_demand = st.session_state.annual_heating_demand
+        mult = st.session_state.annual_heating_consumption/int(house.heating_consumption.overall.annual_sum_fuel_units)
+        envelope.annual_heating_demand = envelope.annual_heating_demand * mult
+        st.session_state.annual_heating_demand = int(envelope.annual_heating_demand)
         st.session_state.heating_demand_changed = False
 
     st.number_input(
-        label="Lighting, appliances, plug loads etc. (kwh): ",
+        label="Electricity use for lighting, appliances, etc. (kwh): ",
         min_value=0,
         max_value=100000,
         value=st.session_state.annual_base_demand,
@@ -179,52 +222,35 @@ def render_envelope_overwrite_options(envelope: BuildingEnvelope) -> BuildingEnv
     )
     if st.session_state.base_demand_changed:  # scale profile  by correction factor
         print("Behaves as if base demand changed")
-        envelope.base_demand = st.session_state.annual_base_demand / int(
-            envelope.base_demand.sum()) * envelope.base_demand
+        multiplier = st.session_state.annual_base_demand / int(envelope.base_demand.sum())
+        envelope.base_demand = house.envelope.base_demand * multiplier
         st.session_state.base_demand_changed = False
 
-
+    typical_heat_demand = constants.BUILDING_TYPE_OPTIONS[house.envelope.house_type].annual_heat_demand_kWh
+    typical_heat_consumption = house.heating_system.calculate_consumption(typical_heat_demand)
+    if house.envelope.house_type == "Flat":
+        house_name = house.envelope.house_type.lower()
+    else:
+        house_name = f"{house.envelope.house_type.lower()} house"
     st.caption(
-        f"A typical {envelope.house_type.lower()} home needs "
-        f"{constants.BUILDING_TYPE_OPTIONS[envelope.house_type].annual_heat_demand_kWh:,} kWh for heating, "
-        f"and {constants.BUILDING_TYPE_OPTIONS[envelope.house_type].annual_base_electricity_demand_kWh:,} "
-        f"kWh for lighting, appliances, etc. "
-        f"The better your home is insulated, the less energy it will need for heating. "
+        f"A typical {house_name} heated with this {house.heating_system.name.lower()} needs"
+        f" {int(typical_heat_consumption.overall.annual_sum_fuel_units):,} {house.heating_system.fuel.units} of "
+        f"{house.heating_system.fuel.name} for heating and hot water, and "
+        f"{constants.BUILDING_TYPE_OPTIONS[house.envelope.house_type].annual_base_electricity_demand_kWh:,} kWh of "
+        f"electricity for lighting, appliances, etc.  \n\n"
+        f"The better insulated your home, the less energy it will need for heating. "
     )
     return envelope
 
 
-def overwrite_heating_demand_in_session_state():
-    st.session_state.annual_heating_demand = st.session_state.annual_heating_demand_overwrite
+def overwrite_heating_consumption_in_session_state():
+    st.session_state.annual_heating_consumption = st.session_state.annual_heating_consumption_overwrite
     st.session_state.heating_demand_changed = True
 
 
 def overwrite_base_demand_in_session_state():
     st.session_state.annual_base_demand = st.session_state.annual_base_demand_overwrite
     st.session_state.base_demand_changed = True
-
-
-def render_baseline_heating_system_overwrite_options(heating_system: "HeatingSystem") -> "HeatingSystem":
-
-    st.number_input(
-        label="Efficiency: ", min_value=0.1, max_value=8.0, value=st.session_state.baseline_heating_efficiency,
-        key="baseline_heating_efficiency_overwrite", on_change=overwrite_baseline_heating_efficiency_in_session_state)
-
-    heating_system.efficiency = st.session_state.baseline_heating_efficiency
-
-    if heating_system.fuel.name == "gas":
-        st.caption(
-            "Many modern boilers have a low efficiency because they run at a high a flow temperature. "
-            "Your boiler may be able to run at 90% or better but in most cases the flow temperature will be too high to "
-            "achieve the boiler's stated efficiency. "
-            "You can learn how to turn down your flow temperature "
-            "[here](https://www.nesta.org.uk/project/lowering-boiler-flow-temperature-reduce-emissions)."
-        )
-    return heating_system
-
-
-def overwrite_baseline_heating_efficiency_in_session_state():
-    st.session_state.baseline_heating_efficiency = st.session_state.baseline_heating_efficiency_overwrite
 
 
 def render_tariff_overwrite_options(tariffs: Tariff, fuel_name: "str") -> Tariff:

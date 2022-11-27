@@ -41,21 +41,13 @@ class Retrofit:
         else:
             payback = np.nan
         return payback
-    # TODO If payback longer than lifetime set to nan?
-
-    @property
-    def annualized_return_on_investment(self):
-        lifetime_savings = self.bill_savings_absolute * self.upgrade_house.lifetime  # you don't discount roi
-        return_on_investment = (lifetime_savings - self.incremental_cost) / self.incremental_cost
-        annualized_roi = (1 + return_on_investment) ** (1 / self.upgrade_house.lifetime) - 1
-        return annualized_roi
-#     TODO: test the above!
 
 
 def upgrade_buildings(baseline_house: 'House', upgrade_heating: 'HeatingSystem', upgrade_solar: 'Solar'
                       ) -> Tuple['House', 'House', 'House']:
     hp_house = copy.deepcopy(baseline_house)  # do after modifications so modifications flow through
     hp_house.heating_system = upgrade_heating
+    print("setting up heat pump house")
 
     solar_house = copy.deepcopy(baseline_house)
     solar_house.solar_install = upgrade_solar
