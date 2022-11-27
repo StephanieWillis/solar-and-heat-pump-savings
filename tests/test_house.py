@@ -164,7 +164,7 @@ def test_upgrade_buildings():
                                 polygons=[test_polygon])
     hp_house, solar_house, both_house = retrofit.upgrade_buildings(baseline_house=oil_house,
                                                                    upgrade_heating=upgrade_heating,
-                                                                   upgrade_solar=solar_install)
+                                                                   solar_install=solar_install)
     assert hp_house.solar_install.generation.overall.annual_sum_kwh == 0
     assert both_house.solar_install.generation.overall.annual_sum_kwh < 0  # export defined as negative
     np.testing.assert_almost_equal(both_house.consumption_per_fuel['electricity'].imported.annual_sum_kwh

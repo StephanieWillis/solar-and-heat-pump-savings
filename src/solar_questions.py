@@ -1,5 +1,7 @@
 import streamlit as st
 
+from typing import Optional, List
+
 from constants import SolarConstants, CLASS_NAME_OF_SIDEBAR_DIV
 import roof
 from solar import Solar
@@ -7,7 +9,7 @@ from solar import Solar
 
 def render() -> "Solar":
     """Render inputs to calculate solar outputs. If a solar install has already been set up, modify that"""
-    solar_install_in = get_solar_install_from_session_state_if_exists_or_create_default()
+    solar_install = get_solar_install_from_session_state_if_exists_or_create_default()
 
     st.header("How much solar power could you generate?")
     st.markdown(
@@ -17,6 +19,16 @@ def render() -> "Solar":
         unsafe_allow_html=True,
     )
 
+    polygons = render_map(solar_install)
+    orientation = render_orientation_questions(solar_install)
+    solar_install = Solar(orientation=orientation, polygons=polygons)
+    solar_install = render_solar_assumptions_sidebar(solar_install)
+    solar_install = render_results(solar_install)
+
+    return solar_install
+
+
+def render_map(solar_install: Solar) -> Optional[List[roof.Polygon]]:
     try:
         polygons = roof.roof_mapper(800, 400)  # figure out how to save state here
     except KeyError:
@@ -27,23 +39,22 @@ def render() -> "Solar":
 
     if "number_of_panels_defined_by_dropdown" not in st.session_state:  # initialise value
         st.session_state.number_of_panels_defined_by_dropdown = False
-    if polygons != solar_install_in.polygons:  # if polygons have changed:
+    if polygons != solar_install.polygons:  # if polygons have changed:
         #  I think 'polygons get reset when you change the page so would need to cache that for this to work
         st.session_state.number_of_panels_defined_by_dropdown = False
+    return polygons
 
+
+def render_orientation_questions(solar_install: Solar):
     st.subheader("Orientation")
     orientation_options = [name for name, _ in SolarConstants.ORIENTATIONS.items()]
     if "orientation_name" not in st.session_state:
-        st.session_state.orientation_name = solar_install_in.orientation.name
+        st.session_state.orientation_name = solar_install.orientation.name
     orientation_name: str = st.selectbox(label="Enter the orientation of the side of the roof you have drawn on",
                                          options=orientation_options,
                                          key="orientation_name")
     orientation = SolarConstants.ORIENTATIONS[orientation_name]
-
-    solar_install = Solar(orientation=orientation, polygons=polygons)
-
-    solar_install = render_results(solar_install)
-    return solar_install
+    return orientation
 
 
 def get_solar_install_from_session_state_if_exists_or_create_default():
@@ -56,8 +67,14 @@ def get_solar_install_from_session_state_if_exists_or_create_default():
     return solar_install
 
 
-def flag_that_number_of_panels_defined_by_dropdown():
-    st.session_state.number_of_panels_defined_by_dropdown = True
+def render_solar_assumptions_sidebar(solar_install: 'Solar') -> 'Solar':
+    with st.sidebar:
+        st.header("Solar inputs")
+
+        st.caption("If you have a better estimate of how much solar could fit on your roof, enter it below:")
+
+        solar_install = render_and_update_solar_inputs(solar_install=solar_install)
+    return solar_install
 
 
 def render_and_update_solar_inputs(solar_install: "Solar"):
@@ -81,13 +98,11 @@ def render_and_update_solar_inputs(solar_install: "Solar"):
     return solar_install
 
 
+def flag_that_number_of_panels_defined_by_dropdown():
+    st.session_state.number_of_panels_defined_by_dropdown = True
+
+
 def render_results(solar_install: Solar):
-    with st.sidebar:
-        st.header("Solar inputs")
-
-        st.caption("If you have a better estimate of how much solar could fit on your roof, enter it below:")
-
-        solar_install = render_and_update_solar_inputs(solar_install=solar_install)
 
     if solar_install.peak_capacity_kw_out_per_kw_in_per_m2 > 0:
         st.markdown(

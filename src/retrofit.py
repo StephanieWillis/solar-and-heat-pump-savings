@@ -43,17 +43,17 @@ class Retrofit:
         return payback
 
 
-def upgrade_buildings(baseline_house: 'House', upgrade_heating: 'HeatingSystem', upgrade_solar: 'Solar'
+def upgrade_buildings(baseline_house: 'House', upgrade_heating: 'HeatingSystem', solar_install: 'Solar'
                       ) -> Tuple['House', 'House', 'House']:
     hp_house = copy.deepcopy(baseline_house)  # do after modifications so modifications flow through
     hp_house.heating_system = upgrade_heating
     print("setting up heat pump house")
 
     solar_house = copy.deepcopy(baseline_house)
-    solar_house.solar_install = upgrade_solar
+    solar_house.solar_install = solar_install
 
     both_house = copy.deepcopy(hp_house)
-    both_house.solar_install = upgrade_solar
+    both_house.solar_install = solar_install
     return hp_house, solar_house, both_house
 
 

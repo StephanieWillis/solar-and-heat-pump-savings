@@ -26,7 +26,7 @@ def render() -> "House":
     if st.session_state.heating_fuel_changed:
         house.tariffs = update_tariffs_for_new_heating_fuel(heating_fuel=house.heating_system.fuel,
                                                             tariffs=house.tariffs)
-    house = render_assumptions_sidebar(house=house)
+    house = render_house_assumptions_sidebar(house=house)
 
     render_results(house)
     return house
@@ -143,7 +143,7 @@ def update_tariffs_for_new_heating_fuel(heating_fuel: Fuel, tariffs: Dict[str, T
     return tariffs
 
 
-def render_assumptions_sidebar(house: House) -> House:
+def render_house_assumptions_sidebar(house: House) -> House:
     with st.sidebar:
         st.header("Assumptions")
         st.markdown(
