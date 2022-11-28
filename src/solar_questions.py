@@ -7,9 +7,18 @@ import roof
 from solar import Solar
 
 
-def render() -> "Solar":
+def get_solar_install_from_session_state_if_exists_or_create_default():
+    if "solar_install" not in st.session_state:
+        solar_install = Solar.create_zero_area_instance()
+        st.session_state.number_of_panels_defined_by_dropdown = False
+    else:
+        solar_install = st.session_state.solar_install
+        st.session_state.number_of_panels_defined_by_dropdown = solar_install.number_of_panels_has_been_overwritten
+    return solar_install
+
+
+def render(solar_install: Solar) -> "Solar":
     """Render inputs to calculate solar outputs. If a solar install has already been set up, modify that"""
-    solar_install = get_solar_install_from_session_state_if_exists_or_create_default()
 
     st.header("How much solar power could you generate?")
     st.markdown(
@@ -35,19 +44,6 @@ def render() -> "Solar":
     solar_install = render_solar_assumptions_sidebar(solar_install)
     solar_install = render_results(solar_install)
 
-    return solar_install
-
-
-def get_solar_install_from_session_state_if_exists_or_create_default():
-    if st.session_state["page_state"]["solar"] == {}:
-        solar_install = Solar.create_zero_area_instance()
-        st.session_state.number_of_panels_defined_by_dropdown = False
-        print("Setting up zero solar instance")
-    else:
-        solar_install = st.session_state["page_state"]["solar"]["solar"]
-        st.session_state.number_of_panels_defined_by_dropdown = solar_install.number_of_panels_has_been_overwritten
-        print("Reading in solar install")
-    print(f"number_of_panels_defined_by_dropdown set to {st.session_state.number_of_panels_defined_by_dropdown}")
     return solar_install
 
 
