@@ -24,7 +24,7 @@ def test_envelope():
 
 def test_heating_system():
     profile = pd.Series(index=constants.BASE_YEAR_HOURLY_INDEX, data=1 / 8760)
-    elec_res = building_model.HeatingSystem(name='Electric storage heater',
+    elec_res = building_model.HeatingSystem(name='Direct electric',
                                             efficiency=1.0,
                                             fuel=constants.ELECTRICITY,
                                             hourly_normalized_demand_profile=profile)
@@ -60,7 +60,7 @@ def test_tariff_calculate_annual_cost():
                                    p_per_unit_import=2.0,
                                    p_per_unit_export=50)
     profile = pd.Series(index=constants.BASE_YEAR_HOURLY_INDEX, data=1 / 8760)
-    elec_res = building_model.HeatingSystem(name='Electric storage heater',
+    elec_res = building_model.HeatingSystem(name='Direct electric',
                                             efficiency=1.0,
                                             fuel=constants.ELECTRICITY,
                                             hourly_normalized_demand_profile=profile)
