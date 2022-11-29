@@ -63,11 +63,14 @@ def render_solar_next_steps(solar_install: Solar):
             "tool to draw on your roof."
         )
 
-    st.caption(
-        "Our estimate may differ from Easy PV's because you might have chosen panels a with different geometry to the "
-        "ones we are modelling. We also make slightly different assumptions than Easy PV on how big a gap you need "
-        "to leave between your solar panels and the edge of your roof. Real practices seem to vary widely! "
-    )
+    st.markdown("""
+        <p class='next-steps'>
+        Our estimate may differ from Easy PV's because you might have chosen panels with different geometry to the 
+        ones we are modelling. We also make slightly different assumptions than Easy PV on how big a gap you need 
+        to leave between your solar panels and the edge of your roof. Real practices seem to vary widely! 
+        </ p >""",
+                unsafe_allow_html=True,
+                )
     st.markdown("<br>", unsafe_allow_html=True)
 
     st.subheader("How big should I go?")
@@ -85,8 +88,8 @@ def render_solar_next_steps(solar_install: Solar):
         "</p>"
         "<p class='next-steps'>"
         " If you install a battery at the same time as your solar panels, you will be able to use more of the "
-        "energy you generate. Whether or not that is worth the extra upfront cost depends quite a lot on how "
-        "and when you use electricity."
+        "energy you generate. Whether or not the battery will deliver big enough savings to cover it's upfront cost"
+        "depends quite a lot on how and when you use electricity."
         "</p>",
         unsafe_allow_html=True,
     )
@@ -101,7 +104,8 @@ def render_solar_next_steps(solar_install: Solar):
         <li> <a href='https://www.elitesg.co.uk/solar-panels'> Elite (Hull) </a> </li> 
         <li> <a href='https://www.egeenergy.com/index.php/services/photo-voltaic-systems> EGE Energy (Norfolk and Suffolk) </a> </li>
         <li> <a href='https://cbrookesheating.co.uk/services/solar-panel-installation'> C Brookes Heating (Bristol/South West) </a></li>
-        <li><a href='https://www.jojusolar.co.uk'> Joju solar </a> </li>
+        <li> <a href='https://www.jojusolar.co.uk'> Joju solar </a> </li>
+        
         """,
         unsafe_allow_html=True,
     )
@@ -126,24 +130,48 @@ def render_heat_pump_next_steps():
         unsafe_allow_html=True,
     )
 
-    st.write()
+    st.subheader("Find an installer")
+    st.markdown(
+        "<p class='next-steps'>"
+        "A good installer will ensure your heat pump runs as efficiently as possible."
+        " The <a href='https://www.heatgeek.com/find-a-heat-geek/'>heat geek map</a>"
+        " is a great place to find high quality installers."
+        "</p>"
+        "<br>",
+        unsafe_allow_html=True,
+    )
+
+    st.subheader("Costs")
+    st.markdown(""" <p class='next-steps'>
+        The costs we use are rough estimates based on. The cost for your home will vary depending on:
+        <ol type="1">
+        <li> How many radiators need replacing</li>
+        <li> Whether any of your pipework needs replacing</li>
+        <li> Whether you have a hot water tank that can be repurposed to work with the heat pump</li>
+        <li> How much heating your home needs</li>
+        <li> Where in the country you are located</li>
+        </ol>
+        This <a href='http://asf-hp-cost-demo-l-b-1046547218.eu-west-1.elb.amazonaws.com'>cost estimator tool</a> 
+        from nesta is based on historical data on heat pump installs and will give you better a sense of how much a heat
+        pump might cost in a home like yours.
+        </p>
+        <p class='next-steps'>
+        The quality of the design and install is vital in ensuring you get the lowest bills possible, so it can
+        definitely be worth paying a more for
+         <a href='https://ainsdalegas.co.uk/blog/post/what-can-go-wrong-with-a-cheap-heat-pump-installation'>
+         a high quality install</a>.
+        </p>
+        <br>""",
+                unsafe_allow_html=True,
+                )
+
+    'https://ainsdalegas.co.uk/blog/post/what-can-go-wrong-with-a-cheap-heat-pump-installation'
 
     st.subheader("Survey your own home")
     st.markdown(
         "<p class='next-steps'>"
         "If you love the detail and want to understand things for yourself, you can have a crack at "
         "calculating your home's heat loss yourself using <a href='https://heatpunk.co.uk/home'>Heat Punk</a>. "
-        "</p>"    
-        "<br>",
-        unsafe_allow_html=True,
-    )
-
-    st.subheader("Find an installer")
-    st.markdown(
-        "<p class='next-steps'>"
-        "A good installer will ensure your heat pump runs as efficiently as possible. The <a href='https://www.heatgeek.com/find-a-heat-geek/'>heat geek map</a>"
-        " is a great place to find installers who are certified "
-        "to perform high quality installs."
         "</p>"
         "<br>",
         unsafe_allow_html=True,
