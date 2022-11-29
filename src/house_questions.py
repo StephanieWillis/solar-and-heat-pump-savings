@@ -10,8 +10,16 @@ from building_model import House, BuildingEnvelope, HeatingSystem, Tariff
 from fuels import Fuel
 
 
-def render() -> "House":
-    house = get_house_from_session_state_if_exists_or_create_default()
+def get_house_from_session_state_if_exists_or_create_default():
+    if "house" not in st.session_state:
+        house = set_up_default_house()
+        st.session_state.house = house
+    else:
+        house = st.session_state.house
+    return house
+
+
+def render(house: House) -> House:
 
     st.header("Start by telling us about your home")
     st.markdown(
@@ -21,23 +29,15 @@ def render() -> "House":
         unsafe_allow_html=True,
     )
 
-    house = render_building_envelope_questions(house=house)  # both take whole house because they change consumption
+    # Both functions below take whole house so can reset consumption
+    house = render_building_envelope_questions(house=house)
     house = render_heating_system_questions(house=house)
     if st.session_state.heating_fuel_changed:
         house.tariffs = update_tariffs_for_new_heating_fuel(heating_fuel=house.heating_system.fuel,
                                                             tariffs=house.tariffs)
-    house = render_assumptions_sidebar(house=house)
+    house = render_house_assumptions_sidebar(house=house)
 
     render_results(house)
-    return house
-
-
-def get_house_from_session_state_if_exists_or_create_default():
-    if st.session_state["page_state"]["house"] == {}:
-        house = set_up_default_house()
-        st.session_state["page_state"]["house"] = dict(house=house)  # in case this page isn't always rendered
-    else:
-        house = st.session_state["page_state"]["house"]["house"]
     return house
 
 
@@ -61,6 +61,8 @@ def render_building_envelope_questions(house: House) -> House:
                 st.session_state.house_type = envelope.house_type
                 write_house_type_variables_to_session_state(envelope=envelope)
                 write_heating_consumption_to_session_state(house)
+                st.session_state.upgrade_heating_system_cost_needs_resetting = False
+
             house_type = st.selectbox("", options=constants.BUILDING_TYPE_OPTIONS.keys(), key="house_type",
                                       on_change=flag_change_in_house_type)
 
@@ -70,6 +72,8 @@ def render_building_envelope_questions(house: House) -> House:
                 write_house_type_variables_to_session_state(envelope=envelope)
                 house.envelope = envelope
                 write_heating_consumption_to_session_state(house)  # so change of house type changes consumption
+                st.session_state.upgrade_heating_system_cost_needs_resetting = True
+                st.session_state.baseline_heating_system_cost_needs_resetting = True
 
     return house
 
@@ -103,6 +107,7 @@ def render_heating_system_questions(house: House) -> House:
                 st.session_state.heating_system_name = heating_system.name
                 st.session_state.heating_fuel_name = heating_system.fuel.name
                 write_baseline_heating_system_to_session_state(heating_system=heating_system)
+                st.session_state.baseline_heating_system_cost_needs_resetting = False
 
             name = st.selectbox(
                 "", options=list(constants.DEFAULT_HEATING_CONSTANTS.keys()), key="heating_system_name",
@@ -115,6 +120,7 @@ def render_heating_system_questions(house: House) -> House:
                 write_baseline_heating_system_to_session_state(heating_system=heating_system)
                 house.heating_system = heating_system
                 write_heating_consumption_to_session_state(house=house)
+                st.session_state.baseline_heating_system_cost_needs_resetting = True
 
     return house
 
@@ -143,7 +149,7 @@ def update_tariffs_for_new_heating_fuel(heating_fuel: Fuel, tariffs: Dict[str, T
     return tariffs
 
 
-def render_assumptions_sidebar(house: House) -> House:
+def render_house_assumptions_sidebar(house: House) -> House:
     with st.sidebar:
         st.header("Assumptions")
         st.markdown(
@@ -156,6 +162,7 @@ def render_assumptions_sidebar(house: House) -> House:
 
 
 def render_house_overwrite_options(house: House):
+    """ Split out because used on savings page and front page"""
     with st.expander("Baseline heating system"):
         house.heating_system = render_baseline_heating_system_overwrite_options(house=house)
     with st.expander("Energy use"):
@@ -168,8 +175,12 @@ def render_house_overwrite_options(house: House):
 
 def render_baseline_heating_system_overwrite_options(house: "House") -> "HeatingSystem":
     st.number_input(
-        label="Efficiency: ", min_value=0.1, max_value=8.0, value=st.session_state.baseline_heating_efficiency,
-        key="baseline_heating_efficiency_overwrite", on_change=overwrite_baseline_heating_efficiency_in_session_state)
+        label="Efficiency: ",
+        min_value=0.1,
+        max_value=8.0,
+        value=st.session_state.baseline_heating_efficiency,
+        key="baseline_heating_efficiency_overwrite",
+        on_change=overwrite_baseline_heating_efficiency_in_session_state)
 
     if st.session_state.baseline_heating_efficiency_changed:
         house.heating_system.efficiency = st.session_state.baseline_heating_efficiency

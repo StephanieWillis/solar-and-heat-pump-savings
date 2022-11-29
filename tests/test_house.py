@@ -24,7 +24,7 @@ def test_envelope():
 
 def test_heating_system():
     profile = pd.Series(index=constants.BASE_YEAR_HOURLY_INDEX, data=1 / 8760)
-    elec_res = building_model.HeatingSystem(name='Electric storage heater',
+    elec_res = building_model.HeatingSystem(name='Direct electric',
                                             efficiency=1.0,
                                             fuel=constants.ELECTRICITY,
                                             hourly_normalized_demand_profile=profile)
@@ -60,7 +60,7 @@ def test_tariff_calculate_annual_cost():
                                    p_per_unit_import=2.0,
                                    p_per_unit_export=50)
     profile = pd.Series(index=constants.BASE_YEAR_HOURLY_INDEX, data=1 / 8760)
-    elec_res = building_model.HeatingSystem(name='Electric storage heater',
+    elec_res = building_model.HeatingSystem(name='Direct electric',
                                             efficiency=1.0,
                                             fuel=constants.ELECTRICITY,
                                             hourly_normalized_demand_profile=profile)
@@ -162,9 +162,10 @@ def test_upgrade_buildings():
                                   [0.132377, 52.19524]])
     solar_install = solar.Solar(orientation=SolarConstants.ORIENTATIONS['South'],
                                 polygons=[test_polygon])
-    hp_house, solar_house, both_house = retrofit.upgrade_buildings(baseline_house=oil_house,
+
+    solar_house, hp_house, both_house = retrofit.upgrade_buildings(baseline_house=oil_house,
                                                                    upgrade_heating=upgrade_heating,
-                                                                   upgrade_solar=solar_install)
+                                                                   solar_install=solar_install)
     assert hp_house.solar_install.generation.overall.annual_sum_kwh == 0
     assert both_house.solar_install.generation.overall.annual_sum_kwh < 0  # export defined as negative
     np.testing.assert_almost_equal(both_house.consumption_per_fuel['electricity'].imported.annual_sum_kwh

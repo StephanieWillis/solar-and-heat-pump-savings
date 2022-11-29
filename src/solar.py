@@ -36,6 +36,8 @@ class Solar:
 
         self.lifetime = SolarConstants.LIFETIME
 
+        self._upfront_cost: int | None = None  # to help with overwrites
+
     def __hash__(self):
         return hash((self.latitude,
                      self.longitude,
@@ -73,17 +75,30 @@ class Solar:
 
     @property
     def upfront_cost(self):
-        if self.capacity_kwp <= 4:
-            cost_per_kwp = SolarConstants.COST_PER_KWP_LESS_THAN_4_KW
+        if self._upfront_cost is None:
+            if self.capacity_kwp <= 4:
+                cost_per_kwp = SolarConstants.COST_PER_KWP_LESS_THAN_4_KW
+            else:
+                cost_per_kwp = SolarConstants.COST_PER_KWP_MORE_THAN_4_KW
+            cost = round(self.capacity_kwp * cost_per_kwp, -2)
         else:
-            cost_per_kwp = SolarConstants.COST_PER_KWP_MORE_THAN_4_KW
-        return round(self.capacity_kwp * cost_per_kwp, -2)
+            cost = self._upfront_cost
+
+        return int(cost)
+
+    @upfront_cost.setter
+    def upfront_cost(self, value):
+        if value is not None:
+            value = round(value, -2)
+        self._upfront_cost = value
+
+    def clear_cost_overwrite(self):
+        self.upfront_cost = None
 
     def convert_plan_value_to_value_along_pitch(self, value: float):
         return value / np.cos(np.radians(self.pitch))
 
     def get_number_of_panels_from_polygons(self) -> int:
-        print(self.roof_area)
         numbers = []
         for polygon in self.polygons:
             if len(polygon.dimensions) != 4:  # if not roughly rectangular

@@ -13,13 +13,17 @@ st.set_page_config(page_title="Heat pump or Solar?",
 
 
 class YourHousePage(Page):
-    def render(self) -> dict:
-        return dict(house=house_questions.render())
+    def render(self):
+        house = house_questions.get_house_from_session_state_if_exists_or_create_default()
+        house = house_questions.render(house=house)
+        st.session_state.house = house
 
 
 class SolarPage(Page):
-    def render(self) -> dict:
-        return dict(solar=solar_questions.render())
+    def render(self):
+        solar_install = solar_questions.get_solar_install_from_session_state_if_exists_or_create_default()
+        solar_install = solar_questions.render(solar_install=solar_install)
+        st.session_state.solar_install = solar_install
 
 
 class ResultsPage(Page):
@@ -27,8 +31,14 @@ class ResultsPage(Page):
         # produce default version of house and solar for cases where user doesn't click through all the pages
         house = house_questions.get_house_from_session_state_if_exists_or_create_default()
         solar_install = solar_questions.get_solar_install_from_session_state_if_exists_or_create_default()
+        upgrade_heating = savings_outputs.get_upgrade_heating_from_session_state_if_exists_or_create_default()
 
-        savings_outputs.render(house=house, solar_install=solar_install)
+        house, solar_install, upgrade_heating = savings_outputs.render(house=house,
+                                                                       solar_install=solar_install,
+                                                                       upgrade_heating=upgrade_heating)
+        st.session_state.house = house
+        st.session_state.solar_install = solar_install
+        st.session_state.upgrade_heating = upgrade_heating
 
 
 class NextStepsPage(Page):
