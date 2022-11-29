@@ -143,7 +143,6 @@ def render_upfront_cost_overwrite_options(house: House, solar_house: House, hp_h
         on_change=overwrite_baseline_heating_costs_in_session_state)
 
     if st.session_state.baseline_heating_cost_overwritten:
-        print("Behaves as if baseline heating cost overwritten")
         house.heating_system_upfront_cost = st.session_state.baseline_heating_cost
         solar_house.heating_system_upfront_cost = st.session_state.baseline_heating_cost
         st.session_state.baseline_heating_cost_overwritten = False
@@ -166,10 +165,13 @@ def render_upfront_cost_overwrite_options(house: House, solar_house: House, hp_h
         st.session_state.solar_cost_overwritten = False
 
     if "heat_pump_cost" not in st.session_state or st.session_state.upgrade_heating_system_cost_needs_resetting:
-        hp_house.clear_cost_overwrite()
-        st.session_state.heat_pump_cost = hp_house.upfront_cost
+        hp_house.clear_cost_overwrite()  # shouldn't currently be necessary because remade when this page renders
+        st.session_state.heat_pump_cost = hp_house.heating_system_upfront_cost
         st.session_state.heat_pump_cost_overwritten = False
         st.session_state.upgrade_heating_system_cost_needs_resetting = False
+    else:  # hp house gets remade each time savings page renders so the overwrite is lost
+        hp_house.heating_system_upfront_cost = st.session_state.heat_pump_cost
+        both_house.heating_system_upfront_cost = st.session_state.heat_pump_cost
 
     st.number_input(
         label="Heat pump cost (without grants)",
