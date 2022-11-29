@@ -64,8 +64,9 @@ def render_solar_next_steps(solar_install: Solar):
         )
 
     st.caption(
-        "Easy PV assumes you need to leave 400mm between the edge of the roof and your solar panels whereas "
-        "we only assume you need to leave 300mm. Real practices seem to vary widely! "
+        "Our estimate may differ from Easy PV's because you might have chosen panels a with different geometry to the "
+        "ones we are modelling. We also make slightly different assumptions than Easy PV on how big a gap you need "
+        "to leave between your solar panels and the edge of your roof. Real practices seem to vary widely! "
     )
     st.markdown("<br>", unsafe_allow_html=True)
 
