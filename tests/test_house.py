@@ -162,7 +162,8 @@ def test_upgrade_buildings():
                                   [0.132377, 52.19524]])
     solar_install = solar.Solar(orientation=SolarConstants.ORIENTATIONS['South'],
                                 polygons=[test_polygon])
-    hp_house, solar_house, both_house = retrofit.upgrade_buildings(baseline_house=oil_house,
+
+    solar_house, hp_house, both_house = retrofit.upgrade_buildings(baseline_house=oil_house,
                                                                    upgrade_heating=upgrade_heating,
                                                                    solar_install=solar_install)
     assert hp_house.solar_install.generation.overall.annual_sum_kwh == 0
