@@ -99,12 +99,6 @@ DEFAULT_HEATING_CONSTANTS = {
         normalized_hourly_heat_demand_profile=NORMALIZED_HOURLY_HEAT_DEMAND_DF['Normalised_ASHP_heat']),
 }
 
-# Tables 1 (for semi only) and 2 (for terrace, flat, detached) from
-# https://media.nesta.org.uk/documents/How_to_reduce_the_cost_of_heat_pumps_v4_1.pdf
-# Correct semi gas boiler cost by same amount as heat pump shifts to keep equivalent
-# TODO: write up costs properly and decide on sensible values for oil and elec
-# https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/656866/BEIS_Update_of_Domestic_Cost_Assumptions_031017.pdf
-# https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1104051/CODE-Final-Report-WHOLE-FINAL-v20.pdf
 HEAT_PUMP_COSTS = {"Terrace": 10000, "Semi-detached": 11100, "Flat": 9100, "Detached": 13100}
 GAS_BOILER_COSTS = {"Terrace": 1800 * 10000 / 11100, "Semi-detached": 1800, "Flat": 1500, "Detached": 2200}
 HEATING_SYSTEM_COSTS = {"Gas boiler": GAS_BOILER_COSTS,

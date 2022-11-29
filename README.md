@@ -114,17 +114,23 @@ The oil tariff is a rough average based on [Boiler Juice](https://www.boilerjuic
 data since prices stabilised in April 2022.
 
 
-### Possible cost data
+### Cost data
 Solar costs are from [BEIS data](https://www.data.gov.uk/dataset/738a7bdb-a533-443d-bd02-69a8dd7fe68d/solar-pv-cost-data)
 for 2021/22 installs accredited under MCS. 
 We used the upper confidence interval given prices have likely risen since 2021/2022
 
-Work in progress:
-Heat pump cost tool: [here](http://asf-hp-cost-demo-l-b-1046547218.eu-west-1.elb.amazonaws.com)
+Heat pump and gas boiler costs from Nesta's [How to reduce the cost of heat pupms report](
+https://media.nesta.org.uk/documents/How_to_reduce_the_cost_of_heat_pumps_v4_1.pdf)
+- Used tables 1 (for semi only) and 2 (for terrace, flat, detached) from
+- Corrected gas boiler cost for semi-detached by same amount as heat pump shifts to keep equivalent
+- Assumed oil and direct electric baseline costs are the same as gas boiler costs. This is probably a poor assumption in the direct electric case
+
+Other cost resources we could use in the future are [here](
+https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/656866/BEIS_Update_of_Domestic_Cost_Assumptions_031017.pdf)
+and [here](
+https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1104051/CODE-Final-Report-WHOLE-FINAL-v20.pdf)
+
 Grant: [Boiler Upgrade Scheme](https://www.gov.uk/apply-boiler-upgrade-scheme/what-you-can-get)
 
-Heating options [here](https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/656866/BEIS_Update_of_Domestic_Cost_Assumptions_031017.pdf)
-and [here](https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1104051/CODE-Final-Report-WHOLE-FINAL-v20.pdf)
-Heat pumps and boilers [here](# https://media.nesta.org.uk/documents/How_to_reduce_the_cost_of_heat_pumps_v4_1.pdf)
 
 
