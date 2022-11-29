@@ -25,6 +25,15 @@ def get_upgrade_heating_from_session_state_if_exists_or_create_default() -> Heat
 
 
 def render(house: "House", solar_install: "Solar", upgrade_heating: "HeatingSystem"):
+
+    if "number_of_panels" not in st.session_state:
+        st.session_state.number_of_panels = solar_install.number_of_panels
+    if st.session_state.number_of_panels == 0:
+        st.warning(
+            "Oops - you didn't draw a rectangle on your roof. Please go back to the solar page and use the polygon"
+            "tool to draw on your roof, or alternatively enter a number of panels in the side bar."
+        )
+
     house, solar_house, hp_house, both_house = render_savings_assumptions_sidebar_and_calculate_upgraded_houses(
         house=house, solar_install=solar_install, upgrade_heating=upgrade_heating)
 
