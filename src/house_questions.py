@@ -316,7 +316,9 @@ def render_tariff_overwrite_options(tariffs: Tariff, fuel_name: "str") -> Tariff
     st.caption(
         "Our default tariffs reflect the current [Energy Price Guarantee]("
         "https://www.gov.uk/government/publications/energy-bills-support/energy-bills-support-factsheet-8-september-2022)"
-        " which is in place until April, but you can change them if you have fixed at a different rate."
+        " which is in place until April. "
+        "Rates will go up in April, but we don't yet know how this will be split between electricity and gas. \n  \n"
+        "The electricity export rate of 15p/kWh is based on [Octopus Outgoing](https://octopus.energy/outgoing)"
     )
 
     return tariffs
