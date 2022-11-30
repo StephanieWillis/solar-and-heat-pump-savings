@@ -17,14 +17,15 @@ def render_table_of_contents():
         "<ul class='toc'>"
         "<a href='#detailed-panel-positioning' class='toc'><li class='toc'> Detailed panel positioning </li></a>"
         "<a href='#how-big-should-i-go'  class='toc'><li class='toc'> How big should I go? </li></a>"
-        "<a href='#find-an-installer'  class='toc'><li class='toc'> Find an installer </li></a>"
+        "<a href='#find-a-solar-installer'  class='toc'><li class='toc'> Find a solar installer </li></a>"
         "</div>"
         "<div>"
         "<p class='toc'> Heat Pumps </p> "
         "<ul class='toc'>"
         "<a href='#are-they-magic' class='toc'><li class='toc'> Are they... magic? </li></a>"
+        "<a href='#find-a-heat-pump-installer' class='toc'><li class='toc'> Find a heat pump installer </li></a>"
+        "<a href='#typical-costs' class='toc'><li class='toc'> Typical costs </li></a>"
         "<a href='#survey-your-own-home' class='toc'><li class='toc'> Survey your own home </li></a>"
-        "<a href='#find-an-installer' class='toc'><li class='toc'> How big should I go? </li></a>"
         "</div>"
         "</div>"
         ""
@@ -65,15 +66,15 @@ def render_solar_next_steps(solar_install: Solar):
 
     st.markdown("""
         <p class='next-steps'>
-        Our estimate may differ from Easy PV's because you might have chosen panels with different geometry to the 
-        ones we are modelling. We also make slightly different assumptions than Easy PV on how big a gap you need 
-        to leave between your solar panels and the edge of your roof. Real practices seem to vary widely! 
+        Our estimate may differ from Easy PV's panel geometry varies a bit, and we make slightly different assumptions
+         on how big a gap you need to leave between your solar panels and the edge of your roof. 
+         Real practices seem to vary widely! 
         </ p >""",
                 unsafe_allow_html=True,
                 )
     st.markdown("<br>", unsafe_allow_html=True)
 
-    st.subheader("How big should I go?")
+    st.markdown("<h3> How big should I go?</h3>", unsafe_allow_html=True)
     st.markdown(
         "<p class='next-steps'>"
         "You can install about 4kW of solar PV without pre-approval from your Distribution Network Operator "
@@ -94,7 +95,8 @@ def render_solar_next_steps(solar_install: Solar):
         unsafe_allow_html=True,
     )
     st.markdown("<br>", unsafe_allow_html=True)
-    st.subheader("Find an installer")
+
+    st.markdown("<h3> Find a solar installer </h3>", unsafe_allow_html=True)
     st.markdown(
         """<p class='next-steps'> These are installers about whom we hear good things. <a href='mailto:stephaniewillis808@gmail.com'> Get in touch </a> if you would
         like to be added to the list!</p>
@@ -130,7 +132,7 @@ def render_heat_pump_next_steps():
         unsafe_allow_html=True,
     )
 
-    st.subheader("Find an installer")
+    st.subheader("Find a heat pump installer")
     st.markdown(
         "<p class='next-steps'>"
         "A good installer will ensure your heat pump runs as efficiently as possible."
@@ -141,7 +143,7 @@ def render_heat_pump_next_steps():
         unsafe_allow_html=True,
     )
 
-    st.subheader("Costs")
+    st.markdown("<h3> Typical costs </h3>", unsafe_allow_html=True)
     st.markdown(""" <p class='next-steps'>
         The costs we use are rough estimates based on. The cost for your home will vary depending on:
         <ol type="1">
@@ -152,12 +154,12 @@ def render_heat_pump_next_steps():
         <li> Where in the country you are located</li>
         </ol>
         This <a href='http://asf-hp-cost-demo-l-b-1046547218.eu-west-1.elb.amazonaws.com'>cost estimator tool</a> 
-        from nesta is based on historical data on heat pump installs and will give you better a sense of how much a heat
+        from nesta is based on historical data on heat pump installs and might give you better a sense of how much a heat
         pump might cost in a home like yours.
         </p>
         <p class='next-steps'>
-        The quality of the design and install is vital in ensuring you get the lowest bills possible, so it can
-        definitely be worth paying a more for
+        The quality of the design and install is vital to ensure you get the lowest bills possible, so it can
+        definitely be worth paying more for
          <a href='https://ainsdalegas.co.uk/blog/post/what-can-go-wrong-with-a-cheap-heat-pump-installation'>
          a high quality install</a>.
         </p>
@@ -171,7 +173,7 @@ def render_heat_pump_next_steps():
     st.markdown(
         "<p class='next-steps'>"
         "If you love the detail and want to understand things for yourself, you can have a crack at "
-        "calculating your home's heat loss yourself using <a href='https://heatpunk.co.uk/home'>Heat Punk</a>. "
+        "calculating your own home's heat loss using <a href='https://heatpunk.co.uk/home'>Heat Punk</a>. "
         "</p>"
         "<br>",
         unsafe_allow_html=True,
