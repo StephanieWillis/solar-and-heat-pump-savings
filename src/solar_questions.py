@@ -86,6 +86,7 @@ def render_solar_overwrite_options(solar_install: "Solar"):
 
     if "number_of_panels" not in st.session_state:
         st.session_state.number_of_panels = solar_install.number_of_panels
+    if "number_of_panels_overwritten" not in st.session_state:
         st.session_state.number_of_panels_overwritten = False
 
     st.number_input(
