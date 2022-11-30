@@ -30,8 +30,8 @@ def render(house: "House", solar_install: "Solar", upgrade_heating: "HeatingSyst
         st.session_state.number_of_panels = solar_install.number_of_panels
     if st.session_state.number_of_panels == 0:
         st.warning(
-            "Oops - you didn't draw a rectangle on your roof. Please go back to the solar page and use the polygon"
-            "tool to draw on your roof, or alternatively enter a number of panels in the side bar."
+            "**Oops** - you didn't draw a rectangle on your roof. Please go back to the solar page and use the polygon"
+            "tool to draw on your roof, or enter a number of panels in the side bar."
         )
 
     house, solar_house, hp_house, both_house = render_savings_assumptions_sidebar_and_calculate_upgraded_houses(
@@ -104,7 +104,7 @@ def render_heat_pump_overwrite_options(upgrade_heating: HeatingSystem) -> Heatin
 
     st.caption(
         "The efficiency of your heat pump depends on how well the system is designed and how low a flow "
-        "temperature it can run at. A COP of 3.6 or more is possible with a [high quality, low flow temperature "
+        "temperature it can run at. A COP of 3.6 or better is possible with a [high quality, low flow temperature "
         "install](https://heatpumpmonitor.org).  \n  \n"
         "A good installer is key to ensuring your heat pump runs efficiently. The [heat geek map"
         "](https://www.heatgeek.com/find-a-heat-geek/) is a great place to start your search."
