@@ -167,7 +167,20 @@ def render_heat_pump_next_steps():
                 unsafe_allow_html=True,
                 )
 
-    'https://ainsdalegas.co.uk/blog/post/what-can-go-wrong-with-a-cheap-heat-pump-installation'
+    st.markdown("<h3> What if energy prices change? </h3>", unsafe_allow_html=True)
+    st.markdown(""" <p class='next-steps'>
+        Whether or not a heat pump reduces your bills depends on the efficiency of your heat pump, and the ratio of
+        the cost of electricity compared to the cost of gas. At the moment the electricity/gas ratio is relatively
+        low meaning that a good heat pump install will save you money on your bills. It's hard to know what will happen
+        next with energy prices, but the 
+        <a href='https://www.nesta.org.uk/report/how-the-energy-crisis-affects-the-case-for-heat-pumps/how-the-costs-of-heat-pumps-compare-to-gas-boilers-since-the-energy-crisis-1/#content'>
+         forecasts</a> we are aware of suggest that that ratio will stay low enough that 
+        good heat pump installs will continue to give lower bills than gas boilers. We cannot be sure of that of course! 
+        Whatever happens to energy prices, a heat pump will continue to be a massive win from a carbon perspective.
+        </p>
+        <br>""",
+                unsafe_allow_html=True,
+                )
 
     st.subheader("Survey your own home")
     st.markdown(
