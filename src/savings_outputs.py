@@ -149,7 +149,10 @@ def render_upfront_cost_overwrite_options(house: House, solar_house: House, hp_h
         max_value=30000,
         value=st.session_state.baseline_heating_cost,
         key="baseline_heating_cost_overwrite",
-        on_change=overwrite_baseline_heating_costs_in_session_state)
+        on_change=overwrite_baseline_heating_costs_in_session_state,
+        help="For the payback calculation we assume that you get  \n a heat pump instead of a new"
+             " boiler, so we take  \n the cost of a new boiler off the heat pump cost"
+    )
 
     if st.session_state.baseline_heating_cost_overwritten:
         house.heating_system_upfront_cost = st.session_state.baseline_heating_cost
@@ -165,7 +168,10 @@ def render_upfront_cost_overwrite_options(house: House, solar_house: House, hp_h
         max_value=30000,
         value=st.session_state.solar_cost,
         key="solar_cost_overwrite",
-        on_change=overwrite_solar_costs_in_session_state)
+        on_change=overwrite_solar_costs_in_session_state,
+        help="The cost of scaffolding is a significant part of the cost  \n of installing solar. If you have scaffolding"
+             " up for another job,  \nmake the most of it and install solar at the same time! "
+    )
 
     if st.session_state.solar_cost_overwritten:
         print("Behaves as if solar cost overwritten")
@@ -188,7 +194,10 @@ def render_upfront_cost_overwrite_options(house: House, solar_house: House, hp_h
         max_value=30000,
         value=st.session_state.heat_pump_cost,
         key="heat_pump_cost_overwrite",
-        on_change=overwrite_heat_pump_costs_in_session_state)
+        on_change=overwrite_heat_pump_costs_in_session_state,
+        help="The cost of a heat pump depends on   \nyour existing radiators and pipework:  \n "
+             "see the final page for more info"
+    )
 
     if st.session_state.heat_pump_cost_overwritten:
         print("Behaves as if heating cost overwritten")
@@ -225,7 +234,10 @@ def render_grant_overwrite_options(hp_house: House, both_house: House) -> Tuple[
         max_value=20000,
         value=st.session_state.heat_pump_grant_value,
         key="heat_pump_grant_value_overwrite",
-        on_change=flag_that_heat_pump_grant_value_overwritten)
+        on_change=flag_that_heat_pump_grant_value_overwritten,
+        help='''The [Boiler Upgrade Scheme](https://www.gov.uk/apply-boiler-upgrade-scheme) is available in England and
+        Wales'''
+    )
 
     if st.session_state.heat_pump_grant_value_overwritten:
         print("Behaves as if heat pump grant overwritten")
