@@ -99,8 +99,15 @@ DEFAULT_HEATING_CONSTANTS = {
         normalized_hourly_heat_demand_profile=NORMALIZED_HOURLY_HEAT_DEMAND_DF['Normalised_ASHP_heat']),
 }
 
-HEAT_PUMP_COSTS = {"Terrace": 10000, "Semi-detached": 11100, "Flat": 9100, "Detached": 13100}
-GAS_BOILER_COSTS = {"Terrace": 1800 * 10000 / 11100, "Semi-detached": 1800, "Flat": 1500, "Detached": 2200}
+RPI_ratio_oct_21_to_oct_22 = 356.2/312.0
+HEAT_PUMP_COSTS = {"Terrace": 10000 * RPI_ratio_oct_21_to_oct_22,
+                   "Semi-detached": 11100 * RPI_ratio_oct_21_to_oct_22,
+                   "Flat": 9100 * RPI_ratio_oct_21_to_oct_22,
+                   "Detached": 13100 * RPI_ratio_oct_21_to_oct_22}
+GAS_BOILER_COSTS = {"Terrace": 1800 * 10000 / 11100 * RPI_ratio_oct_21_to_oct_22,
+                    "Semi-detached": 1800 * RPI_ratio_oct_21_to_oct_22,
+                    "Flat": 1500 * RPI_ratio_oct_21_to_oct_22,
+                    "Detached": 2200 * RPI_ratio_oct_21_to_oct_22}
 HEATING_SYSTEM_COSTS = {"Gas boiler": GAS_BOILER_COSTS,
                         "Heat pump": HEAT_PUMP_COSTS,
                         "Oil boiler": GAS_BOILER_COSTS,  # assume they are the same

@@ -6,6 +6,17 @@ Calculations account for proportion of solar generation that is used within the 
 
 Calculations are hourly rather than half-hourly because the Solar generation API we are using gives hourly results.
 
+## Running
+
+```
+docker compose up
+
+or 
+
+pip install requirements.txt
+cd src
+streamlit run main.py 
+```
 
 ## Solar output calculation
 
@@ -125,7 +136,12 @@ https://media.nesta.org.uk/documents/How_to_reduce_the_cost_of_heat_pumps_v4_1.p
 - Corrected gas boiler cost for semi-detached by same amount as heat pump shifts to keep equivalent
 - Assumed oil and direct electric baseline costs are the same as gas boiler costs. This is probably a poor assumption in the direct electric case
 
-Other cost resources we could use in the future are [here](
+The Nesta prices were in £2021 so we inflated the figures by ratio of retail price index from [Oct 2021](
+https://www.crosslandsolicitors.com/site/hr-hub/October-2021-inflation-data-CPI-CPIH-RPI) to [Oct 2022](
+https://www.crosslandsolicitors.com/site/media/October-2022-inflation-data-CPI-CPIH-RPI). That amounts
+to a 14% cost increase.
+
+Other relevant cost resources [here](
 https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/656866/BEIS_Update_of_Domestic_Cost_Assumptions_031017.pdf)
 and [here](
 https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1104051/CODE-Final-Report-WHOLE-FINAL-v20.pdf)
