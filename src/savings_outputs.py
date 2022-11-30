@@ -30,8 +30,8 @@ def render(house: "House", solar_install: "Solar", upgrade_heating: "HeatingSyst
         st.session_state.number_of_panels = solar_install.number_of_panels
     if st.session_state.number_of_panels == 0:
         st.warning(
-            "Oops - you didn't draw a rectangle on your roof. Please go back to the solar page and use the polygon"
-            "tool to draw on your roof, or alternatively enter a number of panels in the side bar."
+            "**Oops** - you didn't draw a rectangle on your roof. Please go back to the solar page and use the polygon"
+            "tool to draw on your roof, or enter a number of panels in the side bar."
         )
 
     house, solar_house, hp_house, both_house = render_savings_assumptions_sidebar_and_calculate_upgraded_houses(
@@ -104,7 +104,7 @@ def render_heat_pump_overwrite_options(upgrade_heating: HeatingSystem) -> Heatin
 
     st.caption(
         "The efficiency of your heat pump depends on how well the system is designed and how low a flow "
-        "temperature it can run at. A COP of 3.6 or more is possible with a [high quality, low flow temperature "
+        "temperature it can run at. A COP of 3.6 or better is possible with a [high quality, low flow temperature "
         "install](https://heatpumpmonitor.org).  \n  \n"
         "A good installer is key to ensuring your heat pump runs efficiently. The [heat geek map"
         "](https://www.heatgeek.com/find-a-heat-geek/) is a great place to start your search."
@@ -149,7 +149,10 @@ def render_upfront_cost_overwrite_options(house: House, solar_house: House, hp_h
         max_value=30000,
         value=st.session_state.baseline_heating_cost,
         key="baseline_heating_cost_overwrite",
-        on_change=overwrite_baseline_heating_costs_in_session_state)
+        on_change=overwrite_baseline_heating_costs_in_session_state,
+        help="For the payback calculation we assume that you get  \n a heat pump instead of a new"
+             " boiler, so we take  \n the cost of a new boiler off the heat pump cost"
+    )
 
     if st.session_state.baseline_heating_cost_overwritten:
         house.heating_system_upfront_cost = st.session_state.baseline_heating_cost
@@ -165,7 +168,10 @@ def render_upfront_cost_overwrite_options(house: House, solar_house: House, hp_h
         max_value=30000,
         value=st.session_state.solar_cost,
         key="solar_cost_overwrite",
-        on_change=overwrite_solar_costs_in_session_state)
+        on_change=overwrite_solar_costs_in_session_state,
+        help="The cost of scaffolding is a significant part of the cost  \n of installing solar. If you have scaffolding"
+             " up for another job,  \nmake the most of it and install solar at the same time! "
+    )
 
     if st.session_state.solar_cost_overwritten:
         print("Behaves as if solar cost overwritten")
@@ -188,7 +194,10 @@ def render_upfront_cost_overwrite_options(house: House, solar_house: House, hp_h
         max_value=30000,
         value=st.session_state.heat_pump_cost,
         key="heat_pump_cost_overwrite",
-        on_change=overwrite_heat_pump_costs_in_session_state)
+        on_change=overwrite_heat_pump_costs_in_session_state,
+        help="The cost of a heat pump depends on   \nyour existing radiators and pipework:  \n "
+             "see the final page for more info"
+    )
 
     if st.session_state.heat_pump_cost_overwritten:
         print("Behaves as if heating cost overwritten")
@@ -225,7 +234,10 @@ def render_grant_overwrite_options(hp_house: House, both_house: House) -> Tuple[
         max_value=20000,
         value=st.session_state.heat_pump_grant_value,
         key="heat_pump_grant_value_overwrite",
-        on_change=flag_that_heat_pump_grant_value_overwritten)
+        on_change=flag_that_heat_pump_grant_value_overwritten,
+        help='''The [Boiler Upgrade Scheme](https://www.gov.uk/apply-boiler-upgrade-scheme) is available in England and
+        Wales'''
+    )
 
     if st.session_state.heat_pump_grant_value_overwritten:
         print("Behaves as if heat pump grant overwritten")
