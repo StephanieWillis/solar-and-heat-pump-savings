@@ -257,8 +257,8 @@ def render_results(house: House, solar_house: House, hp_house: House, both_house
                    both_retrofit: retrofit.Retrofit):
     # Combine results all variables
     results_df = retrofit.combine_results_dfs_multiple_houses(
-        [house, solar_house, hp_house, both_house],
-        ["Current ", "Solar panels ", "Heat pump ", "Both "],
+        [both_house, hp_house, solar_house, house],
+        ["Both ", "Heat pump ", "Solar panels ",  "Current "],
     )
 
     st.markdown(
@@ -283,7 +283,7 @@ def render_results(house: House, solar_house: House, hp_house: House, both_house
             "<p class='saving-maths'> payback time</p>"
             "<br>"
             "<br>"
-            "<br>"            
+            "<br>"
             "</div>"
             "</div>",
             unsafe_allow_html=True,
@@ -399,11 +399,11 @@ def render_bill_chart(results_df: pd.DataFrame):
 def render_bill_outputs(house: "House", solar_house: "House", hp_house: "House", both_house: "House"):
     st.write(
         f"We calculate that {produce_current_bill_sentence(house)}  \n"
-        f"- with solar {produce_hypothetical_bill_sentence(solar_house)}, "
+        f"- **With solar** {produce_hypothetical_bill_sentence(solar_house)}, "
         f" {produce_bill_saving_sentence(house=solar_house, baseline_house=house)}  \n"
-        f"- with a heat pump {produce_hypothetical_bill_sentence(hp_house)}, "
+        f"- **With a heat pump** {produce_hypothetical_bill_sentence(hp_house)}, "
         f" {produce_bill_saving_sentence(house=hp_house, baseline_house=house)}  \n"
-        f"- with solar and a heat pump {produce_hypothetical_bill_sentence(both_house)}, "
+        f"- **With solar and a heat pump** {produce_hypothetical_bill_sentence(both_house)}, "
         f" {produce_bill_saving_sentence(house=both_house, baseline_house=house)}  \n"
     )
 
@@ -419,7 +419,11 @@ def produce_hypothetical_bill_sentence(house) -> str:
 
 
 def produce_bill_saving_sentence(house: "House", baseline_house: "House") -> str:
-    sentence = f"that's a saving of £{int(baseline_house.total_annual_bill - house.total_annual_bill):,}"
+    saving = int(baseline_house.total_annual_bill - house.total_annual_bill)
+    if saving >= 0:
+        sentence = f"that's a saving of £{saving:,}"
+    else:
+        sentence = f"that's an increase of £{-saving:,}"
     return sentence
 
 
@@ -430,9 +434,9 @@ def render_carbon_chart(results_df: pd.DataFrame):
 def render_carbon_outputs(house: "House", solar_house: "House", hp_house: "House", both_house: "House"):
     st.write(
         f"We calculate that your house emits {house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
-        f"- with solar that would fall to {solar_house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
-        f"- with a heat pump that would fall to {hp_house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
-        f"- with solar and a heat pump that would fall to {both_house.total_annual_tco2:.2f} "
+        f"- **With solar** it would emit {solar_house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
+        f"- **With a heat pump** it would emit {hp_house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
+        f"- **With solar and a heat pump** it would emit {both_house.total_annual_tco2:.2f} "
         f"tonnes of CO2 per year  \n"
     )
 
@@ -443,27 +447,39 @@ def render_consumption_chart(results_df: pd.DataFrame):
 
 def render_consumption_outputs(house: "House", solar_house: "House", hp_house: "House", both_house: "House"):
     st.write(
-        f"We calculate that your house currently needs {produce_consumption_sentence(house)}  \n"
-        f"- with solar that would fall to {produce_consumption_sentence(solar_house)}  \n"
-        f"- with a heat pump that would fall to {produce_consumption_sentence(hp_house)}  \n"
-        f"- with solar and a heat pump that would fall to {produce_consumption_sentence(both_house)} "
+        f"We calculate that your house currently imports {produce_consumption_sentence(house)}  \n"
+        f"- **With solar** it would import {produce_consumption_sentence(solar_house)}  \n"
+        f"- **With a heat pump** it would import {produce_consumption_sentence(hp_house)}  \n"
+        f"- **With solar and a heat pump** it would import {produce_consumption_sentence(both_house)} "
     )
 
 
-def produce_consumption_sentence(house):
+def produce_consumption_sentence(house: 'House') -> str:
+    sentence = (f"{int(round(house.consumption_per_fuel['electricity'].imported.annual_sum_kwh, -2)):,} "
+                f"kWh of electricity")
+
     if house.has_multiple_fuels:
-        sentence = (
-            f"{int(house.annual_consumption_per_fuel_kwh['electricity']):,} "
-            f"kwh of electricity and "
-            f"{int(house.annual_consumption_per_fuel_kwh[house.heating_system.fuel.name]):,}"
-            f" {house.heating_system.fuel.units} of {house.heating_system.fuel.name} per year"
-        )
+        heat = (
+            f" and {int(round(house.annual_consumption_per_fuel_kwh[house.heating_system.fuel.name], -2)):,}"
+            f" {house.heating_system.fuel.units} of {house.heating_system.fuel.name}")
+        sentence += heat
+
+    if house.solar_install.generation.overall.annual_sum_kwh != 0:
+        export = (f". It would export "
+                  f"{int(round(house.consumption_per_fuel['electricity'].exported.annual_sum_kwh, -2)):,}"
+                  f" kWh of the {int(round(-house.solar_install.generation.overall.annual_sum_kwh, -2))}"
+                  f" kWh of electricity generated by your solar panels")
+        self_use = produce_self_use_sentence(house)
+        sentence = sentence + export + self_use
     else:
-        sentence = (
-            f"{int(house.annual_consumption_per_fuel_kwh['electricity']):,}"
-            f" kwh of electricity per year "
-        )
+        sentence += '.'
+
     return sentence
+
+
+def produce_self_use_sentence(house: 'House') -> str:
+    extra = f" ({int(house.percent_self_use_of_solar * 100)}% self-use)."
+    return extra
 
 
 def render_savings_chart(results_df: pd.DataFrame, x_variable: str):
@@ -471,7 +487,8 @@ def render_savings_chart(results_df: pd.DataFrame, x_variable: str):
                        x=x_variable,
                        y="Upgrade option",
                        color="fuel",
-                       color_discrete_map={'electricity': 'hsl(220, 60%, 90%)',
+                       color_discrete_map={'electricity imports': 'hsl(220, 60%, 80%)',
+                                           'electricity exports': 'hsl(220, 60%, 90%)',
                                            'gas': 'hsl(220, 60%, 30%)',
                                            'oil': 'hsl(220, 60%, 20%)'},
                        template="plotly_white")

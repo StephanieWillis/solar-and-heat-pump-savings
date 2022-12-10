@@ -65,7 +65,7 @@ def test_tariff_calculate_annual_cost():
     annual_demand = 10 * 8760
     space_heating_consumption = elec_res.calculate_consumption(annual_demand)
     # Check cost when no export
-    annual_cost = cheapo.calculate_annual_cost(consumption=space_heating_consumption)
+    annual_cost = cheapo.calculate_annual_net_cost(consumption=space_heating_consumption)
     np.testing.assert_almost_equal(annual_cost,
                                    (cheapo.p_per_day * space_heating_consumption.overall.days_in_year
                                     + cheapo.p_per_unit_import * space_heating_consumption.overall.annual_sum_kwh)
@@ -79,7 +79,7 @@ def test_tariff_calculate_annual_cost():
     assert consumption_with_export.exported.annual_sum_kwh == 90
 
     # Check cost with export
-    annual_cost_with_export = cheapo.calculate_annual_cost(consumption=space_heating_consumption)
+    annual_cost_with_export = cheapo.calculate_annual_net_cost(consumption=space_heating_consumption)
     assert annual_cost_with_export < annual_cost
     np.testing.assert_almost_equal(annual_cost_with_export,
                                    (cheapo.p_per_day * consumption_with_export.overall.days_in_year
@@ -171,9 +171,24 @@ def test_upgrade_buildings():
     np.testing.assert_almost_equal(both_house.consumption_per_fuel['electricity'].imported.annual_sum_kwh
                                    - both_house.consumption_per_fuel['electricity'].exported.annual_sum_kwh,
                                    both_house.consumption_per_fuel['electricity'].overall.annual_sum_kwh)
-    assert hp_house.total_annual_bill > both_house.total_annual_bill
 
     assert (both_house.solar_install.generation.overall.annual_sum_kwh
             == solar_house.solar_install.generation.overall.annual_sum_kwh)
+
+    assert hp_house.total_annual_bill > both_house.total_annual_bill
+    np.testing.assert_almost_equal(both_house.annual_bill_import_and_export_per_fuel['electricity']['imported']
+                                   - both_house.annual_bill_import_and_export_per_fuel['electricity']['exported'],
+                                   both_house.annual_bill_per_fuel['electricity'])
+
+    np.testing.assert_almost_equal(both_house.consumption_per_fuel['electricity'].imported.annual_sum_tco2
+                                   - both_house.consumption_per_fuel['electricity'].exported.annual_sum_tco2,
+                                   both_house.consumption_per_fuel['electricity'].overall.annual_sum_tco2)
+
+    assert hp_house.percent_self_use_of_solar == 0
+    assert oil_house.percent_self_use_of_solar == 0
+    assert solar_house.percent_self_use_of_solar > 0
+    assert solar_house.percent_self_use_of_solar == 0.827282421412342  # so high because only 0.8kW of panels
+    assert both_house.percent_self_use_of_solar > solar_house.percent_self_use_of_solar
+    assert both_house.percent_self_use_of_solar == 0.9196782581191316
 
     return hp_house, solar_house, both_house
