@@ -25,7 +25,6 @@ def get_upgrade_heating_from_session_state_if_exists_or_create_default() -> Heat
 
 
 def render(house: "House", solar_install: "Solar", upgrade_heating: "HeatingSystem"):
-
     if "number_of_panels" not in st.session_state:
         st.session_state.number_of_panels = solar_install.number_of_panels
     if st.session_state.number_of_panels == 0:
@@ -82,7 +81,6 @@ def render_improvement_overwrite_options(solar_install: Solar, upgrade_heating: 
 
 
 def render_heat_pump_overwrite_options(upgrade_heating: HeatingSystem) -> HeatingSystem:
-
     if "upgrade_heating_efficiency" not in st.session_state:
         st.session_state.upgrade_heating_efficiency = upgrade_heating.efficiency
         st.session_state.upgrade_heating_efficiency_overwritten = False
@@ -259,7 +257,7 @@ def render_results(house: House, solar_house: House, hp_house: House, both_house
     # Combine results all variables
     results_df = retrofit.combine_results_dfs_multiple_houses(
         [house, solar_house, hp_house, both_house],
-        ["Current", "With solar", "With a heat pump", "With solar and a heat pump"],
+        ["Current ", "Solar panels ", "Heat pump ", "Both "],
     )
 
     st.markdown(
@@ -393,7 +391,7 @@ def format_payback(payback: float) -> str:
 
 
 def render_bill_chart(results_df: pd.DataFrame):
-    render_savings_chart(results_df=results_df, y_variable="Your annual energy bill £")
+    render_savings_chart(results_df=results_df, x_variable="Your annual energy bill £")
 
 
 def render_bill_outputs(house: "House", solar_house: "House", hp_house: "House", both_house: "House"):
@@ -424,7 +422,7 @@ def produce_bill_saving_sentence(house: "House", baseline_house: "House") -> str
 
 
 def render_carbon_chart(results_df: pd.DataFrame):
-    render_savings_chart(results_df=results_df, y_variable="Your annual carbon emissions tCO2")
+    render_savings_chart(results_df=results_df, x_variable="Your annual carbon emissions tCO2")
 
 
 def render_carbon_outputs(house: "House", solar_house: "House", hp_house: "House", both_house: "House"):
@@ -438,7 +436,7 @@ def render_carbon_outputs(house: "House", solar_house: "House", hp_house: "House
 
 
 def render_consumption_chart(results_df: pd.DataFrame):
-    render_savings_chart(results_df=results_df, y_variable="Your annual energy use kwh")
+    render_savings_chart(results_df=results_df, x_variable="Your annual energy use kwh")
 
 
 def render_consumption_outputs(house: "House", solar_house: "House", hp_house: "House", both_house: "House"):
@@ -466,10 +464,18 @@ def produce_consumption_sentence(house):
     return sentence
 
 
-def render_savings_chart(results_df: pd.DataFrame, y_variable: str):
-    bills_fig = px.bar(results_df, y="Upgrade option", x=y_variable, color="fuel", template="plotly_white")
+def render_savings_chart(results_df: pd.DataFrame, x_variable: str):
+    bills_fig = px.bar(results_df,
+                       x=x_variable,
+                       y="Upgrade option",
+                       color="fuel",
+                       color_discrete_map={'electricity': 'hsl(220, 60%, 90%)',
+                                           'gas': 'hsl(220, 60%, 30%)',
+                                           'oil': 'hsl(220, 60%, 20%)'},
+                       template="plotly_white")
     bills_fig.update_layout(
-        legend=dict(orientation="h", y=1.01, x=0.6),
+        font_family="arial",
+        legend=dict(orientation="h", y=1.1, x=0.6),
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         yaxis=dict(title=None),

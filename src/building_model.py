@@ -24,7 +24,7 @@ class House:
             solar_install = Solar.create_zero_area_instance()
         self.solar_install = solar_install
 
-        self.lifetime = (heating_system.lifetime + solar_install.lifetime)/2  # very rough approach
+        self.lifetime = (heating_system.lifetime + solar_install.lifetime) / 2  # very rough approach
 
         self._heating_system_upfront_cost: int | None = None  # to help with overwrites
 
@@ -102,9 +102,13 @@ class House:
     @cached_property
     def energy_and_bills_df(self) -> pd.DataFrame:
         """ To make it easy to plot the results using plotly"""
-        df = pd.DataFrame(data={'Your annual energy use kwh': self.annual_consumption_per_fuel_kwh,
-                                'Your annual energy bill £': self.annual_bill_per_fuel,
-                                'Your annual carbon emissions tCO2': self.annual_tco2_per_fuel})
+        df = pd.DataFrame(data={'Your annual energy use kwh':
+                                    {key: round(val, 0) for key, val in self.annual_consumption_per_fuel_kwh.items()},
+                                'Your annual energy bill £':
+                                    {key: round(val, 0) for key, val in self.annual_bill_per_fuel.items()},
+                                'Your annual carbon emissions tCO2':
+                                    {key: round(val, 2) for key, val in self.annual_tco2_per_fuel.items()}
+                                })
         df.index.name = 'fuel'
         df = df.reset_index()
         return df
