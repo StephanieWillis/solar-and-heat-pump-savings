@@ -1,10 +1,8 @@
 import numpy as np
 import pandas as pd
 
-import building_model
-import retrofit
 from .context import src
-from src import building_model, solar, constants, roof
+from src import building_model, solar, constants, roof, retrofit
 from src.constants import SolarConstants
 
 
@@ -141,8 +139,8 @@ def test_typical_home_hits_price_cap():
                                                base_electricity_demand_profile_kwh=demand)
     gas_house = building_model.House.set_up_from_heating_name(envelope=envelope, heating_name='Gas boiler')
     assert gas_house.has_multiple_fuels is True
-    np.testing.assert_almost_equal(gas_house.consumption_per_fuel['electricity'].overall.annual_sum_kwh, 2900)
-    np.testing.assert_almost_equal(gas_house.consumption_per_fuel['gas'].overall.annual_sum_kwh, 12000)
+    np.testing.assert_almost_equal(gas_house.annual_consumption_per_fuel_kwh['electricity'], 2900)
+    np.testing.assert_almost_equal(gas_house.annual_consumption_per_fuel_kwh['gas'], 12000)
     np.testing.assert_almost_equal(gas_house.total_annual_bill, 2492.1)  # looks like it isn't exactly 2500 after all
     np.testing.assert_almost_equal(gas_house.total_annual_tco2,
                                    (12000 * constants.GAS_TCO2_PER_KWH + 2900 * constants.ELEC_TCO2_PER_KWH))

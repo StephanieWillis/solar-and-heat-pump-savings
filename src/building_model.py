@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from functools import cached_property
 from typing import Dict
 
 import pandas as pd
@@ -42,7 +43,7 @@ class House:
     def electricity_consumption_excluding_heating(self) -> Consumption:
         return self.base_consumption.add(self.solar_install.generation)
 
-    @property
+    @cached_property
     def heating_consumption(self) -> Consumption:
         return self.heating_system.calculate_consumption(self.envelope.annual_heating_demand)
 
@@ -67,7 +68,7 @@ class House:
 
         return consumption_dict
 
-    @property
+    @cached_property
     def annual_consumption_per_fuel_kwh(self) -> Dict[str, float]:
         return {fuel: consumption.overall.annual_sum_kwh
                 for fuel, consumption in self.consumption_per_fuel.items()}
@@ -83,7 +84,7 @@ class House:
             bills_dict[fuel_name] = self.tariffs[fuel_name].calculate_annual_cost(consumption)
         return bills_dict
 
-    @property
+    @cached_property
     def total_annual_bill(self) -> float:
         return sum(self.annual_bill_per_fuel.values())
 
@@ -94,11 +95,11 @@ class House:
             carbon_dict[fuel_name] = consumption.overall.annual_sum_tco2
         return carbon_dict
 
-    @property
+    @cached_property
     def total_annual_tco2(self) -> float:
         return sum(self.annual_tco2_per_fuel.values())
 
-    @property
+    @cached_property
     def energy_and_bills_df(self) -> pd.DataFrame:
         """ To make it easy to plot the results using plotly"""
         df = pd.DataFrame(data={'Your annual energy use kwh': self.annual_consumption_per_fuel_kwh,
@@ -107,6 +108,13 @@ class House:
         df.index.name = 'fuel'
         df = df.reset_index()
         return df
+
+    def clear_cached_properties(self):
+        cls = self.__class__
+        attrs = [a for a in dir(self) if isinstance(getattr(cls, a, cls), cached_property)]
+        for a in attrs:
+            if a in self.__dict__.keys():
+                del self.__dict__[a]
 
     @property
     def heating_system_upfront_cost(self) -> int:

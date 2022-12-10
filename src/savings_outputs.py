@@ -453,14 +453,14 @@ def render_consumption_outputs(house: "House", solar_house: "House", hp_house: "
 def produce_consumption_sentence(house):
     if house.has_multiple_fuels:
         sentence = (
-            f"{int(house.consumption_per_fuel['electricity'].overall.annual_sum_kwh):,} "
+            f"{int(house.annual_consumption_per_fuel_kwh['electricity']):,} "
             f"kwh of electricity and "
-            f"{int(house.consumption_per_fuel[house.heating_system.fuel.name].overall.annual_sum_fuel_units):,}"
+            f"{int(house.annual_consumption_per_fuel_kwh[house.heating_system.fuel.name]):,}"
             f" {house.heating_system.fuel.units} of {house.heating_system.fuel.name} per year"
         )
     else:
         sentence = (
-            f"{int(house.consumption_per_fuel['electricity'].overall.annual_sum_kwh):,}"
+            f"{int(house.annual_consumption_per_fuel_kwh['electricity']):,}"
             f" kwh of electricity per year "
         )
     return sentence
