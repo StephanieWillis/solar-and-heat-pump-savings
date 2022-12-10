@@ -233,8 +233,9 @@ def render_grant_overwrite_options(hp_house: House, both_house: House) -> Tuple[
         value=st.session_state.heat_pump_grant_value,
         key="heat_pump_grant_value_overwrite",
         on_change=flag_that_heat_pump_grant_value_overwritten,
-        help='''The [Boiler Upgrade Scheme](https://www.gov.uk/apply-boiler-upgrade-scheme) is available in England and
-        Wales'''
+        help='''The [Boiler Upgrade Scheme](https://www.gov.uk/apply-boiler-upgrade-scheme) offers a grant of £5000 and
+        is available in England and Wales. The [Home Energy Scotland Scheme](https://www.gov.scot/news/embargoed-enhanced-support-to-make-homes-warmer-and-greener/) is 
+        available in Scotland and offers a grant of £7500.'''
     )
 
     if st.session_state.heat_pump_grant_value_overwritten:
