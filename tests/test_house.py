@@ -1,10 +1,8 @@
 import numpy as np
 import pandas as pd
 
-import building_model
-import retrofit
 from .context import src
-from src import building_model, solar, constants, roof
+from src import building_model, solar, constants, roof, retrofit
 from src.constants import SolarConstants
 
 
@@ -177,6 +175,3 @@ def test_upgrade_buildings():
             == solar_house.solar_install.generation.overall.annual_sum_kwh)
 
     return hp_house, solar_house, both_house
-
-def test_cached_properties():
-    pass
