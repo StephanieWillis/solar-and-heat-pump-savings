@@ -145,11 +145,6 @@ class House:
         df = df.reset_index()
         return df
 
-    @cached_property
-    def annual_consumption_import_and_export_per_fuel_kwh(self) -> Dict[str, float]:
-        return {fuel: {'import': consumption.imported.annual_sum_kwh, 'export': consumption.imported.annual_sum_kwh}
-                for fuel, consumption in self.consumption_per_fuel.items()}
-
     def clear_cached_properties(self):
         cls = self.__class__
         attrs = [a for a in dir(self) if isinstance(getattr(cls, a, cls), cached_property)]

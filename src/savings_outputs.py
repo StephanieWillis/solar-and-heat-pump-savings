@@ -454,7 +454,7 @@ def render_consumption_outputs(house: "House", solar_house: "House", hp_house: "
     )
 
 
-def produce_consumption_sentence(house):
+def produce_consumption_sentence(house: 'House') -> str:
     if house.has_multiple_fuels:
         sentence = (
             f"{int(house.annual_consumption_per_fuel_kwh['electricity']):,} "
@@ -467,7 +467,16 @@ def produce_consumption_sentence(house):
             f"{int(house.annual_consumption_per_fuel_kwh['electricity']):,}"
             f" kwh of electricity per year "
         )
+
+    if house.solar_install.generation.overall.annual_sum_kwh != 0:
+        extra = produce_self_use_sentence(house)
+        sentence += extra
     return sentence
+
+
+def produce_self_use_sentence(house: 'House') -> str:
+    extra = f" ({int(house.percent_self_use_of_solar * 100)}% self-use)"
+    return extra
 
 
 def render_savings_chart(results_df: pd.DataFrame, x_variable: str):
