@@ -281,8 +281,9 @@ def render_results(house: House, solar_house: House, hp_house: House, both_house
             "<div>"
             f"<p class='saving-maths-headline'> {format_payback(solar_retrofit.simple_payback)}</p>"
             "<p class='saving-maths'> payback time</p>"
-            "<p class='install-disclaimer'>                                                                  </p> "
             "<br>"
+            "<br>"
+            "<br>"            
             "</div>"
             "</div>",
             unsafe_allow_html=True,
