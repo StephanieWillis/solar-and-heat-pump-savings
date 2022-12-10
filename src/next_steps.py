@@ -119,7 +119,8 @@ def render_heat_pump_next_steps():
     st.subheader("Are they... magic?")
     st.markdown(
         "<p class='next-steps'>"
-        "If you'd like to understand more about heat pumps, including whether a heat pump is suitable "
+        "Yes, kind of! But in a 'technology is magical' way, rather than a 'this is made up' way. "
+        " If you'd like to understand more about heat pumps, including whether a heat pump is suitable "
         "for your home and whether you need to insulate your home before installing a heat pump, check out "
         "<a href='https://help.sero.life/hc/en-gb/articles/6498847104914-What-is-an-Air-Source-Heat-Pump-'>Sero's explainer on all things heat pump. </a>"
         ""
@@ -176,7 +177,7 @@ def render_heat_pump_next_steps():
         <a href='https://www.nesta.org.uk/report/how-the-energy-crisis-affects-the-case-for-heat-pumps/how-the-costs-of-heat-pumps-compare-to-gas-boilers-since-the-energy-crisis-1/#content'>
          forecasts</a> we are aware of suggest that that ratio will stay low enough that 
         good heat pump installs will continue to give lower bills than gas boilers. We cannot be sure of that of course! 
-        Whatever happens to energy prices, a heat pump will continue to be a massive win from a carbon perspective.
+        Whatever happens to energy prices, a heat pump will continue to be a massive win from a climate perspective.
         </p>
         <br>""",
                 unsafe_allow_html=True,

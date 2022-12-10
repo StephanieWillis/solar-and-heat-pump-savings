@@ -66,6 +66,7 @@ def render_savings_assumptions_sidebar_and_calculate_upgraded_houses(house: Hous
                                                                                  both_house=both_house)
 
         st.text("")
+        st.text("")  # To give some space at the bottom
     return house, solar_house, hp_house, both_house
 
 
@@ -135,6 +136,26 @@ def render_upfront_cost_overwrite_options(house: House, solar_house: House, hp_h
      Have to pass whole house as costs only defined for heating systems when have envelope plus heating system
      """
 
+    if "solar_cost" not in st.session_state:
+        solar_questions.write_solar_cost_to_session_state(solar_install=solar_house.solar_install)
+
+    st.number_input(
+        label="Solar cost",
+        min_value=0,
+        max_value=300000,
+        value=st.session_state.solar_cost,
+        key="solar_cost_overwrite",
+        on_change=overwrite_solar_costs_in_session_state,
+        help="The cost of scaffolding is a significant part of the cost  of installing solar. If you have scaffolding"
+             " up for another job, make the most of it and install solar at the same time! "
+    )
+
+    if st.session_state.solar_cost_overwritten:
+        print("Behaves as if solar cost overwritten")
+        solar_house.solar_install.upfront_cost = st.session_state.solar_cost
+        both_house.solar_install.upfront_cost = st.session_state.solar_cost
+        st.session_state.solar_cost_overwritten = False
+
     if "baseline_heating_cost" not in st.session_state or st.session_state.baseline_heating_system_cost_needs_resetting:
         house.clear_cost_overwrite()
         st.session_state.baseline_heating_cost = house.heating_system_upfront_cost
@@ -148,34 +169,14 @@ def render_upfront_cost_overwrite_options(house: House, solar_house: House, hp_h
         value=st.session_state.baseline_heating_cost,
         key="baseline_heating_cost_overwrite",
         on_change=overwrite_baseline_heating_costs_in_session_state,
-        help="For the payback calculation we assume that you get  \n a heat pump instead of a new"
-             " boiler, so we take  \n the cost of a new boiler off the heat pump cost"
+        help="For the payback calculation we assume that you would have installed a new boiler if you had not"
+             " installed a heat pump so we  subtract the cost of a new boiler from the heat pump cost"
     )
 
     if st.session_state.baseline_heating_cost_overwritten:
         house.heating_system_upfront_cost = st.session_state.baseline_heating_cost
         solar_house.heating_system_upfront_cost = st.session_state.baseline_heating_cost
         st.session_state.baseline_heating_cost_overwritten = False
-
-    if "solar_cost" not in st.session_state:
-        solar_questions.write_solar_cost_to_session_state(solar_install=solar_house.solar_install)
-
-    st.number_input(
-        label="Solar cost",
-        min_value=0,
-        max_value=30000,
-        value=st.session_state.solar_cost,
-        key="solar_cost_overwrite",
-        on_change=overwrite_solar_costs_in_session_state,
-        help="The cost of scaffolding is a significant part of the cost  \n of installing solar. If you have scaffolding"
-             " up for another job,  \nmake the most of it and install solar at the same time! "
-    )
-
-    if st.session_state.solar_cost_overwritten:
-        print("Behaves as if solar cost overwritten")
-        solar_house.solar_install.upfront_cost = st.session_state.solar_cost
-        both_house.solar_install.upfront_cost = st.session_state.solar_cost
-        st.session_state.solar_cost_overwritten = False
 
     if "heat_pump_cost" not in st.session_state or st.session_state.upgrade_heating_system_cost_needs_resetting:
         hp_house.clear_cost_overwrite()  # shouldn't currently be necessary because remade when this page renders
@@ -193,8 +194,7 @@ def render_upfront_cost_overwrite_options(house: House, solar_house: House, hp_h
         value=st.session_state.heat_pump_cost,
         key="heat_pump_cost_overwrite",
         on_change=overwrite_heat_pump_costs_in_session_state,
-        help="The cost of a heat pump depends on   \nyour existing radiators and pipework:  \n "
-             "see the final page for more info"
+        help="The cost of a heat pump depends on your existing radiators and pipework: see the final page for more info"
     )
 
     if st.session_state.heat_pump_cost_overwritten:
@@ -233,8 +233,9 @@ def render_grant_overwrite_options(hp_house: House, both_house: House) -> Tuple[
         value=st.session_state.heat_pump_grant_value,
         key="heat_pump_grant_value_overwrite",
         on_change=flag_that_heat_pump_grant_value_overwritten,
-        help='''The [Boiler Upgrade Scheme](https://www.gov.uk/apply-boiler-upgrade-scheme) is available in England and
-        Wales'''
+        help='''The [Boiler Upgrade Scheme](https://www.gov.uk/apply-boiler-upgrade-scheme) offers a grant of £5000 and
+        is available in England and Wales. The [Home Energy Scotland Scheme](https://www.gov.scot/news/embargoed-enhanced-support-to-make-homes-warmer-and-greener/) is 
+        available in Scotland and offers a grant of £7500.'''
     )
 
     if st.session_state.heat_pump_grant_value_overwritten:
