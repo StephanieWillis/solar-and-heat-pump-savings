@@ -469,9 +469,9 @@ def render_savings_chart(results_df: pd.DataFrame, x_variable: str):
                        x=x_variable,
                        y="Upgrade option",
                        color="fuel",
-                       color_discrete_map={'electricity': 'blue',
-                                           'gas': 'red',
-                                           'oil': 'green'},
+                       color_discrete_map={'electricity': 'hsl(220, 60%, 90%)',
+                                           'gas': 'hsl(220, 60%, 30%)',
+                                           'oil': 'hsl(220, 60%, 20%)'},
                        template="plotly_white")
     bills_fig.update_layout(
         legend=dict(orientation="h", y=1.1, x=0.6),
