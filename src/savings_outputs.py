@@ -142,7 +142,7 @@ def render_upfront_cost_overwrite_options(house: House, solar_house: House, hp_h
     st.number_input(
         label="Solar cost",
         min_value=0,
-        max_value=30000,
+        max_value=300000,
         value=st.session_state.solar_cost,
         key="solar_cost_overwrite",
         on_change=overwrite_solar_costs_in_session_state,
