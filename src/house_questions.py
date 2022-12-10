@@ -120,7 +120,7 @@ def render_heating_system_questions(house: House) -> House:
                                                               parameters=constants.DEFAULT_HEATING_CONSTANTS[name])
                 write_baseline_heating_system_to_session_state(heating_system=heating_system)
                 house.heating_system = heating_system
-                house.clear_cached_properties()
+                # house.clear_cached_properties()
                 write_heating_consumption_to_session_state(house=house)
                 st.session_state.baseline_heating_system_cost_needs_resetting = True
 
@@ -186,7 +186,7 @@ def render_baseline_heating_system_overwrite_options(house: "House") -> "House":
 
     if st.session_state.baseline_heating_efficiency_changed:
         house.heating_system.efficiency = st.session_state.baseline_heating_efficiency
-        house.clear_cached_properties()
+        # house.clear_cached_properties()
         write_heating_consumption_to_session_state(house)  # so change of heating efficiency changes consumption
         st.session_state.baseline_heating_efficiency_changed = False
 
@@ -333,7 +333,7 @@ def render_tariff_overwrite_options(house: House) -> House:
     house.tariffs = tariffs
     house.clear_cached_properties()  # TODO: if others work then put this in an on change if
 
-    return tariffs
+    return house
 
 
 def write_elec_tariff_to_session_state(tariff: Tariff):
