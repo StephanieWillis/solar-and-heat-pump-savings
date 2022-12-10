@@ -171,9 +171,18 @@ def test_upgrade_buildings():
     np.testing.assert_almost_equal(both_house.consumption_per_fuel['electricity'].imported.annual_sum_kwh
                                    - both_house.consumption_per_fuel['electricity'].exported.annual_sum_kwh,
                                    both_house.consumption_per_fuel['electricity'].overall.annual_sum_kwh)
-    assert hp_house.total_annual_bill > both_house.total_annual_bill
 
     assert (both_house.solar_install.generation.overall.annual_sum_kwh
             == solar_house.solar_install.generation.overall.annual_sum_kwh)
+
+    assert hp_house.total_annual_bill > both_house.total_annual_bill
+    np.testing.assert_almost_equal(both_house.annual_bill_import_and_export_per_fuel['electricity']['imported']
+                                   - both_house.annual_bill_import_and_export_per_fuel['electricity']['exported'],
+                                   both_house.annual_bill_per_fuel['electricity'])
+
+
+    np.testing.assert_almost_equal(both_house.consumption_per_fuel['electricity'].imported.annual_sum_tco2
+                                   - both_house.consumption_per_fuel['electricity'].exported.annual_sum_tco2,
+                                   both_house.consumption_per_fuel['electricity'].overall.annual_sum_tco2)
 
     return hp_house, solar_house, both_house
