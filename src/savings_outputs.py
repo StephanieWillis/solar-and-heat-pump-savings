@@ -453,14 +453,14 @@ def render_consumption_outputs(house: "House", solar_house: "House", hp_house: "
 def produce_consumption_sentence(house):
     if house.has_multiple_fuels:
         sentence = (
-            f"{int(house.annual_overall_consumption_per_fuel_kwh['electricity']):,} "
+            f"{int(house.annual_consumption_per_fuel_kwh['electricity']):,} "
             f"kwh of electricity and "
-            f"{int(house.annual_overall_consumption_per_fuel_kwh[house.heating_system.fuel.name]):,}"
+            f"{int(house.annual_consumption_per_fuel_kwh[house.heating_system.fuel.name]):,}"
             f" {house.heating_system.fuel.units} of {house.heating_system.fuel.name} per year"
         )
     else:
         sentence = (
-            f"{int(house.annual_overall_consumption_per_fuel_kwh['electricity']):,}"
+            f"{int(house.annual_consumption_per_fuel_kwh['electricity']):,}"
             f" kwh of electricity per year "
         )
     return sentence
@@ -471,7 +471,8 @@ def render_savings_chart(results_df: pd.DataFrame, x_variable: str):
                        x=x_variable,
                        y="Upgrade option",
                        color="fuel",
-                       color_discrete_map={'electricity': 'hsl(220, 60%, 90%)',
+                       color_discrete_map={'electricity imports': 'hsl(220, 60%, 80%)',
+                                           'electricity exports': 'hsl(220, 60%, 90%)',
                                            'gas': 'hsl(220, 60%, 30%)',
                                            'oil': 'hsl(220, 60%, 20%)'},
                        template="plotly_white")

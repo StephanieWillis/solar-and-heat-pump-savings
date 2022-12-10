@@ -65,7 +65,7 @@ def test_tariff_calculate_annual_cost():
     annual_demand = 10 * 8760
     space_heating_consumption = elec_res.calculate_consumption(annual_demand)
     # Check cost when no export
-    annual_cost = cheapo.calculate_annual_cost(consumption=space_heating_consumption)
+    annual_cost = cheapo.calculate_annual_net_cost(consumption=space_heating_consumption)
     np.testing.assert_almost_equal(annual_cost,
                                    (cheapo.p_per_day * space_heating_consumption.overall.days_in_year
                                     + cheapo.p_per_unit_import * space_heating_consumption.overall.annual_sum_kwh)
@@ -79,7 +79,7 @@ def test_tariff_calculate_annual_cost():
     assert consumption_with_export.exported.annual_sum_kwh == 90
 
     # Check cost with export
-    annual_cost_with_export = cheapo.calculate_annual_cost(consumption=space_heating_consumption)
+    annual_cost_with_export = cheapo.calculate_annual_net_cost(consumption=space_heating_consumption)
     assert annual_cost_with_export < annual_cost
     np.testing.assert_almost_equal(annual_cost_with_export,
                                    (cheapo.p_per_day * consumption_with_export.overall.days_in_year
@@ -141,8 +141,8 @@ def test_typical_home_hits_price_cap():
                                                base_electricity_demand_profile_kwh=demand)
     gas_house = building_model.House.set_up_from_heating_name(envelope=envelope, heating_name='Gas boiler')
     assert gas_house.has_multiple_fuels is True
-    np.testing.assert_almost_equal(gas_house.annual_overall_consumption_per_fuel_kwh['electricity'], 2900)
-    np.testing.assert_almost_equal(gas_house.annual_overall_consumption_per_fuel_kwh['gas'], 12000)
+    np.testing.assert_almost_equal(gas_house.annual_consumption_per_fuel_kwh['electricity'], 2900)
+    np.testing.assert_almost_equal(gas_house.annual_consumption_per_fuel_kwh['gas'], 12000)
     np.testing.assert_almost_equal(gas_house.total_annual_bill, 2492.1)  # looks like it isn't exactly 2500 after all
     np.testing.assert_almost_equal(gas_house.total_annual_tco2,
                                    (12000 * constants.GAS_TCO2_PER_KWH + 2900 * constants.ELEC_TCO2_PER_KWH))

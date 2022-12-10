@@ -69,19 +69,29 @@ class House:
         return consumption_dict
 
     @cached_property
-    def annual_overall_consumption_per_fuel_kwh(self) -> Dict[str, float]:
+    def annual_consumption_per_fuel_kwh(self) -> Dict[str, float]:
         return {fuel: consumption.overall.annual_sum_kwh
                 for fuel, consumption in self.consumption_per_fuel.items()}
 
     @property
     def total_annual_consumption_kwh(self) -> float:
-        return sum(self.annual_overall_consumption_per_fuel_kwh.values())
+        return sum(self.annual_consumption_per_fuel_kwh.values())
+
+    @property
+    def annual_bill_import_and_export_per_fuel(self) -> Dict[str, Dict[str, float]]:
+        bills_imported_and_exported = {}
+        for fuel_name, consumption in self.consumption_per_fuel.items():
+            inner_dict = {'imported': self.tariffs[fuel_name].calculate_annual_import_cost(consumption=consumption),
+                          'exported': self.tariffs[fuel_name].calculate_annual_export_cost(consumption=consumption)}
+            bills_imported_and_exported[fuel_name] = inner_dict
+        return bills_imported_and_exported
 
     @property
     def annual_bill_per_fuel(self) -> Dict[str, float]:
         bills_dict = {}
         for fuel_name, consumption in self.consumption_per_fuel.items():
-            bills_dict[fuel_name] = self.tariffs[fuel_name].calculate_annual_cost(consumption)
+            bills_dict[fuel_name] = (self.annual_bill_import_and_export_per_fuel[fuel_name]['imported']
+                                     - self.annual_bill_import_and_export_per_fuel[fuel_name]['exported'])
         return bills_dict
 
     @cached_property
@@ -101,17 +111,32 @@ class House:
 
     @cached_property
     def energy_and_bills_df(self) -> pd.DataFrame:
+
         """ To make it easy to plot the results using plotly"""
-        df = pd.DataFrame(data={'Your annual energy use kwh':
-                                    {key: round(val, 0) for key, val in self.annual_overall_consumption_per_fuel_kwh.items()},
-                                'Your annual energy bill £':
-                                    {key: round(val, 0) for key, val in self.annual_bill_per_fuel.items()},
-                                'Your annual carbon emissions tCO2':
-                                    {key: round(val, 2) for key, val in self.annual_tco2_per_fuel.items()}
-                                })
+        kwh = {'electricity imports': round(self.consumption_per_fuel['electricity'].imported.annual_sum_kwh, 0),
+               'electricity exports': - round(self.consumption_per_fuel['electricity'].exported.annual_sum_kwh, 0)}
+        bill = {'electricity imports': round(self.annual_bill_import_and_export_per_fuel['electricity']['imported'], 0),
+                'electricity exports': - round(self.annual_bill_import_and_export_per_fuel['electricity']['exported'], 0)}
+        co2_dict = {'electricity imports': round(self.consumption_per_fuel['electricity'].imported.annual_sum_tco2, 2),
+                    'electricity exports': - round(self.consumption_per_fuel['electricity'].exported.annual_sum_tco2, 2)}
+
+        heating_fuel = self.heating_system.fuel.name
+        if heating_fuel != 'electricity':
+            kwh[heating_fuel] = round(self.consumption_per_fuel[heating_fuel].overall.annual_sum_kwh, 0)
+            bill[heating_fuel] = round(self.annual_bill_per_fuel[heating_fuel], 0)
+            co2_dict[heating_fuel] = round(self.consumption_per_fuel[heating_fuel].overall.annual_sum_tco2, 2)
+
+        df = pd.DataFrame(data={'Your annual energy use kwh': kwh,
+                                'Your annual energy bill £': bill,
+                                'Your annual carbon emissions tCO2': co2_dict})
         df.index.name = 'fuel'
         df = df.reset_index()
         return df
+
+    @cached_property
+    def annual_consumption_import_and_export_per_fuel_kwh(self) -> Dict[str, float]:
+        return {fuel: {'import': consumption.imported.annual_sum_kwh, 'export': consumption.imported.annual_sum_kwh}
+                for fuel, consumption in self.consumption_per_fuel.items()}
 
     def clear_cached_properties(self):
         cls = self.__class__
@@ -156,16 +181,28 @@ class Tariff:
     p_per_unit_import: float  # unit defined by the fuel
     p_per_unit_export: float = 0.0
 
-    def calculate_annual_cost(self, consumption: 'Consumption') -> float:
-        """ Calculate the annual cost of the consumption of a certain fuel with this tariff"""
+    def calculate_annual_import_cost(self, consumption: 'Consumption') -> float:
+        """ Calculate the annual cost of the import consumption of a certain fuel with this tariff"""
         if self.fuel.name != consumption.fuel.name:
             raise ValueError("To calculate annual costs the tariff fuel must match the consumption fuel, they are"
                              f"{self.fuel} and {consumption.fuel}")
         cost_p_per_day = consumption.overall.days_in_year * self.p_per_day
         cost_p_imports = consumption.imported.annual_sum_fuel_units * self.p_per_unit_import
-        income_p_exports = consumption.exported.annual_sum_fuel_units * self.p_per_unit_export
-        annual_cost = (cost_p_per_day + cost_p_imports - income_p_exports) / 100
-        return annual_cost
+        annual_import_cost = (cost_p_per_day + cost_p_imports) / 100
+        return annual_import_cost
+
+    def calculate_annual_export_cost(self, consumption: 'Consumption') -> float:
+        """ Calculate the annual cost of the export of a certain fuel with this tariff"""
+        if self.fuel.name != consumption.fuel.name:
+            raise ValueError("To calculate annual costs the tariff fuel must match the consumption fuel, they are"
+                             f"{self.fuel} and {consumption.fuel}")
+        income_exports = consumption.exported.annual_sum_fuel_units * self.p_per_unit_export / 100
+        return income_exports
+
+    def calculate_annual_net_cost(self, consumption: 'Consumption') -> float:
+        annual_import_cost = self.calculate_annual_import_cost(consumption=consumption)
+        income_exports = self.calculate_annual_export_cost(consumption=consumption)
+        return annual_import_cost - income_exports
 
     @classmethod
     def set_up_standard_tariffs(cls, heating_system_fuel: Fuel) -> Dict[str, 'Tariff']:
