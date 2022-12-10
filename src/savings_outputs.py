@@ -423,7 +423,7 @@ def produce_bill_saving_sentence(house: "House", baseline_house: "House") -> str
     if saving >= 0:
         sentence = f"that's a saving of £{saving:,}"
     else:
-        sentence = f"that's an increase of £{saving:,}"
+        sentence = f"that's an increase of £{-saving:,}"
     return sentence
 
 
