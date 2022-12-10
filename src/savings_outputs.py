@@ -257,8 +257,8 @@ def render_results(house: House, solar_house: House, hp_house: House, both_house
                    both_retrofit: retrofit.Retrofit):
     # Combine results all variables
     results_df = retrofit.combine_results_dfs_multiple_houses(
-        [house, solar_house, hp_house, both_house],
-        ["Current ", "Solar panels ", "Heat pump ", "Both "],
+        [both_house, hp_house, solar_house, house],
+        ["Both ", "Heat pump ", "Solar panels ",  "Current "],
     )
 
     st.markdown(
