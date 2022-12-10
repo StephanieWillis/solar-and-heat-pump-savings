@@ -115,7 +115,6 @@ class House:
         for a in attrs:
             if a in self.__dict__.keys():
                 del self.__dict__[a]
-        pass
 
     @property
     def heating_system_upfront_cost(self) -> int:

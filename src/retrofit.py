@@ -45,7 +45,7 @@ class Retrofit:
 
 def upgrade_buildings(baseline_house: 'House', solar_install: 'Solar', upgrade_heating: 'HeatingSystem'
                       ) -> Tuple['House', 'House', 'House']:
-    baseline_house.clear_cached_properties()
+    baseline_house.clear_cached_properties()  # shouldn't this be for each house?
 
     hp_house = copy.deepcopy(baseline_house)  # do after modifications so modifications flow through
     hp_house.clear_cost_overwrite()  # so that changes in baseline cost don't flow through into hp_house

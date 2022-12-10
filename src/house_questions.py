@@ -71,7 +71,7 @@ def render_building_envelope_questions(house: House) -> House:
                 envelope = BuildingEnvelope.from_building_type_constants(constants.BUILDING_TYPE_OPTIONS[house_type])
                 write_house_type_variables_to_session_state(envelope=envelope)
                 house.envelope = envelope
-                house.clear_cached_properties()
+                house.clear_cached_properties()  # so that change in envelope flows through into cached properties
                 write_heating_consumption_to_session_state(house)  # so change of house type changes consumption
                 st.session_state.upgrade_heating_system_cost_needs_resetting = True
                 st.session_state.baseline_heating_system_cost_needs_resetting = True
@@ -218,12 +218,12 @@ def render_consumption_overwrite_options(house: 'House') -> House:
         key="annual_heating_consumption_overwrite",
         on_change=overwrite_heating_consumption_in_session_state)
 
-    envelope = house.envelope
     if st.session_state.heating_demand_changed:  # scale profile  by correction factor
         print("Behaves as if heating demand changed")
         mult = st.session_state.annual_heating_consumption/int(house.heating_consumption.overall.annual_sum_fuel_units)
-        envelope.annual_heating_demand = envelope.annual_heating_demand * mult
-        st.session_state.annual_heating_demand = int(envelope.annual_heating_demand)
+        house.envelope.annual_heating_demand = house.envelope.annual_heating_demand * mult
+        house.clear_cached_properties()  # so change in annual heating demand flows through to cached properties
+        st.session_state.annual_heating_demand = int(house.envelope.annual_heating_demand)
         st.session_state.heating_demand_changed = False
 
     st.number_input(
@@ -236,8 +236,9 @@ def render_consumption_overwrite_options(house: 'House') -> House:
     )
     if st.session_state.base_demand_changed:  # scale profile  by correction factor
         print("Behaves as if base demand changed")
-        multiplier = st.session_state.annual_base_demand / int(envelope.base_demand.sum())
-        envelope.base_demand = house.envelope.base_demand * multiplier
+        multiplier = st.session_state.annual_base_demand / int(house.envelope.base_demand.sum())
+        house.envelope.base_demand = house.envelope.base_demand * multiplier
+        house.clear_cached_properties()  # so change in base demand flows through to cached properties
         st.session_state.base_demand_changed = False
 
     typical_heat_demand = constants.BUILDING_TYPE_OPTIONS[house.envelope.house_type].annual_heat_demand_kWh
@@ -255,8 +256,6 @@ def render_consumption_overwrite_options(house: 'House') -> House:
         f"The better insulated your home, the less energy it will need for heating. "
     )
 
-    house.envelope = envelope
-    house.clear_cached_properties()
     return house
 
 
@@ -275,6 +274,9 @@ def render_tariff_overwrite_options(house: House) -> House:
 
     tariffs = house.tariffs
     fuel_name = house.heating_system.fuel.name
+
+    if "tariff_changed" not in st.session_state:
+        st.session_state.tariff_changed = False
 
     if "p_per_unit_elec_import" not in st.session_state:
         write_elec_tariff_to_session_state(tariff=tariffs["electricity"])
@@ -330,8 +332,10 @@ def render_tariff_overwrite_options(house: House) -> House:
         "The electricity export rate of 15p/kWh is based on [Octopus Outgoing](https://octopus.energy/outgoing)"
     )
 
-    house.tariffs = tariffs
-    house.clear_cached_properties()  # TODO: if others work then put this in an on change if
+    if st.session_state.tariff_changed:
+        house.tariffs = tariffs
+        house.clear_cached_properties()
+        st.session_state.tariff_changed = False
 
     return house
 
@@ -349,22 +353,27 @@ def write_heating_tariffs_to_sessions_state(tariff: Tariff):
 
 def overwrite_elec_p_per_unit_import_in_session_state():
     st.session_state.p_per_unit_elec_import = st.session_state.p_per_unit_elec_import_overwrite
+    st.session_state.tariff_changed = True
 
 
 def overwrite_elec_p_per_unit_export_in_session_state():
     st.session_state.p_per_unit_elec_export = st.session_state.p_per_unit_elec_export_overwrite
+    st.session_state.tariff_changed = True
 
 
 def overwrite_elec_p_per_day_in_session_state():
     st.session_state.p_per_day_elec = st.session_state.p_per_day_elec_overwrite
+    st.session_state.tariff_changed = True
 
 
 def overwrite_p_per_unit_heating_fuel_import():
     st.session_state.p_per_unit_heating_fuel_import = st.session_state.p_per_unit_heating_fuel_import_overwrite
+    st.session_state.tariff_changed = True
 
 
 def overwrite_p_per_day_heating_fuel():
     st.session_state.p_per_day_heating_fuel = st.session_state.p_per_day_heating_fuel_overwrite
+    st.session_state.tariff_changed = True
 
 
 def render_results(house: House):
