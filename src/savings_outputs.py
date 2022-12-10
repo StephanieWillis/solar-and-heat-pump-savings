@@ -419,7 +419,11 @@ def produce_hypothetical_bill_sentence(house) -> str:
 
 
 def produce_bill_saving_sentence(house: "House", baseline_house: "House") -> str:
-    sentence = f"that's a saving of £{int(baseline_house.total_annual_bill - house.total_annual_bill):,}"
+    saving = int(baseline_house.total_annual_bill - house.total_annual_bill)
+    if saving >= 0:
+        sentence = f"that's a saving of £{saving:,}"
+    else:
+        sentence = f"that's an increase of £{saving:,}"
     return sentence
 
 
@@ -430,9 +434,9 @@ def render_carbon_chart(results_df: pd.DataFrame):
 def render_carbon_outputs(house: "House", solar_house: "House", hp_house: "House", both_house: "House"):
     st.write(
         f"We calculate that your house emits {house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
-        f"- with solar that would fall to {solar_house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
-        f"- with a heat pump that would fall to {hp_house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
-        f"- with solar and a heat pump that would fall to {both_house.total_annual_tco2:.2f} "
+        f"- with solar it would emit {solar_house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
+        f"- with a heat pump it would emit {hp_house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
+        f"- with solar and a heat pump it would emit {both_house.total_annual_tco2:.2f} "
         f"tonnes of CO2 per year  \n"
     )
 
@@ -444,9 +448,9 @@ def render_consumption_chart(results_df: pd.DataFrame):
 def render_consumption_outputs(house: "House", solar_house: "House", hp_house: "House", both_house: "House"):
     st.write(
         f"We calculate that your house currently needs {produce_consumption_sentence(house)}  \n"
-        f"- with solar that would fall to {produce_consumption_sentence(solar_house)}  \n"
-        f"- with a heat pump that would fall to {produce_consumption_sentence(hp_house)}  \n"
-        f"- with solar and a heat pump that would fall to {produce_consumption_sentence(both_house)} "
+        f"- with solar it would need {produce_consumption_sentence(solar_house)}  \n"
+        f"- with a heat pump it would need {produce_consumption_sentence(hp_house)}  \n"
+        f"- with solar and a heat pump it would need {produce_consumption_sentence(both_house)} "
     )
 
 
