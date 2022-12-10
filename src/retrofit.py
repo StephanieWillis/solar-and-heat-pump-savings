@@ -58,7 +58,7 @@ def upgrade_buildings(baseline_house: 'House', solar_install: 'Solar', upgrade_h
     both_house = copy.deepcopy(hp_house)
     both_house.clear_cost_overwrite()  # so that changes in baseline cost don't flow through into both_house
     both_house.solar_install = solar_install
-    solar_house.clear_cached_properties()  # so that cached properties recalculated for this solar install + hp system
+    both_house.clear_cached_properties()  # so that cached properties recalculated for this solar install + hp system
 
     return solar_house, hp_house, both_house
 
