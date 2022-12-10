@@ -71,6 +71,7 @@ def render_building_envelope_questions(house: House) -> House:
                 envelope = BuildingEnvelope.from_building_type_constants(constants.BUILDING_TYPE_OPTIONS[house_type])
                 write_house_type_variables_to_session_state(envelope=envelope)
                 house.envelope = envelope
+                house.clear_cached_properties()
                 write_heating_consumption_to_session_state(house)  # so change of house type changes consumption
                 st.session_state.upgrade_heating_system_cost_needs_resetting = True
                 st.session_state.baseline_heating_system_cost_needs_resetting = True
@@ -119,6 +120,7 @@ def render_heating_system_questions(house: House) -> House:
                                                               parameters=constants.DEFAULT_HEATING_CONSTANTS[name])
                 write_baseline_heating_system_to_session_state(heating_system=heating_system)
                 house.heating_system = heating_system
+                house.clear_cached_properties()
                 write_heating_consumption_to_session_state(house=house)
                 st.session_state.baseline_heating_system_cost_needs_resetting = True
 
@@ -164,16 +166,16 @@ def render_house_assumptions_sidebar(house: House) -> House:
 def render_house_overwrite_options(house: House):
     """ Split out because used on savings page and front page"""
     with st.expander("Baseline heating system"):
-        house.heating_system = render_baseline_heating_system_overwrite_options(house=house)
+        house = render_baseline_heating_system_overwrite_options(house=house)
     with st.expander("Energy use"):
-        house.envelope = render_consumption_overwrite_options(house=house)
+        house = render_consumption_overwrite_options(house=house)
     with st.expander("Tariff"):
-        house.tariffs = render_tariff_overwrite_options(tariffs=house.tariffs, fuel_name=house.heating_system.fuel.name)
+        house = render_tariff_overwrite_options(house=house)
     st.text("")  # to add some space
     return house
 
 
-def render_baseline_heating_system_overwrite_options(house: "House") -> "HeatingSystem":
+def render_baseline_heating_system_overwrite_options(house: "House") -> "House":
     st.number_input(
         label="Efficiency: ",
         min_value=0.1,
@@ -184,6 +186,7 @@ def render_baseline_heating_system_overwrite_options(house: "House") -> "Heating
 
     if st.session_state.baseline_heating_efficiency_changed:
         house.heating_system.efficiency = st.session_state.baseline_heating_efficiency
+        house.clear_cached_properties()
         write_heating_consumption_to_session_state(house)  # so change of heating efficiency changes consumption
         st.session_state.baseline_heating_efficiency_changed = False
 
@@ -195,7 +198,7 @@ def render_baseline_heating_system_overwrite_options(house: "House") -> "Heating
             "You can learn how to turn down your flow temperature "
             "[here](https://www.nesta.org.uk/project/lowering-boiler-flow-temperature-reduce-emissions)."
         )
-    return house.heating_system
+    return house
 
 
 def overwrite_baseline_heating_efficiency_in_session_state():
@@ -203,7 +206,7 @@ def overwrite_baseline_heating_efficiency_in_session_state():
     st.session_state.baseline_heating_efficiency_changed = True
 
 
-def render_consumption_overwrite_options(house: 'House') -> BuildingEnvelope:
+def render_consumption_overwrite_options(house: 'House') -> House:
 
     heat_label = f"{house.heating_system.fuel.name.capitalize()} use for heat/hot water" \
                  f" ({house.heating_system.fuel.units})"
@@ -251,7 +254,10 @@ def render_consumption_overwrite_options(house: 'House') -> BuildingEnvelope:
         f"electricity for lighting, appliances, etc.  \n\n"
         f"The better insulated your home, the less energy it will need for heating. "
     )
-    return envelope
+
+    house.envelope = envelope
+    house.clear_cached_properties()
+    return house
 
 
 def overwrite_heating_consumption_in_session_state():
@@ -264,8 +270,11 @@ def overwrite_base_demand_in_session_state():
     st.session_state.base_demand_changed = True
 
 
-def render_tariff_overwrite_options(tariffs: Tariff, fuel_name: "str") -> Tariff:
+def render_tariff_overwrite_options(house: House) -> House:
     st.subheader("Electricity")
+
+    tariffs = house.tariffs
+    fuel_name = house.heating_system.fuel.name
 
     if "p_per_unit_elec_import" not in st.session_state:
         write_elec_tariff_to_session_state(tariff=tariffs["electricity"])
@@ -320,6 +329,9 @@ def render_tariff_overwrite_options(tariffs: Tariff, fuel_name: "str") -> Tariff
         "Rates will go up in April, but we don't yet know how this will be split between electricity and gas. \n  \n"
         "The electricity export rate of 15p/kWh is based on [Octopus Outgoing](https://octopus.energy/outgoing)"
     )
+
+    house.tariffs = tariffs
+    house.clear_cached_properties()  # TODO: if others work then put this in an on change if
 
     return tariffs
 
