@@ -176,7 +176,7 @@ def render_heat_pump_next_steps():
         <a href='https://www.nesta.org.uk/report/how-the-energy-crisis-affects-the-case-for-heat-pumps/how-the-costs-of-heat-pumps-compare-to-gas-boilers-since-the-energy-crisis-1/#content'>
          forecasts</a> we are aware of suggest that that ratio will stay low enough that 
         good heat pump installs will continue to give lower bills than gas boilers. We cannot be sure of that of course! 
-        Whatever happens to energy prices, a heat pump will continue to be a massive win from a carbon perspective.
+        Whatever happens to energy prices, a heat pump will continue to be a massive win from a climate perspective.
         </p>
         <br>""",
                 unsafe_allow_html=True,
