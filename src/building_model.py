@@ -69,13 +69,13 @@ class House:
         return consumption_dict
 
     @cached_property
-    def annual_consumption_per_fuel_kwh(self) -> Dict[str, float]:
+    def annual_overall_consumption_per_fuel_kwh(self) -> Dict[str, float]:
         return {fuel: consumption.overall.annual_sum_kwh
                 for fuel, consumption in self.consumption_per_fuel.items()}
 
     @property
     def total_annual_consumption_kwh(self) -> float:
-        return sum(self.annual_consumption_per_fuel_kwh.values())
+        return sum(self.annual_overall_consumption_per_fuel_kwh.values())
 
     @property
     def annual_bill_per_fuel(self) -> Dict[str, float]:
@@ -103,7 +103,7 @@ class House:
     def energy_and_bills_df(self) -> pd.DataFrame:
         """ To make it easy to plot the results using plotly"""
         df = pd.DataFrame(data={'Your annual energy use kwh':
-                                    {key: round(val, 0) for key, val in self.annual_consumption_per_fuel_kwh.items()},
+                                    {key: round(val, 0) for key, val in self.annual_overall_consumption_per_fuel_kwh.items()},
                                 'Your annual energy bill £':
                                     {key: round(val, 0) for key, val in self.annual_bill_per_fuel.items()},
                                 'Your annual carbon emissions tCO2':
