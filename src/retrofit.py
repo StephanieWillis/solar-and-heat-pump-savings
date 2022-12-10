@@ -40,6 +40,8 @@ class Retrofit:
             payback = self.incremental_cost/self.bill_savings_absolute
         else:
             payback = np.nan
+        if payback < 0:  # case where incremental cost is negative
+            payback = 0
         return payback
 
 
