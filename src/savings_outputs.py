@@ -399,11 +399,11 @@ def render_bill_chart(results_df: pd.DataFrame):
 def render_bill_outputs(house: "House", solar_house: "House", hp_house: "House", both_house: "House"):
     st.write(
         f"We calculate that {produce_current_bill_sentence(house)}  \n"
-        f"- With solar {produce_hypothetical_bill_sentence(solar_house)}, "
+        f"- **With solar** {produce_hypothetical_bill_sentence(solar_house)}, "
         f" {produce_bill_saving_sentence(house=solar_house, baseline_house=house)}  \n"
-        f"- With a heat pump {produce_hypothetical_bill_sentence(hp_house)}, "
+        f"- **With a heat pump** {produce_hypothetical_bill_sentence(hp_house)}, "
         f" {produce_bill_saving_sentence(house=hp_house, baseline_house=house)}  \n"
-        f"- With solar and a heat pump {produce_hypothetical_bill_sentence(both_house)}, "
+        f"- **With solar and a heat pump** {produce_hypothetical_bill_sentence(both_house)}, "
         f" {produce_bill_saving_sentence(house=both_house, baseline_house=house)}  \n"
     )
 
@@ -434,9 +434,9 @@ def render_carbon_chart(results_df: pd.DataFrame):
 def render_carbon_outputs(house: "House", solar_house: "House", hp_house: "House", both_house: "House"):
     st.write(
         f"We calculate that your house emits {house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
-        f"- With solar it would emit {solar_house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
-        f"- With a heat pump it would emit {hp_house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
-        f"- With solar and a heat pump it would emit {both_house.total_annual_tco2:.2f} "
+        f"- **With solar** it would emit {solar_house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
+        f"- **With a heat pump** it would emit {hp_house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
+        f"- **With solar and a heat pump** it would emit {both_house.total_annual_tco2:.2f} "
         f"tonnes of CO2 per year  \n"
     )
 
@@ -448,9 +448,9 @@ def render_consumption_chart(results_df: pd.DataFrame):
 def render_consumption_outputs(house: "House", solar_house: "House", hp_house: "House", both_house: "House"):
     st.write(
         f"We calculate that your house currently imports {produce_consumption_sentence(house)}  \n"
-        f"- With solar it would import {produce_consumption_sentence(solar_house)}  \n"
-        f"- With a heat pump it would import {produce_consumption_sentence(hp_house)}  \n"
-        f"- With solar and a heat pump it would import {produce_consumption_sentence(both_house)} "
+        f"- **With solar** it would import {produce_consumption_sentence(solar_house)}  \n"
+        f"- **With a heat pump** it would import {produce_consumption_sentence(hp_house)}  \n"
+        f"- **With solar and a heat pump** it would import {produce_consumption_sentence(both_house)} "
     )
 
 
