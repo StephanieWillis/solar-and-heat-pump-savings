@@ -474,6 +474,7 @@ def render_savings_chart(results_df: pd.DataFrame, x_variable: str):
                                            'oil': 'hsl(220, 60%, 20%)'},
                        template="plotly_white")
     bills_fig.update_layout(
+        font_family="arial",
         legend=dict(orientation="h", y=1.1, x=0.6),
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
