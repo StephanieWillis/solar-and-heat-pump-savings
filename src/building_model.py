@@ -77,6 +77,18 @@ class House:
     def total_annual_consumption_kwh(self) -> float:
         return sum(self.annual_consumption_per_fuel_kwh.values())
 
+    @cached_property
+    def percent_self_use_of_solar(self) -> float:
+        if self.solar_install.capacity_kwp > 0:
+            elec_consumption_pre_solar = self.base_consumption.overall.annual_sum_kwh
+            if self.heating_system.fuel.name == 'electricity':
+                elec_consumption_pre_solar += self.heating_consumption.overall.annual_sum_kwh
+            solar_used = elec_consumption_pre_solar - self.consumption_per_fuel['electricity'].imported.annual_sum_kwh
+            self_use = solar_used/(-self.solar_install.generation.overall.annual_sum_kwh)
+        else:
+            self_use = 0
+        return self_use
+
     @property
     def annual_bill_import_and_export_per_fuel(self) -> Dict[str, Dict[str, float]]:
         bills_imported_and_exported = {}

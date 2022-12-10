@@ -180,9 +180,15 @@ def test_upgrade_buildings():
                                    - both_house.annual_bill_import_and_export_per_fuel['electricity']['exported'],
                                    both_house.annual_bill_per_fuel['electricity'])
 
-
     np.testing.assert_almost_equal(both_house.consumption_per_fuel['electricity'].imported.annual_sum_tco2
                                    - both_house.consumption_per_fuel['electricity'].exported.annual_sum_tco2,
                                    both_house.consumption_per_fuel['electricity'].overall.annual_sum_tco2)
+
+    assert hp_house.percent_self_use_of_solar == 0
+    assert oil_house.percent_self_use_of_solar == 0
+    assert solar_house.percent_self_use_of_solar > 0
+    assert solar_house.percent_self_use_of_solar == 0.827282421412342  # so high because only 0.8kW of panels
+    assert both_house.percent_self_use_of_solar > solar_house.percent_self_use_of_solar
+    assert both_house.percent_self_use_of_solar == 0.9196782581191316
 
     return hp_house, solar_house, both_house
