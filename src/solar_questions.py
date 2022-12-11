@@ -141,6 +141,7 @@ def render_solar_overwrite_options(solar_install: "Solar"):
     if st.session_state.pitch_overwritten:
         print("Behaves as if pitch of roof changed")
         solar_install.pitch = st.session_state.pitch
+        solar_install.number_of_panels = solar_install.get_number_of_panels_from_polygons()
         st.session_state.pitch_overwritten = False
         write_solar_cost_to_session_state(solar_install)
 
