@@ -29,7 +29,7 @@ def render(house: "House", solar_install: "Solar", upgrade_heating: "HeatingSyst
         st.session_state.number_of_panels = solar_install.number_of_panels
     if st.session_state.number_of_panels == 0:
         st.warning(
-            "**Oops** - you didn't draw a rectangle on your roof. Please go back to the solar page and use the polygon"
+            "**Oops** - you didn't draw a rectangle on your roof. Please go back to the solar page and use the polygon "
             "tool to draw on your roof, or enter a number of panels in the side bar."
         )
 
