@@ -116,7 +116,8 @@ def render_solar_overwrite_options(solar_install: "Solar"):
         max_value=0.8,
         key="kwp_per_panel_overwrite",
         value=st.session_state.kwp_per_panel,
-        on_change=overwrite_kwp_of_panels_in_session_state)
+        on_change=overwrite_kwp_of_panels_in_session_state,
+        )
 
     if st.session_state.kwp_per_panel_overwritten:
         print("Behaves as if kWp of panels changed")
@@ -124,7 +125,26 @@ def render_solar_overwrite_options(solar_install: "Solar"):
         st.session_state.kwp_per_panel_overwritten = False
         write_solar_cost_to_session_state(solar_install)
 
-    st.session_state["page_state"]["solar"] = dict(solar=solar_install)
+    if "pitch" not in st.session_state:
+        st.session_state.pitch = solar_install.pitch
+        st.session_state.pitch_overwritten = False
+
+    st.number_input(
+        label="Roof pitch (°)",
+        min_value=0.0,
+        max_value=90.0,
+        key="pitch_overwrite",
+        value=st.session_state.pitch,
+        on_change=overwrite_pitch_in_session_state,
+        help="30° is typical but 45° is also fairly common")
+
+    if st.session_state.pitch_overwritten:
+        print("Behaves as if pitch of roof changed")
+        solar_install.pitch = st.session_state.pitch
+        st.session_state.pitch_overwritten = False
+        write_solar_cost_to_session_state(solar_install)
+
+    st.session_state["page_state"]["solar"] = dict(solar=solar_install)  # I think this is obsolete
 
     return solar_install
 
@@ -140,6 +160,11 @@ def overwrite_number_of_panels_in_session_state():
 def overwrite_kwp_of_panels_in_session_state():
     st.session_state.kwp_per_panel = st.session_state.kwp_per_panel_overwrite
     st.session_state.kwp_per_panel_overwritten = True
+
+
+def overwrite_pitch_in_session_state():
+    st.session_state.pitch = st.session_state.pitch_overwrite
+    st.session_state.pitch_overwritten = True
 
 
 def write_solar_cost_to_session_state(solar_install):
