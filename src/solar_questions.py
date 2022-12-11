@@ -131,8 +131,8 @@ def render_solar_overwrite_options(solar_install: "Solar"):
 
     st.number_input(
         label="Roof pitch (°)",
-        min_value=0.0,
-        max_value=90.0,
+        min_value=0,
+        max_value=90,
         key="pitch_overwrite",
         value=st.session_state.pitch,
         on_change=overwrite_pitch_in_session_state,
