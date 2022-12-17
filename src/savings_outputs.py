@@ -258,7 +258,7 @@ def render_results(house: House, solar_house: House, hp_house: House, both_house
     # Combine results all variables
     results_df = retrofit.combine_results_dfs_multiple_houses(
         [both_house, hp_house, solar_house, house],
-        ["Both ", "Heat pump ", "Solar panels ",  "Current "],
+        ["Both ", "Heat pump ", "Solar panels ", "Current "],
     )
 
     st.markdown(
@@ -335,7 +335,7 @@ def render_results(house: House, solar_house: House, hp_house: House, both_house
         render_consumption_chart(results_df)
 
     st.markdown(
-        f"<h2>Your home emits about <span style='color:hsl(220, 60%, 30%)'>{house.total_annual_tco2:.2f} tonnes"
+        f"<h2>Your home emits about <span style='color:hsl(220, 60%, 30%)'>{house.total_annual_tco2:.1f} tonnes"
         f" </span>of CO2e each year, you could cut your emissions by </h2>",
         unsafe_allow_html=True,
     )
@@ -396,34 +396,47 @@ def render_bill_chart(results_df: pd.DataFrame):
     render_savings_chart(results_df=results_df, x_variable="Your annual energy bill £")
 
 
+def wrap_words_in_blue_format(words: str) -> str:
+    return f"<span style='color:hsl(220, 60%, 40%)'> {words} </span> "
+
+
 def render_bill_outputs(house: "House", solar_house: "House", hp_house: "House", both_house: "House"):
-    st.write(
-        f"We calculate that {produce_current_bill_sentence(house)}  \n"
-        f"- **With solar** {produce_hypothetical_bill_sentence(solar_house)}, "
-        f" {produce_bill_saving_sentence(house=solar_house, baseline_house=house)}  \n"
-        f"- **With a heat pump** {produce_hypothetical_bill_sentence(hp_house)}, "
-        f" {produce_bill_saving_sentence(house=hp_house, baseline_house=house)}  \n"
-        f"- **With solar and a heat pump** {produce_hypothetical_bill_sentence(both_house)}, "
-        f" {produce_bill_saving_sentence(house=both_house, baseline_house=house)}  \n"
-    )
+    st.markdown(f"""
+                <p class='next-steps'>We calculate that {produce_current_bill_sentence(house)}
+                    <ul>
+                        <li> <b>With solar</b> {produce_hypothetical_bill_sentence(solar_house)},
+                         {produce_bill_saving_sentence(house=solar_house, baseline_house=house)}</li>
+                        <li> <b>With a heat pump</b> {produce_hypothetical_bill_sentence(hp_house)}, 
+                         {produce_bill_saving_sentence(house=hp_house, baseline_house=house)}</li>
+                        <li> <b>With both</b> {produce_hypothetical_bill_sentence(both_house)}, 
+                         {produce_bill_saving_sentence(house=both_house, baseline_house=house)}
+                    </ul>
+                 </p>
+                 """,
+                unsafe_allow_html=True
+                )
 
 
-def produce_current_bill_sentence(house) -> str:
-    sentence = f"your energy bills for the next year will be £{int(house.total_annual_bill):,}"
+def produce_current_bill_sentence(house: "House") -> str:
+    end = wrap_words_in_blue_format(words=f' £{int(house.total_annual_bill):,}')
+    sentence = f"your energy bills for the next year will be {end}"
     return sentence
 
 
 def produce_hypothetical_bill_sentence(house) -> str:
-    sentence = f"they would be £{int(house.total_annual_bill):,}"
+    end = wrap_words_in_blue_format(words=f' £{int(house.total_annual_bill):,}')
+    sentence = f"they would be {end}"
     return sentence
 
 
 def produce_bill_saving_sentence(house: "House", baseline_house: "House") -> str:
     saving = int(baseline_house.total_annual_bill - house.total_annual_bill)
     if saving >= 0:
-        sentence = f"that's a saving of £{saving:,}"
+        end = wrap_words_in_blue_format(words=f' £{saving:,}')
+        sentence = f"that's a saving of {end}"
     else:
-        sentence = f"that's an increase of £{-saving:,}"
+        end = wrap_words_in_blue_format(words=f' £{-saving:,}')
+        sentence = f"that's an increase of {end}"
     return sentence
 
 
@@ -432,13 +445,20 @@ def render_carbon_chart(results_df: pd.DataFrame):
 
 
 def render_carbon_outputs(house: "House", solar_house: "House", hp_house: "House", both_house: "House"):
-    st.write(
-        f"We calculate that your house emits {house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
-        f"- **With solar** it would emit {solar_house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
-        f"- **With a heat pump** it would emit {hp_house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
-        f"- **With solar and a heat pump** it would emit {both_house.total_annual_tco2:.2f} "
-        f"tonnes of CO2 per year  \n"
-    )
+    current_formatted = wrap_words_in_blue_format(f'{house.total_annual_tco2:.1f}')
+    solar_formatted = wrap_words_in_blue_format(f'{solar_house.total_annual_tco2:.1f}')
+    hp_formatted = wrap_words_in_blue_format(f'{hp_house.total_annual_tco2:.1f}')
+    both_formatted = wrap_words_in_blue_format(f'{both_house.total_annual_tco2:.1f}')
+    st.markdown(
+        f"""
+        <p class='next-steps'>We calculate that your house emits {current_formatted} tonnes of CO2 per year 
+            <ul>    
+                <li><b>With solar</b> it would emit {solar_formatted} tonnes of CO2 per year</li>
+                <li><b>With a heat pump</b> it would emit {hp_formatted} tonnes of CO2 per year</li> 
+                <li><b>With both</b> it would emit {both_formatted} tonnes of CO2 per year</li>
+            </ul>
+        </p> """,
+        unsafe_allow_html=True)
 
 
 def render_consumption_chart(results_df: pd.DataFrame):
@@ -446,39 +466,46 @@ def render_consumption_chart(results_df: pd.DataFrame):
 
 
 def render_consumption_outputs(house: "House", solar_house: "House", hp_house: "House", both_house: "House"):
-    st.write(
-        f"We calculate that your house currently imports {produce_consumption_sentence(house)}  \n"
-        f"- **With solar** it would import {produce_consumption_sentence(solar_house)}  \n"
-        f"- **With a heat pump** it would import {produce_consumption_sentence(hp_house)}  \n"
-        f"- **With solar and a heat pump** it would import {produce_consumption_sentence(both_house)} "
-    )
+    st.markdown(f"""
+                <p class='next-steps'>We calculate that your house currently imports {produce_consumption_sentence(house)}
+                    <ul>    
+                     <li> <b>With solar</b> it would import {produce_consumption_sentence(solar_house)}
+                     <li> <b>With a heat pump</b> it would import {produce_consumption_sentence(hp_house)}
+                     <li> <b>With both</b> it would import {produce_consumption_sentence(both_house)}
+                </p>
+                 """,
+                unsafe_allow_html=True)
 
 
 def produce_consumption_sentence(house: 'House') -> str:
-    sentence = (f"{int(round(house.consumption_per_fuel['electricity'].imported.annual_sum_kwh, -2)):,} "
-                f"kWh of electricity")
+    sentence = (wrap_words_in_blue_format(
+                f"{int(round(house.consumption_per_fuel['electricity'].imported.annual_sum_kwh, -2)):,} ")
+                + "kWh of electricity")
 
     if house.has_multiple_fuels:
-        heat = (
-            f" and {int(round(house.annual_consumption_per_fuel_kwh[house.heating_system.fuel.name], -2)):,}"
-            f" {house.heating_system.fuel.units} of {house.heating_system.fuel.name}")
+        heat = (" and "
+                + wrap_words_in_blue_format(
+                    f"{int(round(house.annual_consumption_per_fuel_kwh[house.heating_system.fuel.name], -2)):,} ")
+                + f"{house.heating_system.fuel.units} of {house.heating_system.fuel.name}")
         sentence += heat
 
     if house.solar_install.generation.overall.annual_sum_kwh != 0:
-        export = (f". It would export "
-                  f"{int(round(house.consumption_per_fuel['electricity'].exported.annual_sum_kwh, -2)):,}"
-                  f" kWh of the {int(round(-house.solar_install.generation.overall.annual_sum_kwh, -2))}"
-                  f" kWh of electricity generated by your solar panels")
+        export = (f", and export "
+                  + wrap_words_in_blue_format(
+                    f"{int(round(house.consumption_per_fuel['electricity'].exported.annual_sum_kwh, -2)):,} ")
+                  + "of the"
+                  + wrap_words_in_blue_format(
+                    f" {int(round(-house.solar_install.generation.overall.annual_sum_kwh, -2))} ")
+                  + f"kWh generated by your solar panels")
         self_use = produce_self_use_sentence(house)
-        sentence = sentence + export + self_use
-    else:
-        sentence += '.'
+        sentence = f'{sentence}{export}{self_use}'
 
     return sentence
 
 
 def produce_self_use_sentence(house: 'House') -> str:
-    extra = f" ({int(house.percent_self_use_of_solar * 100)}% self-use)."
+    start = wrap_words_in_blue_format(f" {int(house.percent_self_use_of_solar * 100)}%")
+    extra = f" ({start} self-use)"
     return extra
 
 
