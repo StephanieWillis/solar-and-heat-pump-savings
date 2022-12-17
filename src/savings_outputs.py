@@ -397,7 +397,7 @@ def render_bill_chart(results_df: pd.DataFrame):
 
 
 def wrap_words_in_blue_format(words: str) -> str:
-    return f"<span style='color:hsl(220, 60%, 30%)'> {words} </span> "
+    return f"<span style='color:hsl(220, 60%, 40%)'> {words} </span> "
 
 
 def render_bill_outputs(house: "House", solar_house: "House", hp_house: "House", both_house: "House"):
