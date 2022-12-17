@@ -89,7 +89,7 @@ def render_solar_next_steps(solar_install: Solar):
         "</p>"
         "<p class='next-steps'>"
         " If you install a battery at the same time as your solar panels, you will be able to use more of the "
-        "energy you generate. Whether or not the battery will deliver big enough savings to cover it's upfront cost"
+        "energy you generate. Whether or not the battery will deliver big enough savings to cover it's upfront cost "
         "depends quite a lot on how and when you use electricity."
         "</p>",
         unsafe_allow_html=True,
@@ -146,7 +146,8 @@ def render_heat_pump_next_steps():
 
     st.markdown("<h3> Typical costs </h3>", unsafe_allow_html=True)
     st.markdown(""" <p class='next-steps'>
-        The costs we use are rough estimates based on. The cost for your home will vary depending on:
+        The costs we use are rough estimates based on historical data + inflation.
+         The cost for your home will vary depending on:
         <ol type="1">
         <li> How many radiators need replacing</li>
         <li> Whether any of your pipework needs replacing</li>
@@ -155,8 +156,8 @@ def render_heat_pump_next_steps():
         <li> Where in the country you are located</li>
         </ol>
         This <a href='http://asf-hp-cost-demo-l-b-1046547218.eu-west-1.elb.amazonaws.com'>cost estimator tool</a> 
-        from nesta is based on historical data on heat pump installs and might give you better a sense of how much a heat
-        pump might cost in a home like yours.
+        from Nesta is based on historical data on heat pump installs and might give you better a sense of how much a 
+        heat pump might cost in a home like yours.
         </p>
         <p class='next-steps'>
         The quality of the design and install is vital to ensure you get the lowest bills possible, so it can
