@@ -155,7 +155,7 @@ def render_heat_pump_next_steps():
         <li> Where in the country you are located</li>
         </ol>
         This <a href='http://asf-hp-cost-demo-l-b-1046547218.eu-west-1.elb.amazonaws.com'>cost estimator tool</a> 
-        from nesta is based on historical data on heat pump installs and might give you better a sense of how much a heat
+        from Nesta is based on historical data on heat pump installs and might give you better a sense of how much a heat
         pump might cost in a home like yours.
         </p>
         <p class='next-steps'>
