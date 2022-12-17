@@ -397,12 +397,12 @@ def render_bill_chart(results_df: pd.DataFrame):
 
 
 def wrap_words_in_bold_blue_format(words: str) -> str:
-    return f"<b><span style='color:hsl(220, 60%, 30%)'> {words} </span></b> "
+    return f"<span style='color:hsl(220, 60%, 40%)'> {words} </span> "
 
 
 def render_bill_outputs(house: "House", solar_house: "House", hp_house: "House", both_house: "House"):
     st.markdown(f"""
-                <p>We calculate that {produce_current_bill_sentence(house)}
+                <p class='next-steps'>We calculate that {produce_current_bill_sentence(house)}
                     <ul>
                         <li> <b>With solar</b> {produce_hypothetical_bill_sentence(solar_house)},
                          {produce_bill_saving_sentence(house=solar_house, baseline_house=house)}</li>
@@ -451,7 +451,7 @@ def render_carbon_outputs(house: "House", solar_house: "House", hp_house: "House
     both_formatted = wrap_words_in_bold_blue_format(f'{both_house.total_annual_tco2:.1f}')
     st.markdown(
         f"""
-        <p>We calculate that your house emits {current_formatted} tonnes of CO2 per year 
+        <p class='next-steps'>We calculate that your house emits {current_formatted} tonnes of CO2 per year 
             <ul>    
                 <li><b>With solar</b> it would emit {solar_formatted} tonnes of CO2 per year</li>
                 <li><b>With a heat pump</b> it would emit {hp_formatted} tonnes of CO2 per year</li> 
@@ -467,7 +467,7 @@ def render_consumption_chart(results_df: pd.DataFrame):
 
 def render_consumption_outputs(house: "House", solar_house: "House", hp_house: "House", both_house: "House"):
     st.markdown(f"""
-                <p>We calculate that your house currently imports {produce_consumption_sentence(house)}
+                <p class='next-steps'>We calculate that your house currently imports {produce_consumption_sentence(house)}
                     <ul>    
                      <li> <b>With solar</b> it would import {produce_consumption_sentence(solar_house)}
                      <li> <b>With a heat pump</b> it would import {produce_consumption_sentence(hp_house)}
