@@ -335,7 +335,7 @@ def render_results(house: House, solar_house: House, hp_house: House, both_house
         render_consumption_chart(results_df)
 
     st.markdown(
-        f"<h2>Your home emits about <span style='color:hsl(220, 60%, 30%)'>{house.total_annual_tco2:.2f} tonnes"
+        f"<h2>Your home emits about <span style='color:hsl(220, 60%, 30%)'>{house.total_annual_tco2:.1f} tonnes"
         f" </span>of CO2e each year, you could cut your emissions by </h2>",
         unsafe_allow_html=True,
     )
