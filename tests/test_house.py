@@ -40,7 +40,7 @@ def test_heating_system_from_constants():
                                                              parameters=constants.DEFAULT_HEATING_CONSTANTS[
                                                                  "Gas boiler"])
     assert gas_boiler.fuel.name == 'gas'
-    assert gas_boiler.fuel.units == 'kwh'
+    assert gas_boiler.fuel.units == 'kWh'
     assert gas_boiler.fuel.tco2_per_kwh == constants.GAS_TCO2_PER_KWH
     assert gas_boiler.fuel.converter_consumption_units_to_kwh == 1
     np.testing.assert_almost_equal(gas_boiler.hourly_normalized_demand_profile.sum(), 1.0)
@@ -97,7 +97,7 @@ def test_set_up_house_from_heating_name():
 
     assert list(hp_house.consumption_per_fuel.keys()) == ['electricity']
     assert hp_house_elec_consumption.fuel.name == 'electricity'
-    assert hp_house_elec_consumption.fuel.units == 'kwh'
+    assert hp_house_elec_consumption.fuel.units == 'kWh'
     assert (hp_house_elec_consumption.overall.hourly_profile_kwh > 0).all()
     assert hp_house_elec_consumption.overall.annual_sum_kwh > 0
     assert (hp_house_elec_consumption.imported.hourly_profile_kwh
