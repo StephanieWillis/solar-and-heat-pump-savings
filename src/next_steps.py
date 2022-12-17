@@ -89,7 +89,7 @@ def render_solar_next_steps(solar_install: Solar):
         "</p>"
         "<p class='next-steps'>"
         " If you install a battery at the same time as your solar panels, you will be able to use more of the "
-        "energy you generate. Whether or not the battery will deliver big enough savings to cover it's upfront cost"
+        "energy you generate. Whether or not the battery will deliver big enough savings to cover it's upfront cost "
         "depends quite a lot on how and when you use electricity."
         "</p>",
         unsafe_allow_html=True,
