@@ -445,13 +445,20 @@ def render_carbon_chart(results_df: pd.DataFrame):
 
 
 def render_carbon_outputs(house: "House", solar_house: "House", hp_house: "House", both_house: "House"):
-    st.write(
-        f"We calculate that your house emits {house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
-        f"- **With solar** it would emit {solar_house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
-        f"- **With a heat pump** it would emit {hp_house.total_annual_tco2:.2f} tonnes of CO2 per year  \n"
-        f"- **With solar and a heat pump** it would emit {both_house.total_annual_tco2:.2f} "
-        f"tonnes of CO2 per year  \n"
-    )
+    current_formatted = wrap_words_in_bold_blue_format(f'{house.total_annual_tco2:.2f}')
+    solar_formatted = wrap_words_in_bold_blue_format(f'{solar_house.total_annual_tco2:.2f}')
+    hp_formatted = wrap_words_in_bold_blue_format(f'{hp_house.total_annual_tco2:.2f}')
+    both_formatted = wrap_words_in_bold_blue_format(f'{both_house.total_annual_tco2:.2f}')
+    st.markdown(
+        f"""
+        <p>We calculate that your house emits {current_formatted} tonnes of CO2 per year 
+            <ul>    
+                <li><b>With solar</b> it would emit {solar_formatted} tonnes of CO2 per year</li>
+                <li><b>With a heat pump</b> it would emit {hp_formatted} tonnes of CO2 per year</li> 
+                <li><b>With both</b> it would emit {both_formatted} tonnes of CO2 per year</li>
+            </ul>
+        </p> """,
+        unsafe_allow_html=True)
 
 
 def render_consumption_chart(results_df: pd.DataFrame):
@@ -459,12 +466,12 @@ def render_consumption_chart(results_df: pd.DataFrame):
 
 
 def render_consumption_outputs(house: "House", solar_house: "House", hp_house: "House", both_house: "House"):
-    st.write(
-        f"We calculate that your house currently imports {produce_consumption_sentence(house)}  \n"
-        f"- **With solar** it would import {produce_consumption_sentence(solar_house)}  \n"
-        f"- **With a heat pump** it would import {produce_consumption_sentence(hp_house)}  \n"
-        f"- **With solar and a heat pump** it would import {produce_consumption_sentence(both_house)} "
-    )
+    st.write(f"""
+         We calculate that your house currently imports {produce_consumption_sentence(house)}
+         - **With solar** it would import {produce_consumption_sentence(solar_house)}
+         - **With a heat pump** it would import {produce_consumption_sentence(hp_house)}
+         - **With solar and a heat pump** it would import {produce_consumption_sentence(both_house)}
+     """)
 
 
 def produce_consumption_sentence(house: 'House') -> str:
