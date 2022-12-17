@@ -5,6 +5,17 @@ from typing import List
 import streamlit as st
 from stepper import stepper
 from .style import inject_style
+from streamlit.components.v1 import html
+
+
+def jump_to_top():
+    """Executes a JS snippet which jumps the
+    current view to the top of the window
+    """
+    js = "<script>console.log('Jumping to top');"\
+         "window.parent.document.scrollTo(0,0)" \
+         "</script>"
+    return html(js)
 
 
 class Page:
@@ -97,14 +108,14 @@ class Wizard:
         _, col1, col2 = st.columns((7, 1, 1), gap="medium")
 
         if not self.on_first_page:
-            previous = col1.button("Previous")
+            previous = col1.button("Previous", on_click=jump_to_top)
         else:
             previous = None
 
         if self.on_final_page:
             next_ = None
         else:
-            next_ = col2.button("Next")
+            next_ = col2.button("Next", on_click=jump_to_top)
 
         if previous:
             self.go_to_previous_page()
