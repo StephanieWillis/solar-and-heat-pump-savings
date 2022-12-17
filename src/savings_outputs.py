@@ -521,7 +521,7 @@ def render_savings_chart(results_df: pd.DataFrame, x_variable: str):
                        template="plotly_white")
     bills_fig.update_layout(
         font_family="arial",
-        legend=dict(orientation="h", y=1.15, x=0),
+        legend=dict(orientation="h", y=1.15, x=0, title=None),
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         yaxis=dict(title=None),
