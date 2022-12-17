@@ -507,7 +507,8 @@ def produce_consumption_sentence(house: 'House') -> str:
 
 
 def produce_self_use_sentence(house: 'House') -> str:
-    extra = f" ({int(house.percent_self_use_of_solar * 100)}% self-use)."
+    start = wrap_words_in_bold_blue_format(f" {int(house.percent_self_use_of_solar * 100)}%")
+    extra = f" ({start} self-use)."
     return extra
 
 
