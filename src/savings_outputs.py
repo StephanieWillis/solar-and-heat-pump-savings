@@ -515,7 +515,7 @@ def render_savings_chart(results_df: pd.DataFrame, x_variable: str):
                        y="Upgrade option",
                        color="fuel",
                        color_discrete_map={'electricity imports': 'hsl(220, 60%, 80%)',
-                                           'electricity exports': 'hsl(220, 60%, 90%)',
+                                           'electricity exports': 'hsl(56, 100%, 70%)',
                                            'gas': 'hsl(220, 60%, 30%)',
                                            'oil': 'hsl(220, 60%, 20%)'},
                        template="plotly_white")
