@@ -105,10 +105,11 @@ def test_set_up_house_from_heating_name():
             == hp_house_elec_consumption.overall.hourly_profile_kwh).all()
 
     assert not hp_house.has_multiple_fuels
+    df = hp_house.energy_and_bills_df
     assert (round(hp_house.total_annual_consumption_kwh, 0)
-            == hp_house.energy_and_bills_df['Your annual energy use kwh'].iloc[0])
+            == df['Your annual energy use kwh'].loc[df['fuel'] == 'electricity imports'].iloc[0])
     assert (round(hp_house.total_annual_bill)
-            == hp_house.energy_and_bills_df['Your annual energy bill £'].iloc[0])
+            == df['Your annual energy bill £'].loc[df['fuel'] == 'electricity imports'].iloc[0])
 
     # gas boiler
     gas_house = building_model.House.set_up_from_heating_name(envelope=envelope, heating_name='Gas boiler')
