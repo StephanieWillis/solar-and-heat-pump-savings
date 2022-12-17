@@ -39,7 +39,7 @@ def render_solar_next_steps(solar_install: Solar):
     st.markdown("<h3> Detailed panel positioning</h3>", unsafe_allow_html=True)
     st.markdown(
         "<p class='next-steps'>"
-        " This tool uses your roof dimensions and standard solar panel dimensions to estimate how many panels "
+        " This tool uses the dimensions of your roof and a standard solar panel to estimate how many panels "
         "could fit on your roof. We do not account for obstacles such as rooflights and chimneys. If "
         "you would like to better understand how solar panels could fit around obstacles on your roof, "
         "you can use the excellent <a href='https://easy-pv.co.uk/home'> EasyPV tool</a>.  \n  \n"
@@ -66,8 +66,8 @@ def render_solar_next_steps(solar_install: Solar):
 
     st.markdown("""
         <p class='next-steps'>
-        Our estimate may differ from Easy PV's panel geometry varies a bit, and we make slightly different assumptions
-         on how big a gap you need to leave between your solar panels and the edge of your roof. 
+        Our estimate may differ from Easy PV's: panel geometry varies, and we make slightly different assumptions
+         on the gap you need to leave between your solar panels and the edge of your roof. 
          Real practices seem to vary widely! 
         </ p >""",
                 unsafe_allow_html=True,
@@ -77,20 +77,21 @@ def render_solar_next_steps(solar_install: Solar):
     st.markdown("<h3> How big should I go?</h3>", unsafe_allow_html=True)
     st.markdown(
         "<p class='next-steps'>"
-        "You can install about 4kW of solar PV without pre-approval from your Distribution Network Operator "
-        "(DNO). You can install more than this, but you need pre-approval which can take up to 11 weeks so "
-        "it's worth planning ahead if you want to install a bigger system. <a href='https://blog.spiritenergy.co.uk/homeowner/how-many-solar-panels-allowed#:~:text=On%20a%20single%20phase%20supply,roughly%2010%2D13%20solar%20panels_'> More info here </a>."
+        "You can install up to 4kW of solar PV without pre-approval from your Distribution Network Operator "
+        "(DNO). Pre-approval for larger installs can take up to 11 weeks so "
+        "it's worth planning ahead! <a href='https://blog.spiritenergy.co.uk/homeowner/how-many-solar-panels-allowed#:~:text=On%20a%20single%20phase%20supply,roughly%2010%2D13%20solar%20panels_'> More info here </a>."
         "</p>"
         "<p class='next-steps'>"
-        "The more panels you go for, the smaller the share of the generation you can use for yourself. "
-        "Avoiding buying electricity (at ~34p/kWh) gives you a bigger saving than selling electricity "
-        "(at ~15p/kWh) so smaller installations will have a quicker payback. "
-        "Bigger installations will still give you a bigger return overall however."
+        "The rate you get paid for selling electricity from your panels (~15p/kWh) isn't as high as the rate"
+        "you pay for electricity (~34p/kWh), which means that your panels will make you money slower once"
+        "you've replaced all of your electricity purchases. This means that smaller installations (just replace"
+        "your own use) will pay back faster than bigger ones (replace your energy use + sell to the grid). "
+        "However, in the long run, the bigger the installation, the more money you make!"
         "</p>"
         "<p class='next-steps'>"
         " If you install a battery at the same time as your solar panels, you will be able to use more of the "
-        "energy you generate. Whether or not the battery will deliver big enough savings to cover it's upfront cost "
-        "depends quite a lot on how and when you use electricity."
+        "energy you generate. Whether or not the battery will deliver big enough savings to cover its upfront cost "
+        "depends quite a lot on how and when you use electricity, which we can't model accurately here!"
         "</p>",
         unsafe_allow_html=True,
     )
@@ -137,7 +138,7 @@ def render_heat_pump_next_steps():
     st.markdown(
         "<p class='next-steps'>"
         "A good installer will ensure your heat pump runs as efficiently as possible."
-        " The <a href='https://www.heatgeek.com/find-a-heat-geek/'>heat geek map</a>"
+        " The <a href='https://www.heatgeek.com/find-a-heat-geek/'>Heat Geek Map</a>"
         " is a great place to find high quality installers."
         "</p>"
         "<br>",
@@ -172,13 +173,13 @@ def render_heat_pump_next_steps():
     st.markdown("<h3> What if energy prices change? </h3>", unsafe_allow_html=True)
     st.markdown(""" <p class='next-steps'>
         Whether or not a heat pump reduces your bills depends on the efficiency of your heat pump, and the ratio of
-        the cost of electricity compared to the cost of gas. At the moment the electricity/gas ratio is relatively
+        the cost of electricity to the cost of gas. Currently, the electricity/gas ratio is relatively
         low meaning that a good heat pump install will save you money on your bills. It's hard to know what will happen
-        next with energy prices, but the 
+        next with energy prices, but 
         <a href='https://www.nesta.org.uk/report/how-the-energy-crisis-affects-the-case-for-heat-pumps/how-the-costs-of-heat-pumps-compare-to-gas-boilers-since-the-energy-crisis-1/#content'>
-         forecasts</a> we are aware of suggest that that ratio will stay low enough that 
-        good heat pump installs will continue to give lower bills than gas boilers. We cannot be sure of that of course! 
-        Whatever happens to energy prices, a heat pump will continue to be a massive win from a climate perspective.
+         forecasts</a> suggest that that ratio will stay low enough that 
+        good heat pump installs will continue to give lower bills than gas boilers. Of course, things may change! 
+        But whatever happens to energy prices, a heat pump will continue to be a massive win from a climate perspective.
         </p>
         <br>""",
                 unsafe_allow_html=True,
