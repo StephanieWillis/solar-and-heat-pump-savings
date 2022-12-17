@@ -97,7 +97,10 @@ def render_solar_overwrite_options(solar_install: "Solar"):
         max_value=None,
         key="number_of_panels_overwrite",
         value=st.session_state.number_of_panels,
-        on_change=overwrite_number_of_panels_in_session_state)
+        on_change=overwrite_number_of_panels_in_session_state,
+        help="A typical install is about 12 panels. If you go for more you will likely need DNO approval - "
+             "see the final page for more info."
+    )
 
     if st.session_state.number_of_panels_overwritten:
         solar_install.number_of_panels = st.session_state.number_of_panels
@@ -116,7 +119,8 @@ def render_solar_overwrite_options(solar_install: "Solar"):
         max_value=0.8,
         key="kwp_per_panel_overwrite",
         value=st.session_state.kwp_per_panel,
-        on_change=overwrite_kwp_of_panels_in_session_state)
+        on_change=overwrite_kwp_of_panels_in_session_state,
+        help="Older panels typically had a capacity of 0.3kW/panel, but newer panels are bigger:  around 0.4kW/panel")
 
     if st.session_state.kwp_per_panel_overwritten:
         print("Behaves as if kWp of panels changed")
