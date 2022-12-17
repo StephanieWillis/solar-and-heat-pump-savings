@@ -408,7 +408,7 @@ def render_bill_outputs(house: "House", solar_house: "House", hp_house: "House",
                          {produce_bill_saving_sentence(house=solar_house, baseline_house=house)}</li>
                         <li> <b>With a heat pump</b> {produce_hypothetical_bill_sentence(hp_house)}, 
                          {produce_bill_saving_sentence(house=hp_house, baseline_house=house)}</li>
-                        <li> <b>With solar and a heat pump</b> {produce_hypothetical_bill_sentence(both_house)}, 
+                        <li> <b>With both</b> {produce_hypothetical_bill_sentence(both_house)}, 
                          {produce_bill_saving_sentence(house=both_house, baseline_house=house)}
                     </ul>
                  </p>
@@ -470,7 +470,7 @@ def render_consumption_outputs(house: "House", solar_house: "House", hp_house: "
          We calculate that your house currently imports {produce_consumption_sentence(house)}
          - **With solar** it would import {produce_consumption_sentence(solar_house)}
          - **With a heat pump** it would import {produce_consumption_sentence(hp_house)}
-         - **With solar and a heat pump** it would import {produce_consumption_sentence(both_house)}
+         - **With both** it would import {produce_consumption_sentence(both_house)}
      """)
 
 
