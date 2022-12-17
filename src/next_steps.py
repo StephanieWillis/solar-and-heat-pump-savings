@@ -51,16 +51,16 @@ def render_solar_next_steps(solar_install: Solar):
         for i, polygon in enumerate(solar_install.polygons):
             height = solar_install.convert_plan_value_to_value_along_pitch(polygon.average_plan_height)
             width = polygon.average_width
-            st.write(f"- Polygon {i + 1} was {width:.1f} m wide by {height:.1f} m deep")
+            st.info(f"- Polygon {i + 1} was {width:.1f} m wide by {height:.1f} m deep")
         st.caption(f"*(we've assumed your roof pitch is 30 degrees)*")
     elif solar_install.roof_plan_area > 0:
         polygon = solar_install.polygons[0]
         height = solar_install.convert_plan_value_to_value_along_pitch(polygon.average_plan_height)
         width = polygon.average_width
-        st.write(f"- {width:.1f} m wide  \n" f"- {height:.1f} m deep *(we've assumed your roof pitch is 30 degrees)*")
+        st.info(f"- {width:.1f} m wide  \n" f"- {height:.1f} m deep *(we've assumed your roof pitch is 30 degrees)*")
     else:
         st.warning(
-            "Oops - you didn't draw a rectangle on your roof. Please go back to the solar page and use the polygon"
+            "Oops - you didn't draw a rectangle on your roof. Please go back to the solar page and use the polygon "
             "tool to draw on your roof."
         )
 
