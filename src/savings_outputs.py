@@ -258,7 +258,7 @@ def render_results(house: House, solar_house: House, hp_house: House, both_house
     # Combine results all variables
     results_df = retrofit.combine_results_dfs_multiple_houses(
         [both_house, hp_house, solar_house, house],
-        ["Both ", "Heat pump ", "Solar panels ",  "Current "],
+        ["Both ", "Heat pump ", "Solar panels ", "Current "],
     )
 
     st.markdown(
@@ -396,34 +396,47 @@ def render_bill_chart(results_df: pd.DataFrame):
     render_savings_chart(results_df=results_df, x_variable="Your annual energy bill £")
 
 
+def wrap_words_in_bold_blue_format(words: str) -> str:
+    return f"<b><span style='color:hsl(220, 60%, 30%)'> {words} </span></b> "
+
+
 def render_bill_outputs(house: "House", solar_house: "House", hp_house: "House", both_house: "House"):
-    st.write(
-        f"We calculate that {produce_current_bill_sentence(house)}  \n"
-        f"- **With solar** {produce_hypothetical_bill_sentence(solar_house)}, "
-        f" {produce_bill_saving_sentence(house=solar_house, baseline_house=house)}  \n"
-        f"- **With a heat pump** {produce_hypothetical_bill_sentence(hp_house)}, "
-        f" {produce_bill_saving_sentence(house=hp_house, baseline_house=house)}  \n"
-        f"- **With solar and a heat pump** {produce_hypothetical_bill_sentence(both_house)}, "
-        f" {produce_bill_saving_sentence(house=both_house, baseline_house=house)}  \n"
-    )
+    st.markdown(f"""
+                <p>We calculate that {produce_current_bill_sentence(house)}
+                    <ul>
+                        <li> <b>With solar</b> {produce_hypothetical_bill_sentence(solar_house)},
+                         {produce_bill_saving_sentence(house=solar_house, baseline_house=house)}</li>
+                        <li> <b>With a heat pump</b> {produce_hypothetical_bill_sentence(hp_house)}, 
+                         {produce_bill_saving_sentence(house=hp_house, baseline_house=house)}</li>
+                        <li> <b>With solar and a heat pump</b> {produce_hypothetical_bill_sentence(both_house)}, 
+                         {produce_bill_saving_sentence(house=both_house, baseline_house=house)}
+                    </ul>
+                 </p>
+                 """,
+                unsafe_allow_html=True
+                )
 
 
-def produce_current_bill_sentence(house) -> str:
-    sentence = f"your energy bills for the next year will be £{int(house.total_annual_bill):,}"
+def produce_current_bill_sentence(house: "House") -> str:
+    end = wrap_words_in_bold_blue_format(words=f' £{int(house.total_annual_bill):,}')
+    sentence = f"your energy bills for the next year will be {end}"
     return sentence
 
 
 def produce_hypothetical_bill_sentence(house) -> str:
-    sentence = f"they would be £{int(house.total_annual_bill):,}"
+    end = wrap_words_in_bold_blue_format(words=f' £{int(house.total_annual_bill):,}')
+    sentence = f"they would be {end}"
     return sentence
 
 
 def produce_bill_saving_sentence(house: "House", baseline_house: "House") -> str:
     saving = int(baseline_house.total_annual_bill - house.total_annual_bill)
     if saving >= 0:
-        sentence = f"that's a saving of £{saving:,}"
+        end = wrap_words_in_bold_blue_format(words=f' £{saving:,}')
+        sentence = f"that's a saving of {end}"
     else:
-        sentence = f"that's an increase of £{-saving:,}"
+        end = wrap_words_in_bold_blue_format(words=f' £{-saving:,}')
+        sentence = f"that's an increase of {end}"
     return sentence
 
 
