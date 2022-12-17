@@ -76,7 +76,7 @@ def test_generation_attributed_to_correct_fuel_and_consumption_stream():
                                 polygons=[TEST_POLYGONS[0]],
                                 pitch=30)
     assert solar_install.generation.fuel.name == 'electricity'
-    assert solar_install.generation.fuel.units == "kwh"
+    assert solar_install.generation.fuel.units == "kWh"
 
     assert isinstance(solar_install.generation.overall.hourly_profile_kwh, pd.Series)
     assert (solar_install.generation.overall.hourly_profile_kwh <= 0).all()  # export defined as negative
