@@ -515,13 +515,13 @@ def render_savings_chart(results_df: pd.DataFrame, x_variable: str):
                        y="Upgrade option",
                        color="fuel",
                        color_discrete_map={'electricity imports': 'hsl(220, 60%, 80%)',
-                                           'electricity exports': 'hsl(220, 60%, 90%)',
+                                           'electricity exports': 'hsl(56, 100%, 70%)',
                                            'gas': 'hsl(220, 60%, 30%)',
                                            'oil': 'hsl(220, 60%, 20%)'},
                        template="plotly_white")
     bills_fig.update_layout(
         font_family="arial",
-        legend=dict(orientation="h", y=1.1, x=0.6),
+        legend=dict(orientation="h", y=1.15, x=0),
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         yaxis=dict(title=None),

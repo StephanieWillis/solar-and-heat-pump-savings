@@ -125,12 +125,12 @@ class House:
     def energy_and_bills_df(self) -> pd.DataFrame:
 
         """ To make it easy to plot the results using plotly"""
-        kwh = {'electricity imports': round(self.consumption_per_fuel['electricity'].imported.annual_sum_kwh, 0),
-               'electricity exports': - round(self.consumption_per_fuel['electricity'].exported.annual_sum_kwh, 0)}
-        bill = {'electricity imports': round(self.annual_bill_import_and_export_per_fuel['electricity']['imported'], 0),
-                'electricity exports': - round(self.annual_bill_import_and_export_per_fuel['electricity']['exported'], 0)}
-        co2_dict = {'electricity imports': round(self.consumption_per_fuel['electricity'].imported.annual_sum_tco2, 2),
-                    'electricity exports': - round(self.consumption_per_fuel['electricity'].exported.annual_sum_tco2, 2)}
+        kwh = {'electricity exports': - round(self.consumption_per_fuel['electricity'].exported.annual_sum_kwh, 0),
+               'electricity imports': round(self.consumption_per_fuel['electricity'].imported.annual_sum_kwh, 0)}
+        bill = {'electricity exports': - round(self.annual_bill_import_and_export_per_fuel['electricity']['exported'], 0),
+                'electricity imports': round(self.annual_bill_import_and_export_per_fuel['electricity']['imported'], 0)}
+        co2_dict = {'electricity exports': - round(self.consumption_per_fuel['electricity'].exported.annual_sum_tco2, 2),
+                    'electricity imports': round(self.consumption_per_fuel['electricity'].imported.annual_sum_tco2, 2)}
 
         heating_fuel = self.heating_system.fuel.name
         if heating_fuel != 'electricity':
