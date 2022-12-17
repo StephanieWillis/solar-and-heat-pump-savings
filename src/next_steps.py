@@ -82,7 +82,6 @@ def render_solar_next_steps(solar_install: Solar):
         "it's worth planning ahead! <a href='https://blog.spiritenergy.co.uk/homeowner/how-many-solar-panels-allowed#:~:text=On%20a%20single%20phase%20supply,roughly%2010%2D13%20solar%20panels_'> More info here </a>."
         "</p>"
         "<p class='next-steps'>"
-        "The more panels you have, the more likely you are to want to sell some electricity back to the grid. "
         "The rate you get paid for selling electricity from your panels (~15p/kWh) isn't as high as the rate"
         "you pay for electricity (~34p/kWh), which means that your panels will make you money slower once"
         "you've replaced all of your electricity purchases. This means that smaller installations (just replace"
