@@ -445,10 +445,10 @@ def render_carbon_chart(results_df: pd.DataFrame):
 
 
 def render_carbon_outputs(house: "House", solar_house: "House", hp_house: "House", both_house: "House"):
-    current_formatted = wrap_words_in_bold_blue_format(f'{house.total_annual_tco2:.2f}')
-    solar_formatted = wrap_words_in_bold_blue_format(f'{solar_house.total_annual_tco2:.2f}')
-    hp_formatted = wrap_words_in_bold_blue_format(f'{hp_house.total_annual_tco2:.2f}')
-    both_formatted = wrap_words_in_bold_blue_format(f'{both_house.total_annual_tco2:.2f}')
+    current_formatted = wrap_words_in_bold_blue_format(f'{house.total_annual_tco2:.1f}')
+    solar_formatted = wrap_words_in_bold_blue_format(f'{solar_house.total_annual_tco2:.1f}')
+    hp_formatted = wrap_words_in_bold_blue_format(f'{hp_house.total_annual_tco2:.1f}')
+    both_formatted = wrap_words_in_bold_blue_format(f'{both_house.total_annual_tco2:.1f}')
     st.markdown(
         f"""
         <p>We calculate that your house emits {current_formatted} tonnes of CO2 per year 
