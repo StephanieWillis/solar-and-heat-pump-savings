@@ -68,7 +68,7 @@ def render_orientation_questions(solar_install: Solar):
     orientation_name: str = st.selectbox(label="Enter the orientation of the side of the roof you have drawn on",
                                          options=orientation_options,
                                          key="orientation_name",
-                                         help="The more south-facing your roof, the more energy your solar panels will"
+                                         help="The more south-facing your roof, the more energy your solar panels will "
                                               "generate")
     orientation = SolarConstants.ORIENTATIONS[orientation_name]
     return orientation

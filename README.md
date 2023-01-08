@@ -13,7 +13,7 @@ docker compose up
 
 or 
 
-pip install requirements.txt
+pip install -r requirements.txt
 cd src
 streamlit run main.py 
 ```
