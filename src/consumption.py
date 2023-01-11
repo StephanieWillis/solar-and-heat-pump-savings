@@ -11,7 +11,7 @@ from fuels import Fuel
 class ConsumptionStream:
 
     hourly_profile_kwh: pd.Series  # series index must be hourly datetime values for one whole year
-    fuel: Fuel = field(default_factory=constants.ELECTRICITY)
+    fuel: Fuel = constants.ELECTRICITY
 
     def __post_init__(self):
         """ Check index is of correct form"""
