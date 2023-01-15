@@ -526,4 +526,8 @@ def render_savings_chart(results_df: pd.DataFrame, x_variable: str):
         paper_bgcolor="rgba(0,0,0,0)",
         yaxis=dict(title=None),
     )
-    st.plotly_chart(bills_fig, use_container_width=True, sharing="streamlit")
+
+    # Add some plot configuration settings
+    config = {'displayModeBar': False}
+    
+    st.plotly_chart(bills_fig, use_container_width=True, sharing="streamlit", config=config)

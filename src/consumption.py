@@ -1,5 +1,5 @@
 import copy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import pandas as pd
 

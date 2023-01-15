@@ -5,6 +5,7 @@ from typing import List, Tuple, Optional
 import folium
 import leafmap.foliumap as leafmap
 import streamlit as st
+import streamlit.components.v1 as streamlit_components
 from streamlit_folium import st_folium
 import numpy as np
 
@@ -128,11 +129,6 @@ def roof_mapper(width: int, height: int) -> Optional[List[Polygon]]:
     st.subheader("Find your house")
     selected_location = place_search()
 
-    map_styling = ".leaflet-draw-draw-polyline {" \
-                  "display: none;" \
-                  "}"
-    st.markdown(f"<style><{map_styling}/style>", unsafe_allow_html=True)
-
     centre = [selected_location["lat"], selected_location["lng"]] if selected_location else [55, 0]
 
     st.subheader("Draw on your roof")
@@ -154,6 +150,42 @@ def roof_mapper(width: int, height: int) -> Optional[List[Polygon]]:
         ).add_to(m)
 
     map = st_folium(m, width=width, height=height)
+
+    # Define some extra script to add to the page to hide some of the map tool features
+    # The script will run in an iframe so you have to do some work to navigate back to the iframe parent window
+    # You can then add an event listener for the streamlit 'message' event which should run whenever anything 
+    # happens in the app to make sure it fires after the iframe content has loaded
+    script = "let top_window = window.top;" \
+             "top_window.addEventListener('message', function(e){" \
+             "  let map_iframe = this.document.querySelector('[title=\"streamlit_folium.st_folium\"]');" \
+             "  let parentdocument = map_iframe.contentWindow.document;" \
+             "  let stylesheet = parentdocument.head.querySelector('#new-map-stylesheet');" \
+             "  if (!stylesheet) {" \
+             "    stylesheet = parentdocument.createElement('style');" \
+             "    stylesheet.type = 'text/css';" \
+             "    stylesheet.id = 'new-map-stylesheet';" \
+             "    parentdocument.head.appendChild(stylesheet);" \
+             "    let styles = '" \
+             "    a.leaflet-draw-draw-polyline, " \
+             "    a.leaflet-draw-draw-rectangle, " \
+             "    a.leaflet-draw-draw-circle, " \
+             "    a.leaflet-draw-draw-marker, " \
+             "    a.leaflet-draw-draw-circlemarker, " \
+             "    ul.leaflet-draw-actions li" \
+             "    { display: none; }';" \
+             "    stylesheet.sheet.insertRule(styles, 0);" \
+             "    styles = '" \
+             "    a.leaflet-draw-toolbar-button-enabled, " \
+             "    a.leaflet-draw-toolbar-button-enabled:hover " \
+             "    { background-color: lightblue; }';" \
+             "    stylesheet.sheet.insertRule(styles, 0);" \
+             "    console.log('styling_map');" \
+             "  }" \
+             "});"
+
+    # Add the extra script you defined
+    streamlit_components.html(f"<script>{script}</script>", height=0)
+    
 
     if map["all_drawings"]:  # map["all_drawings"] is none until somebody clicks
         polygons = []
