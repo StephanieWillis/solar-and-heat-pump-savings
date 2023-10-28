@@ -8,3 +8,4 @@ leafmap
 streamlit-folium
 requests
 setuptools
+altair<5
