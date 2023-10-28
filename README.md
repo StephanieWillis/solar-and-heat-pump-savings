@@ -137,9 +137,9 @@ https://media.nesta.org.uk/documents/How_to_reduce_the_cost_of_heat_pumps_v4_1.p
 - Assumed oil and direct electric baseline costs are the same as gas boiler costs. This is probably a poor assumption in the direct electric case
 
 The Nesta prices were in £2021 so we inflated the figures by ratio of retail price index from [Oct 2021](
-https://www.crosslandsolicitors.com/site/hr-hub/October-2021-inflation-data-CPI-CPIH-RPI) to [Oct 2022](
-https://www.crosslandsolicitors.com/site/media/October-2022-inflation-data-CPI-CPIH-RPI). That amounts
-to a 14% cost increase.
+https://www.crosslandsolicitors.com/site/hr-hub/October-2021-inflation-data-CPI-CPIH-RPI) to [September 2023](
+https://www.crosslandsolicitors.com/site/media/hr-hub/September-2023-inflation-CPI-CPIH-RPI). That amounts
+to a 21% cost increase.
 
 Other relevant cost resources [here](
 https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/656866/BEIS_Update_of_Domestic_Cost_Assumptions_031017.pdf)
