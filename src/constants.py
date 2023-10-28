@@ -135,8 +135,8 @@ class TariffConstants:
 
 
 STANDARD_TARIFF = TariffConstants(
-    p_per_kwh_gas=10.3, p_per_kwh_elec_import=34.0, p_per_kwh_elec_export=15.0,
-    p_per_L_oil=95.0, p_per_day_gas=28.0, p_per_day_elec=46.0)
+    p_per_kwh_gas=7.0, p_per_kwh_elec_import=27.0, p_per_kwh_elec_export=15.0,
+    p_per_L_oil=79.0, p_per_day_gas=30.0, p_per_day_elec=53.0)
 
 
 @dataclass()

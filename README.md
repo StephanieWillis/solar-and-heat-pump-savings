@@ -116,13 +116,11 @@ Electricity emissions factors are UK average from the start of 2022 to 2022-10-2
 ### Tariffs
 
 The default tariffs for gas and electricity are based on the average rate under the
-[Energy Price Guarantee](https://www.gov.uk/government/publications/energy-bills-support/energy-bills-support-factsheet-8-september-2022),
-which is active until April 2023.
-Without further government support, bills will increase after that date, at least in the short term. Some clues
-as where rates might go in [this Cornwall Insights analysis](https://www.cornwall-insight.com/predicted-fall-in-the-april-2023-price-cap-but-prices-remain-significantly-above-the-epg/)
-and [this nesta analysis](https://www.nesta.org.uk/report/how-the-energy-crisis-affects-the-case-for-heat-pumps/how-the-costs-of-heat-pumps-compare-to-gas-boilers-since-the-energy-crisis-1/#content)
+[October 2023 price cap](https://www.ofgem.gov.uk/energy-price-cap),
+which is active until the 30th of December 2023.
+The electricity export tariff is Octopus's [Outgoing Fixed](https://octopus.energy/smart/outgoing/).
 The oil tariff is a rough average based on [Boiler Juice](https://www.boilerjuice.com/heating-oil-prices/) 
-data since prices stabilised in April 2022.
+data for September and October 2023.
 
 
 ### Cost data
