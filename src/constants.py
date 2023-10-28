@@ -11,12 +11,12 @@ THIS_FILE = Path(__file__)
 BASE_YEAR_HOURLY_INDEX = pd.date_range(start="2013-01-01", end="2014-01-01", freq="1H", inclusive="left")
 EMPTY_TIMESERIES = pd.Series(index=BASE_YEAR_HOURLY_INDEX, data=0)
 
-KWH_PER_LITRE_OF_OIL = 10.35  # https://www.thegreenage.co.uk/is-heating-oil-a-cheap-way-to-heat-my-home/
 ELEC_TCO2_PER_KWH = 186 / 10 ** 6
 ELECTRICITY = Fuel("electricity", tco2_per_kwh=ELEC_TCO2_PER_KWH)
 GAS_TCO2_PER_KWH = 202 / 10 ** 6
 GAS = Fuel(name="gas", tco2_per_kwh=GAS_TCO2_PER_KWH)
 OIL_TCO2_PER_KWH = 260 / 10 ** 6
+KWH_PER_LITRE_OF_OIL = 10.35  # https://www.thegreenage.co.uk/is-heating-oil-a-cheap-way-to-heat-my-home/
 OIL = Fuel(name="oil", units="litres", converter_consumption_units_to_kwh=KWH_PER_LITRE_OF_OIL,
            tco2_per_kwh=OIL_TCO2_PER_KWH)
 FUELS = [ELECTRICITY, GAS, OIL]
