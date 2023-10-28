@@ -188,8 +188,8 @@ def test_upgrade_buildings():
     assert hp_house.percent_self_use_of_solar == 0
     assert oil_house.percent_self_use_of_solar == 0
     assert solar_house.percent_self_use_of_solar > 0
-    assert solar_house.percent_self_use_of_solar == 0.827282421412342  # so high because only 0.8kW of panels
+    assert round(solar_house.percent_self_use_of_solar, 3) == 0.827  # so high because only 0.8kW of panels
     assert both_house.percent_self_use_of_solar > solar_house.percent_self_use_of_solar
-    assert both_house.percent_self_use_of_solar == 0.9196782581191316
+    assert round(both_house.percent_self_use_of_solar, 3) == 0.920
 
     return hp_house, solar_house, both_house

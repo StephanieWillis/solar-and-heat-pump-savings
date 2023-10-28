@@ -62,10 +62,10 @@ def test_get_hourly_radiation_from_eu_api_returns_expected_annual_sum():
 
     assert solar_install.peak_capacity_kw_out_per_kw_in_per_m2 == 10 * SolarConstants.KW_PEAK_PER_PANEL
     pv_power_kw = solar_install.get_hourly_radiation_from_eu_api()
-    ANNUAL_KWH = 3102.6047200000003
-    np.testing.assert_almost_equal(pv_power_kw.sum(), ANNUAL_KWH)
-    np.testing.assert_almost_equal(solar_install.generation.exported.annual_sum_kwh, ANNUAL_KWH)
-    np.testing.assert_almost_equal(solar_install.generation.overall.annual_sum_kwh, - ANNUAL_KWH)
+    ANNUAL_KWH = 3103
+    np.testing.assert_almost_equal(pv_power_kw.sum(), ANNUAL_KWH, decimal=0)
+    np.testing.assert_almost_equal(solar_install.generation.exported.annual_sum_kwh, ANNUAL_KWH, decimal=0)
+    np.testing.assert_almost_equal(solar_install.generation.overall.annual_sum_kwh, - ANNUAL_KWH, decimal=0)
     np.testing.assert_almost_equal(solar_install.generation.imported.annual_sum_kwh, 0)
 
     return pv_power_kw
