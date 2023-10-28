@@ -327,10 +327,10 @@ def render_tariff_overwrite_options(house: House) -> House:
             tariffs["oil"].p_per_unit_import = st.session_state.p_per_unit_heating_fuel_import
 
     st.caption(
-        "Our default tariffs reflect the current [Energy Price Guarantee]("
-        "https://www.gov.uk/government/publications/energy-bills-support/energy-bills-support-factsheet-8-september-2022)"
-        " which is in place until April. "
-        "Rates will go up in April, but we don't yet know how this will be split between electricity and gas. \n  \n"
+        "Our default tariffs reflect the current [Ofgem price cap](https://www.ofgem.gov.uk/energy-price-cap). "
+        "Cheaper electricity rates are available. For example Ovo is offering a [15p/kWh heat pump tariff]("
+        "https://company.ovo.com/cheaper-than-a-gas-boiler-ovo-launches-best-in-market-heat-pump-offer/) where "
+        "you get this low rate just for the electricity your heat pump uses. \n  \n"
         "The electricity export rate of 15p/kWh is based on [Octopus Outgoing](https://octopus.energy/outgoing)"
     )
 
