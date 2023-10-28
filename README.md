@@ -91,9 +91,9 @@ In the step where we pickle the demand profile we normalize it so the profiles s
 
 ### Heating system efficiencies
 
-**Heat pumps** - using rounded values from 5 kW 
-[Vaillant arotherm SCOP data](https://www.vaillant.co.uk/downloads/aproducts/renewables-1/arotherm-plus/arotherm-plus-1/quick-guides/new-5/installers-quick-guide-arotherm-plus-1949445.pdf),
- with flow temperature of 55C. These efficiencies are above
+**Heat pumps** - using rounded values from 7 kW 
+[Vaillant arotherm SCOP data](https://www.vaillant.co.uk/downloads/aproducts/renewables-1/arotherm-plus/arotherm-plus-spec-sheet-1892564.pdf)
+with flow temperature of 55C. These efficiencies are above
 recorded averages (2.76 according to this [nesta analysis](https://www.nesta.org.uk/report/reduce-the-cost-of-heat-pumps/))
 but lower than reported values for high quality installs.
 

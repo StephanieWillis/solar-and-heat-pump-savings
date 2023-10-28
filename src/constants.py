@@ -94,7 +94,7 @@ DEFAULT_HEATING_CONSTANTS = {
         normalized_hourly_heat_demand_profile=NORMALIZED_HOURLY_HEAT_DEMAND_DF[
             'Normalised_Resistance_heater_heat']),
     "Heat pump": HeatingConstants(
-        efficiency=3.0,
+        efficiency=3.4,
         fuel=ELECTRICITY,
         normalized_hourly_heat_demand_profile=NORMALIZED_HOURLY_HEAT_DEMAND_DF['Normalised_ASHP_heat']),
 }
