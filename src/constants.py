@@ -114,7 +114,7 @@ HEATING_SYSTEM_COSTS = {"Gas boiler": GAS_BOILER_COSTS,
                         "Direct electric": GAS_BOILER_COSTS
                         }
 HEATING_SYSTEM_GRANTS = {"Gas boiler": 0,
-                         "Heat pump": 5000,  # Boiler upgrade scheme,
+                         "Heat pump": 7500,  # Boiler upgrade scheme,
                          "Oil boiler": 0,
                          "Direct electric": 0
                          }
