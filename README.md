@@ -18,6 +18,9 @@ cd src
 streamlit run main.py 
 ```
 
+When using docker compose the url given in your terminal is wrong. The correct url is http://localhost:8083
+(because the port stated in the docker file is 8082)
+
 ## Solar output calculation
 
 Using EU joint research centre calculations.
