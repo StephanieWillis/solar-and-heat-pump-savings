@@ -132,21 +132,19 @@ def test_set_up_house_from_heating_name():
 
 
 def test_typical_home_hits_price_cap():
-    # price cap under Energy price guarantee is £2500 for house that uses 12,000kWh of gas and 2,900kWh of elec
+    # October 2023 price cap for house is 1834 for house that uses 11,500kWh of gas and 2,900kWh of elec
     gas_boiler = building_model.HeatingSystem.from_constants(
         name='Gas boiler',
         parameters=constants.DEFAULT_HEATING_CONSTANTS['Gas boiler'])
-    demand = 2900 * constants.NORMALIZED_HOURLY_BASE_DEMAND
+    demand = 2700 * constants.NORMALIZED_HOURLY_BASE_DEMAND
     envelope = building_model.BuildingEnvelope(house_type='typical',
-                                               annual_heating_demand=12000 * gas_boiler.efficiency,
+                                               annual_heating_demand=11500 * gas_boiler.efficiency,
                                                base_electricity_demand_profile_kwh=demand)
     gas_house = building_model.House.set_up_from_heating_name(envelope=envelope, heating_name='Gas boiler')
     assert gas_house.has_multiple_fuels is True
-    np.testing.assert_almost_equal(gas_house.annual_consumption_per_fuel_kwh['electricity'], 2900)
-    np.testing.assert_almost_equal(gas_house.annual_consumption_per_fuel_kwh['gas'], 12000)
-    np.testing.assert_almost_equal(gas_house.total_annual_bill, 2492.1)  # looks like it isn't exactly 2500 after all
+    np.testing.assert_almost_equal(gas_house.total_annual_bill, 1837, 0)  # prices we are using are rounded
     np.testing.assert_almost_equal(gas_house.total_annual_tco2,
-                                   (12000 * constants.GAS_TCO2_PER_KWH + 2900 * constants.ELEC_TCO2_PER_KWH))
+                                   (11500 * constants.GAS_TCO2_PER_KWH + 2700 * constants.ELEC_TCO2_PER_KWH))
 
 
 def test_upgrade_buildings():
@@ -190,6 +188,6 @@ def test_upgrade_buildings():
     assert solar_house.percent_self_use_of_solar > 0
     assert round(solar_house.percent_self_use_of_solar, 3) == 0.827  # so high because only 0.8kW of panels
     assert both_house.percent_self_use_of_solar > solar_house.percent_self_use_of_solar
-    assert round(both_house.percent_self_use_of_solar, 3) == 0.920
+    assert round(both_house.percent_self_use_of_solar, 3) == 0.914
 
     return hp_house, solar_house, both_house

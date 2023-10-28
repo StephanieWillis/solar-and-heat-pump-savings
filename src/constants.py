@@ -11,12 +11,12 @@ THIS_FILE = Path(__file__)
 BASE_YEAR_HOURLY_INDEX = pd.date_range(start="2013-01-01", end="2014-01-01", freq="1H", inclusive="left")
 EMPTY_TIMESERIES = pd.Series(index=BASE_YEAR_HOURLY_INDEX, data=0)
 
-KWH_PER_LITRE_OF_OIL = 10.35  # https://www.thegreenage.co.uk/is-heating-oil-a-cheap-way-to-heat-my-home/
 ELEC_TCO2_PER_KWH = 186 / 10 ** 6
 ELECTRICITY = Fuel("electricity", tco2_per_kwh=ELEC_TCO2_PER_KWH)
 GAS_TCO2_PER_KWH = 202 / 10 ** 6
 GAS = Fuel(name="gas", tco2_per_kwh=GAS_TCO2_PER_KWH)
 OIL_TCO2_PER_KWH = 260 / 10 ** 6
+KWH_PER_LITRE_OF_OIL = 10.35  # https://www.thegreenage.co.uk/is-heating-oil-a-cheap-way-to-heat-my-home/
 OIL = Fuel(name="oil", units="litres", converter_consumption_units_to_kwh=KWH_PER_LITRE_OF_OIL,
            tco2_per_kwh=OIL_TCO2_PER_KWH)
 FUELS = [ELECTRICITY, GAS, OIL]
@@ -94,27 +94,27 @@ DEFAULT_HEATING_CONSTANTS = {
         normalized_hourly_heat_demand_profile=NORMALIZED_HOURLY_HEAT_DEMAND_DF[
             'Normalised_Resistance_heater_heat']),
     "Heat pump": HeatingConstants(
-        efficiency=3.0,
+        efficiency=3.4,
         fuel=ELECTRICITY,
         normalized_hourly_heat_demand_profile=NORMALIZED_HOURLY_HEAT_DEMAND_DF['Normalised_ASHP_heat']),
 }
 
-RPI_ratio_oct_21_to_oct_22 = 356.2/312.0
-HEAT_PUMP_COSTS = {"Terrace": 10000 * RPI_ratio_oct_21_to_oct_22,
-                   "Semi-detached": 11100 * RPI_ratio_oct_21_to_oct_22,
-                   "Flat": 9100 * RPI_ratio_oct_21_to_oct_22,
-                   "Detached": 13100 * RPI_ratio_oct_21_to_oct_22}
-GAS_BOILER_COSTS = {"Terrace": 1800 * 10000 / 11100 * RPI_ratio_oct_21_to_oct_22,
-                    "Semi-detached": 1800 * RPI_ratio_oct_21_to_oct_22,
-                    "Flat": 1500 * RPI_ratio_oct_21_to_oct_22,
-                    "Detached": 2200 * RPI_ratio_oct_21_to_oct_22}
+RPI_ratio_oct_21_to_sept_23 = 378.4/312.0
+HEAT_PUMP_COSTS = {"Terrace": 10000 * RPI_ratio_oct_21_to_sept_23,
+                   "Semi-detached": 11100 * RPI_ratio_oct_21_to_sept_23,
+                   "Flat": 9100 * RPI_ratio_oct_21_to_sept_23,
+                   "Detached": 13100 * RPI_ratio_oct_21_to_sept_23}
+GAS_BOILER_COSTS = {"Terrace": 1800 * 10000 / 11100 * RPI_ratio_oct_21_to_sept_23,
+                    "Semi-detached": 1800 * RPI_ratio_oct_21_to_sept_23,
+                    "Flat": 1500 * RPI_ratio_oct_21_to_sept_23,
+                    "Detached": 2200 * RPI_ratio_oct_21_to_sept_23}
 HEATING_SYSTEM_COSTS = {"Gas boiler": GAS_BOILER_COSTS,
                         "Heat pump": HEAT_PUMP_COSTS,
                         "Oil boiler": GAS_BOILER_COSTS,  # assume they are the same
                         "Direct electric": GAS_BOILER_COSTS
                         }
 HEATING_SYSTEM_GRANTS = {"Gas boiler": 0,
-                         "Heat pump": 5000,  # Boiler upgrade scheme,
+                         "Heat pump": 7500,  # Boiler upgrade scheme,
                          "Oil boiler": 0,
                          "Direct electric": 0
                          }
@@ -135,8 +135,8 @@ class TariffConstants:
 
 
 STANDARD_TARIFF = TariffConstants(
-    p_per_kwh_gas=10.3, p_per_kwh_elec_import=34.0, p_per_kwh_elec_export=15.0,
-    p_per_L_oil=95.0, p_per_day_gas=28.0, p_per_day_elec=46.0)
+    p_per_kwh_gas=7.0, p_per_kwh_elec_import=27.0, p_per_kwh_elec_export=15.0,
+    p_per_L_oil=79.0, p_per_day_gas=30.0, p_per_day_elec=53.0)
 
 
 @dataclass()

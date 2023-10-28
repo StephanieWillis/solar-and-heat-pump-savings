@@ -104,7 +104,7 @@ def render_heat_pump_overwrite_options(upgrade_heating: HeatingSystem) -> Heatin
     st.caption(
         "The efficiency of your heat pump depends on how well the system is designed and how low a flow "
         "temperature it can run at. A COP of 3.6 or better is possible with a [high quality, low flow temperature "
-        "install](https://heatpumpmonitor.org).  \n  \n"
+        "install](https://heatpumpmonitor.org/graph).  \n  \n"
         "A good installer is key to ensuring your heat pump runs efficiently. The [heat geek map"
         "](https://www.heatgeek.com/find-a-heat-geek/) is a great place to start your search."
     )

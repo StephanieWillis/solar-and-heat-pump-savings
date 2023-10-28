@@ -94,11 +94,11 @@ In the step where we pickle the demand profile we normalize it so the profiles s
 
 ### Heating system efficiencies
 
-**Heat pumps** - using rounded values from 5 kW 
-[Vaillant arotherm SCOP data](https://www.vaillant.co.uk/downloads/aproducts/renewables-1/arotherm-plus/arotherm-plus-1/quick-guides/new-5/installers-quick-guide-arotherm-plus-1949445.pdf),
- with flow temperature of 55C. These efficiencies are above
+**Heat pumps** - using rounded values from 7 kW 
+[Vaillant arotherm SCOP data](https://www.vaillant.co.uk/downloads/aproducts/renewables-1/arotherm-plus/arotherm-plus-spec-sheet-1892564.pdf)
+with flow temperature of 55C. These efficiencies are above
 recorded averages (2.76 according to this [nesta analysis](https://www.nesta.org.uk/report/reduce-the-cost-of-heat-pumps/))
-but lower than reported values for high quality installs.
+but lower than reported values for [high quality installs](https://heatpumpmonitor.org/graph).
 
 **Gas boiler** - using 84%, as used in this 
 [Delta EE report](https://www.climatexchange.org.uk/media/1897/electrification_of_heat_and_impact_on_scottish_electricity_system_-_final_report1.pdf)). Using 80% for water heating due to lower
@@ -119,13 +119,11 @@ Electricity emissions factors are UK average from the start of 2022 to 2022-10-2
 ### Tariffs
 
 The default tariffs for gas and electricity are based on the average rate under the
-[Energy Price Guarantee](https://www.gov.uk/government/publications/energy-bills-support/energy-bills-support-factsheet-8-september-2022),
-which is active until April 2023.
-Without further government support, bills will increase after that date, at least in the short term. Some clues
-as where rates might go in [this Cornwall Insights analysis](https://www.cornwall-insight.com/predicted-fall-in-the-april-2023-price-cap-but-prices-remain-significantly-above-the-epg/)
-and [this nesta analysis](https://www.nesta.org.uk/report/how-the-energy-crisis-affects-the-case-for-heat-pumps/how-the-costs-of-heat-pumps-compare-to-gas-boilers-since-the-energy-crisis-1/#content)
+[October 2023 price cap](https://www.ofgem.gov.uk/energy-price-cap),
+which is active until the 30th of December 2023.
+The electricity export tariff is Octopus's [Outgoing Fixed](https://octopus.energy/smart/outgoing/).
 The oil tariff is a rough average based on [Boiler Juice](https://www.boilerjuice.com/heating-oil-prices/) 
-data since prices stabilised in April 2022.
+data for September and October 2023.
 
 
 ### Cost data
@@ -133,16 +131,16 @@ Solar costs are from [BEIS data](https://www.data.gov.uk/dataset/738a7bdb-a533-4
 for 2021/22 installs accredited under MCS. 
 We used the upper confidence interval given prices have likely risen since 2021/2022
 
-Heat pump and gas boiler costs from Nesta's [How to reduce the cost of heat pupms report](
+Heat pump and gas boiler costs from Nesta's [How to reduce the cost of heat pumps report](
 https://media.nesta.org.uk/documents/How_to_reduce_the_cost_of_heat_pumps_v4_1.pdf)
 - Used tables 1 (for semi only) and 2 (for terrace, flat, detached) from
 - Corrected gas boiler cost for semi-detached by same amount as heat pump shifts to keep equivalent
 - Assumed oil and direct electric baseline costs are the same as gas boiler costs. This is probably a poor assumption in the direct electric case
 
 The Nesta prices were in £2021 so we inflated the figures by ratio of retail price index from [Oct 2021](
-https://www.crosslandsolicitors.com/site/hr-hub/October-2021-inflation-data-CPI-CPIH-RPI) to [Oct 2022](
-https://www.crosslandsolicitors.com/site/media/October-2022-inflation-data-CPI-CPIH-RPI). That amounts
-to a 14% cost increase.
+https://www.crosslandsolicitors.com/site/hr-hub/October-2021-inflation-data-CPI-CPIH-RPI) to [September 2023](
+https://www.crosslandsolicitors.com/site/media/hr-hub/September-2023-inflation-CPI-CPIH-RPI). That amounts
+to a 21% cost increase.
 
 Other relevant cost resources [here](
 https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/656866/BEIS_Update_of_Domestic_Cost_Assumptions_031017.pdf)
