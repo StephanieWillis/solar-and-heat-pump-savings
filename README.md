@@ -95,7 +95,7 @@ In the step where we pickle the demand profile we normalize it so the profiles s
 [Vaillant arotherm SCOP data](https://www.vaillant.co.uk/downloads/aproducts/renewables-1/arotherm-plus/arotherm-plus-spec-sheet-1892564.pdf)
 with flow temperature of 55C. These efficiencies are above
 recorded averages (2.76 according to this [nesta analysis](https://www.nesta.org.uk/report/reduce-the-cost-of-heat-pumps/))
-but lower than reported values for high quality installs.
+but lower than reported values for [high quality installs](https://heatpumpmonitor.org/graph).
 
 **Gas boiler** - using 84%, as used in this 
 [Delta EE report](https://www.climatexchange.org.uk/media/1897/electrification_of_heat_and_impact_on_scottish_electricity_system_-_final_report1.pdf)). Using 80% for water heating due to lower
