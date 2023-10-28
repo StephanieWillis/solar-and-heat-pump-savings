@@ -128,7 +128,7 @@ Solar costs are from [BEIS data](https://www.data.gov.uk/dataset/738a7bdb-a533-4
 for 2021/22 installs accredited under MCS. 
 We used the upper confidence interval given prices have likely risen since 2021/2022
 
-Heat pump and gas boiler costs from Nesta's [How to reduce the cost of heat pupms report](
+Heat pump and gas boiler costs from Nesta's [How to reduce the cost of heat pumps report](
 https://media.nesta.org.uk/documents/How_to_reduce_the_cost_of_heat_pumps_v4_1.pdf)
 - Used tables 1 (for semi only) and 2 (for terrace, flat, detached) from
 - Corrected gas boiler cost for semi-detached by same amount as heat pump shifts to keep equivalent
